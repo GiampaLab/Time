@@ -67,6 +67,8 @@
                 return 270.0;
             case ArmState.None:
                 return 225.0;
+            case ArmState.OnePointFive:
+                return 45.0;
             default: return 0;
         }
     }
@@ -88,7 +90,7 @@
 
             SetClock(null);
 		    
-            timer = new System.Threading.Timer(SetClock, new System.Threading.AutoResetEvent(false), 10, 10); // 10 milliseconds
+            timer = new System.Threading.Timer(SetClock, new System.Threading.AutoResetEvent(false), 0, 10); // 10 milliseconds
         }
 
         private void SetClock(object? stateInfo)
@@ -96,7 +98,7 @@
             var time = DateTime.Now;
 
             for(var i=0; i<24; i++){
-                switch(time.Second % 10){
+                switch(time.Second / 10){
                     case 0:
                         Clocks[1].UpdateState(ArmState.Three, ArmState.Six);
                         Clocks[4].UpdateState(ArmState.Nine, ArmState.Six);
@@ -134,10 +136,10 @@
                         break;
 
                     case 4:
-                        Clocks[1].UpdateState(ArmState.Zero, ArmState.Six);
-                        Clocks[4].UpdateState(ArmState.Zero, ArmState.Six);
-                        Clocks[2].UpdateState(ArmState.Zero, ArmState.Three);
-                        Clocks[5].UpdateState(ArmState.Zero, ArmState.Nine);
+                        Clocks[1].UpdateState(ArmState.None, ArmState.None);
+                        Clocks[4].UpdateState(ArmState.None, ArmState.Six);
+                        Clocks[2].UpdateState(ArmState.OnePointFive, ArmState.Three);
+                        Clocks[5].UpdateState(ArmState.Nine, ArmState.Zero);
                         Clocks[3].UpdateState(ArmState.None, ArmState.None);
                         Clocks[6].UpdateState(ArmState.Zero, ArmState.Six);
                         break;
@@ -200,6 +202,10 @@
         public ClockArm SecondArm {get; private set; } = new ClockArm();       
         public Clock(int Id){
             this.Id = Id;
+            FirstArm.CurrentState = 0.0;
+            FirstArm.Config.Direction = Direction.Clockwise;
+            SecondArm.CurrentState = 0.0;
+            SecondArm.Config.Direction = Direction.Anticlockwise;
         }
 
         public void UpdateState(ArmState firstArmState, ArmState secondArmstate){
@@ -212,9 +218,10 @@
         }
 
         private void UpdateArmState(ClockArm arm){
+            Console.WriteLine($"Current State{arm.CurrentState}");
             arm.CurrentState = arm.Config.Direction == Direction.Clockwise ?
-                    arm.CurrentState + 1:
-                    arm.CurrentState -1;
+                    Math.Round(arm.CurrentState + 0.1, 2):
+                    Math.Round(arm.CurrentState - 0.1, 2);
         }
     }
 
@@ -222,13 +229,13 @@
         private double _currentState;
         public double CurrentState{
             get{ return _currentState; } 
-            set{_currentState = value % 360.0;}
-        } 
-        public ArmConfig Config{get; private set;} = new ArmConfig();
+            set{_currentState = value > 0? value % 360.0 : (value + 360.0) % 360.0 ;}
+        }
+        public ArmConfig Config{get; set;} = new ArmConfig();
     }
 
     public class ArmConfig{
-        public Direction Direction{get; private set;} = Direction.Clockwise;
+        public Direction Direction{get; set;} = Direction.Clockwise;
         public int MaxSpeed{get; private set;} = 3;
         public int Acceleration{get; private set;} = 2;
         public int Deceleration{get; private set;} = 2;
@@ -244,6 +251,7 @@
         Three,
         Six,
         Nine,
-        None
+        None,
+        OnePointFive
     }
 }
