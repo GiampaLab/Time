@@ -102,21 +102,31 @@ code {
     color: #c02d76;
 }
 
-.clock-container {
-	background-color: midnightblue;
+.clocks-wrapper{
 	display: flex;
+  	flex-flow:row nowrap;
 	justify-content: center;
 	align-items: center;
-	width: 100%;
-	min-height: 75vmin;
+  	background-color: midnightblue;
+}
+
+.clock-container {
+	background-color: inherit;
+	display: flex;
+	flex-flow:column nowrap;
+	justify-content: center;
+	align-items: center;
+	/* width: 100%;
+	min-height: 75vmin; */
 }
 
 .clock {
 	position: relative;
 	overflow: hidden;
+    margin: 5px;
 	background-color: inherit;
-	height: 70vmin;
-	width: 70vmin;
+	height: 30vmin;
+	width: 30vmin;
 	border-radius: 50%;
 	box-shadow: 0 -12px 12px rgba(255,255,255,.1),
 				inset 0 -12px 12px rgba(255,255,255,.1),
@@ -175,27 +185,29 @@ code {
 		content: "9";
 	}
 	.clock .ctr {
-		width: 3.1%;
-		height: 3.1%;
+		width: 2.5vh;
+		height: 2.5vh;
 		border-radius: 50%;
 		left: 50%;
 		top: 50%;
 		transform: translate(-50%, -50%);
-		background-color: wheat;
+		background-color: white;
 	}
 
 .clock .hour div {
 	top: 10%;
 	height: 40%;
-	border: 9px solid wheat;
-	margin-left: -9px;
+	width: 2.5vh;
+	background-color: white;
+	margin-left: -1.25vh;
 }
 
 .clock .minute div {
 	top: 10%;
 	height: 40%;
-	border: 9px solid wheat;
-	margin-left: -9px;
+	width: 2.5vh;
+	background-color: white;
+	margin-left: -1.25vh;
 }
 
 .clock .second div {

@@ -1,40 +1,40 @@
 @page "/analogclock"
 
-<div class="clock-container">
-	<div class="clock">
-		<div class="hour" style="transform:rotate(@(controller != null ? ArmStateToDegree(controller.Clocks[7].FirstArm.State) : 0)deg);"><div></div></div>
-		<div class="minute" style="transform:rotate(@(controller != null ? ArmStateToDegree(controller.Clocks[7].SecondArm.State) : 0)deg);"><div></div></div>
-		<span class="ctr"></span>
-	</div>
-    <div class="clock">
-		<div class="hour" style="transform:rotate(@(controller != null ? ArmStateToDegree(controller.Clocks[8].FirstArm.State) : 0)deg);"><div></div></div>
-		<div class="minute" style="transform:rotate(@(controller != null ? ArmStateToDegree(controller.Clocks[8].SecondArm.State) : 0)deg);"><div></div></div>
-		<span class="ctr"></span>
-	</div>
-</div>
-<div class="clock-container">
-    <div class="clock">
-		<div class="hour" style="transform:rotate(@(controller != null ? ArmStateToDegree(controller.Clocks[15].FirstArm.State) : 0)deg);"><div></div></div>
-		<div class="minute" style="transform:rotate(@(controller != null ? ArmStateToDegree(controller.Clocks[15].SecondArm.State) : 0)deg);"><div></div></div>
-		<span class="ctr"></span>
-	</div>
-    <div class="clock">
-		<div class="hour" style="transform:rotate(@(controller != null ? ArmStateToDegree(controller.Clocks[16].FirstArm.State) : 0)deg);"><div></div></div>
-		<div class="minute" style="transform:rotate(@(controller != null ? ArmStateToDegree(controller.Clocks[16].SecondArm.State) : 0)deg);"><div></div></div>
-		<span class="ctr"></span>
-	</div>
-</div>
-<div class="clock-container">
-    <div class="clock">
-		<div class="hour" style="transform:rotate(@(controller != null ? ArmStateToDegree(controller.Clocks[23].FirstArm.State) : 0)deg);"><div></div></div>
-		<div class="minute" style="transform:rotate(@(controller != null ? ArmStateToDegree(controller.Clocks[23].SecondArm.State) : 0)deg);"><div></div></div>
-		<span class="ctr"></span>
-	</div>
-    <div class="clock">
-		<div class="hour" style="transform:rotate(@(controller != null ? ArmStateToDegree(controller.Clocks[24].FirstArm.State) : 0)deg);"><div></div></div>
-		<div class="minute" style="transform:rotate(@(controller != null ? ArmStateToDegree(controller.Clocks[24].SecondArm.State) : 0)deg);"><div></div></div>
-		<span class="ctr"></span>
-	</div>
+<div class="clocks-wrapper">
+    <div class="clock-container">
+        <div class="clock">
+            <div class="hour" style="transform:rotate(@(controller != null ? ArmStateToDegree(controller.Clocks[1].FirstArm.State) : 0)deg);"><div></div></div>
+            <div class="minute" style="transform:rotate(@(controller != null ? ArmStateToDegree(controller.Clocks[1].SecondArm.State) : 0)deg);"><div></div></div>
+            <span class="ctr"></span>
+        </div>
+        <div class="clock">
+            <div class="hour" style="transform:rotate(@(controller != null ? ArmStateToDegree(controller.Clocks[2].FirstArm.State) : 0)deg);"><div></div></div>
+            <div class="minute" style="transform:rotate(@(controller != null ? ArmStateToDegree(controller.Clocks[2].SecondArm.State) : 0)deg);"><div></div></div>
+            <span class="ctr"></span>
+        </div>
+        <div class="clock">
+            <div class="hour" style="transform:rotate(@(controller != null ? ArmStateToDegree(controller.Clocks[3].FirstArm.State) : 0)deg);"><div></div></div>
+            <div class="minute" style="transform:rotate(@(controller != null ? ArmStateToDegree(controller.Clocks[3].SecondArm.State) : 0)deg);"><div></div></div>
+            <span class="ctr"></span>
+        </div>
+    </div>
+    <div class="clock-container">
+        <div class="clock">
+            <div class="hour" style="transform:rotate(@(controller != null ? ArmStateToDegree(controller.Clocks[4].FirstArm.State) : 0)deg);"><div></div></div>
+            <div class="minute" style="transform:rotate(@(controller != null ? ArmStateToDegree(controller.Clocks[4].SecondArm.State) : 0)deg);"><div></div></div>
+            <span class="ctr"></span>
+        </div>
+        <div class="clock">
+            <div class="hour" style="transform:rotate(@(controller != null ? ArmStateToDegree(controller.Clocks[5].FirstArm.State) : 0)deg);"><div></div></div>
+            <div class="minute" style="transform:rotate(@(controller != null ? ArmStateToDegree(controller.Clocks[5].SecondArm.State) : 0)deg);"><div></div></div>
+            <span class="ctr"></span>
+        </div>
+        <div class="clock">
+            <div class="hour" style="transform:rotate(@(controller != null ? ArmStateToDegree(controller.Clocks[6].FirstArm.State) : 0)deg);"><div></div></div>
+            <div class="minute" style="transform:rotate(@(controller != null ? ArmStateToDegree(controller.Clocks[6].SecondArm.State) : 0)deg);"><div></div></div>
+            <span class="ctr"></span>
+        </div>
+    </div>
 </div>
 
 @code {
@@ -58,6 +58,8 @@
                 return 180.0;
             case ArmState.Nine:
                 return 270.0;
+            case ArmState.None:
+                return 225.0;
             default: return 0;
         }
     }
@@ -90,153 +92,153 @@
             for(var i=0; i<24; i++){
                 switch(time.Second % 10){
                     case 0:
-                        Clocks[7].FirstArm.State = ArmState.Three;
-                        Clocks[7].SecondArm.State = ArmState.Six;
-                        Clocks[8].FirstArm.State = ArmState.Nine;
-                        Clocks[8].SecondArm.State = ArmState.Six;
-                        Clocks[15].FirstArm.State = ArmState.Zero;
-                        Clocks[15].SecondArm.State = ArmState.Six;
-                        Clocks[16].FirstArm.State = ArmState.Zero;
-                        Clocks[16].SecondArm.State = ArmState.Six;
-                        Clocks[23].FirstArm.State = ArmState.Zero;
-                        Clocks[23].SecondArm.State = ArmState.Three;
-                        Clocks[24].FirstArm.State = ArmState.Zero;
-                        Clocks[24].SecondArm.State = ArmState.Nine;
+                        Clocks[1].FirstArm.State = ArmState.Three;
+                        Clocks[1].SecondArm.State = ArmState.Six;
+                        Clocks[4].FirstArm.State = ArmState.Nine;
+                        Clocks[4].SecondArm.State = ArmState.Six;
+                        Clocks[2].FirstArm.State = ArmState.Zero;
+                        Clocks[2].SecondArm.State = ArmState.Six;
+                        Clocks[5].FirstArm.State = ArmState.Zero;
+                        Clocks[5].SecondArm.State = ArmState.Six;
+                        Clocks[3].FirstArm.State = ArmState.Zero;
+                        Clocks[3].SecondArm.State = ArmState.Three;
+                        Clocks[6].FirstArm.State = ArmState.Zero;
+                        Clocks[6].SecondArm.State = ArmState.Nine;
                         break;
 
                     case 1:
-                        Clocks[7].FirstArm.State = ArmState.Zero;
-                        Clocks[7].SecondArm.State = ArmState.Six;
-                        Clocks[8].FirstArm.State = ArmState.Zero;
-                        Clocks[8].SecondArm.State = ArmState.Six;
-                        Clocks[15].FirstArm.State = ArmState.Zero;
-                        Clocks[15].SecondArm.State = ArmState.Six;
-                        Clocks[16].FirstArm.State = ArmState.Zero;
-                        Clocks[16].SecondArm.State = ArmState.Six;
-                        Clocks[23].FirstArm.State = ArmState.Zero;
-                        Clocks[23].SecondArm.State = ArmState.Six;
-                        Clocks[24].FirstArm.State = ArmState.Zero;
-                        Clocks[24].SecondArm.State = ArmState.Six;
+                        Clocks[1].FirstArm.State = ArmState.None;
+                        Clocks[1].SecondArm.State = ArmState.None;
+                        Clocks[4].FirstArm.State = ArmState.Zero;
+                        Clocks[4].SecondArm.State = ArmState.Six;
+                        Clocks[2].FirstArm.State = ArmState.None;
+                        Clocks[2].SecondArm.State = ArmState.None;
+                        Clocks[5].FirstArm.State = ArmState.Zero;
+                        Clocks[5].SecondArm.State = ArmState.Six;
+                        Clocks[3].FirstArm.State = ArmState.None;
+                        Clocks[3].SecondArm.State = ArmState.None;
+                        Clocks[6].FirstArm.State = ArmState.Zero;
+                        Clocks[6].SecondArm.State = ArmState.Six;
                         break;
                     
                     case 2:
-                        Clocks[7].FirstArm.State = ArmState.Three;
-                        Clocks[7].SecondArm.State = ArmState.Three;
-                        Clocks[8].FirstArm.State = ArmState.Nine;
-                        Clocks[8].SecondArm.State = ArmState.Six;
-                        Clocks[15].FirstArm.State = ArmState.Three;
-                        Clocks[15].SecondArm.State = ArmState.Six;
-                        Clocks[16].FirstArm.State = ArmState.Zero;
-                        Clocks[16].SecondArm.State = ArmState.Nine;
-                        Clocks[23].FirstArm.State = ArmState.Zero;
-                        Clocks[23].SecondArm.State = ArmState.Three;
-                        Clocks[24].FirstArm.State = ArmState.Nine;
-                        Clocks[24].SecondArm.State = ArmState.Nine;
+                        Clocks[1].FirstArm.State = ArmState.Three;
+                        Clocks[1].SecondArm.State = ArmState.Three;
+                        Clocks[4].FirstArm.State = ArmState.Nine;
+                        Clocks[4].SecondArm.State = ArmState.Six;
+                        Clocks[2].FirstArm.State = ArmState.Three;
+                        Clocks[2].SecondArm.State = ArmState.Six;
+                        Clocks[5].FirstArm.State = ArmState.Zero;
+                        Clocks[5].SecondArm.State = ArmState.Nine;
+                        Clocks[3].FirstArm.State = ArmState.Zero;
+                        Clocks[3].SecondArm.State = ArmState.Three;
+                        Clocks[6].FirstArm.State = ArmState.Nine;
+                        Clocks[6].SecondArm.State = ArmState.Nine;
                         break;
 
                     case 3:
-                        Clocks[7].FirstArm.State = ArmState.Three;
-                        Clocks[7].SecondArm.State = ArmState.Three;
-                        Clocks[8].FirstArm.State = ArmState.Nine;
-                        Clocks[8].SecondArm.State = ArmState.Six;
-                        Clocks[15].FirstArm.State = ArmState.Three;
-                        Clocks[15].SecondArm.State = ArmState.Three;
-                        Clocks[16].FirstArm.State = ArmState.Zero;
-                        Clocks[16].SecondArm.State = ArmState.Six;
-                        Clocks[23].FirstArm.State = ArmState.Three;
-                        Clocks[23].SecondArm.State = ArmState.Three;
-                        Clocks[24].FirstArm.State = ArmState.Zero;
-                        Clocks[24].SecondArm.State = ArmState.Nine;
+                        Clocks[1].FirstArm.State = ArmState.Three;
+                        Clocks[1].SecondArm.State = ArmState.Three;
+                        Clocks[4].FirstArm.State = ArmState.Nine;
+                        Clocks[4].SecondArm.State = ArmState.Six;
+                        Clocks[2].FirstArm.State = ArmState.Three;
+                        Clocks[2].SecondArm.State = ArmState.Three;
+                        Clocks[5].FirstArm.State = ArmState.Zero;
+                        Clocks[5].SecondArm.State = ArmState.Six;
+                        Clocks[3].FirstArm.State = ArmState.Three;
+                        Clocks[3].SecondArm.State = ArmState.Three;
+                        Clocks[6].FirstArm.State = ArmState.Zero;
+                        Clocks[6].SecondArm.State = ArmState.Nine;
                         break;
 
                     case 4:
-                        Clocks[7].FirstArm.State = ArmState.Zero;
-                        Clocks[7].SecondArm.State = ArmState.Six;
-                        Clocks[8].FirstArm.State = ArmState.Zero;
-                        Clocks[8].SecondArm.State = ArmState.Six;
-                        Clocks[15].FirstArm.State = ArmState.Zero;
-                        Clocks[15].SecondArm.State = ArmState.Three;
-                        Clocks[16].FirstArm.State = ArmState.Zero;
-                        Clocks[16].SecondArm.State = ArmState.Nine;
-                        Clocks[23].FirstArm.State = ArmState.Zero;
-                        Clocks[23].SecondArm.State = ArmState.Six;
-                        Clocks[24].FirstArm.State = ArmState.Zero;
-                        Clocks[24].SecondArm.State = ArmState.Six;
+                        Clocks[1].FirstArm.State = ArmState.Zero;
+                        Clocks[1].SecondArm.State = ArmState.Six;
+                        Clocks[4].FirstArm.State = ArmState.Zero;
+                        Clocks[4].SecondArm.State = ArmState.Six;
+                        Clocks[2].FirstArm.State = ArmState.Zero;
+                        Clocks[2].SecondArm.State = ArmState.Three;
+                        Clocks[5].FirstArm.State = ArmState.Zero;
+                        Clocks[5].SecondArm.State = ArmState.Nine;
+                        Clocks[3].FirstArm.State = ArmState.None;
+                        Clocks[3].SecondArm.State = ArmState.None;
+                        Clocks[6].FirstArm.State = ArmState.Zero;
+                        Clocks[6].SecondArm.State = ArmState.Six;
                         break;
 
                     case 5:
-                        Clocks[7].FirstArm.State = ArmState.Three;
-                        Clocks[7].SecondArm.State = ArmState.Six;
-                        Clocks[8].FirstArm.State = ArmState.Nine;
-                        Clocks[8].SecondArm.State = ArmState.Nine;
-                        Clocks[15].FirstArm.State = ArmState.Zero;
-                        Clocks[15].SecondArm.State = ArmState.Three;
-                        Clocks[16].FirstArm.State = ArmState.Nine;
-                        Clocks[16].SecondArm.State = ArmState.Six;
-                        Clocks[23].FirstArm.State = ArmState.Three;
-                        Clocks[23].SecondArm.State = ArmState.Three;
-                        Clocks[24].FirstArm.State = ArmState.Zero;
-                        Clocks[24].SecondArm.State = ArmState.Nine;
+                        Clocks[1].FirstArm.State = ArmState.Three;
+                        Clocks[1].SecondArm.State = ArmState.Six;
+                        Clocks[4].FirstArm.State = ArmState.Nine;
+                        Clocks[4].SecondArm.State = ArmState.Nine;
+                        Clocks[2].FirstArm.State = ArmState.Zero;
+                        Clocks[2].SecondArm.State = ArmState.Three;
+                        Clocks[5].FirstArm.State = ArmState.Nine;
+                        Clocks[5].SecondArm.State = ArmState.Six;
+                        Clocks[3].FirstArm.State = ArmState.Three;
+                        Clocks[3].SecondArm.State = ArmState.Three;
+                        Clocks[6].FirstArm.State = ArmState.Zero;
+                        Clocks[6].SecondArm.State = ArmState.Nine;
                         break;
 
                     case 6:
-                        Clocks[7].FirstArm.State = ArmState.Three;
-                        Clocks[7].SecondArm.State = ArmState.Six;
-                        Clocks[8].FirstArm.State = ArmState.Nine;
-                        Clocks[8].SecondArm.State = ArmState.Nine;
-                        Clocks[15].FirstArm.State = ArmState.Zero;
-                        Clocks[15].SecondArm.State = ArmState.Six;
-                        Clocks[16].FirstArm.State = ArmState.Nine;
-                        Clocks[16].SecondArm.State = ArmState.Six;
-                        Clocks[23].FirstArm.State = ArmState.Zero;
-                        Clocks[23].SecondArm.State = ArmState.Three;
-                        Clocks[24].FirstArm.State = ArmState.Zero;
-                        Clocks[24].SecondArm.State = ArmState.Nine;
+                        Clocks[1].FirstArm.State = ArmState.Three;
+                        Clocks[1].SecondArm.State = ArmState.Six;
+                        Clocks[4].FirstArm.State = ArmState.Nine;
+                        Clocks[4].SecondArm.State = ArmState.Nine;
+                        Clocks[2].FirstArm.State = ArmState.Zero;
+                        Clocks[2].SecondArm.State = ArmState.Six;
+                        Clocks[5].FirstArm.State = ArmState.Nine;
+                        Clocks[5].SecondArm.State = ArmState.Six;
+                        Clocks[3].FirstArm.State = ArmState.Zero;
+                        Clocks[3].SecondArm.State = ArmState.Three;
+                        Clocks[6].FirstArm.State = ArmState.Zero;
+                        Clocks[6].SecondArm.State = ArmState.Nine;
                         break;
 
                     case 7:
-                        Clocks[7].FirstArm.State = ArmState.Three;
-                        Clocks[7].SecondArm.State = ArmState.Three;
-                        Clocks[8].FirstArm.State = ArmState.Nine;
-                        Clocks[8].SecondArm.State = ArmState.Six;
-                        Clocks[15].FirstArm.State = ArmState.Zero;
-                        Clocks[15].SecondArm.State = ArmState.Six;
-                        Clocks[16].FirstArm.State = ArmState.Zero;
-                        Clocks[16].SecondArm.State = ArmState.Six;
-                        Clocks[23].FirstArm.State = ArmState.Zero;
-                        Clocks[23].SecondArm.State = ArmState.Six;
-                        Clocks[24].FirstArm.State = ArmState.Zero;
-                        Clocks[24].SecondArm.State = ArmState.Six;
+                        Clocks[1].FirstArm.State = ArmState.Three;
+                        Clocks[1].SecondArm.State = ArmState.Three;
+                        Clocks[4].FirstArm.State = ArmState.Nine;
+                        Clocks[4].SecondArm.State = ArmState.Six;
+                        Clocks[2].FirstArm.State = ArmState.None;
+                        Clocks[2].SecondArm.State = ArmState.None;
+                        Clocks[5].FirstArm.State = ArmState.Zero;
+                        Clocks[5].SecondArm.State = ArmState.Six;
+                        Clocks[3].FirstArm.State = ArmState.None;
+                        Clocks[3].SecondArm.State = ArmState.None;
+                        Clocks[6].FirstArm.State = ArmState.Zero;
+                        Clocks[6].SecondArm.State = ArmState.Six;
                         break;
 
                     case 8:
-                        Clocks[7].FirstArm.State = ArmState.Three;
-                        Clocks[7].SecondArm.State = ArmState.Six;
-                        Clocks[8].FirstArm.State = ArmState.Nine;
-                        Clocks[8].SecondArm.State = ArmState.Six;
-                        Clocks[15].FirstArm.State = ArmState.Zero;
-                        Clocks[15].SecondArm.State = ArmState.Six;
-                        Clocks[16].FirstArm.State = ArmState.Zero;
-                        Clocks[16].SecondArm.State = ArmState.Nine;
-                        Clocks[23].FirstArm.State = ArmState.Zero;
-                        Clocks[23].SecondArm.State = ArmState.Three;
-                        Clocks[24].FirstArm.State = ArmState.Zero;
-                        Clocks[24].SecondArm.State = ArmState.Nine;
+                        Clocks[1].FirstArm.State = ArmState.Three;
+                        Clocks[1].SecondArm.State = ArmState.Six;
+                        Clocks[4].FirstArm.State = ArmState.Nine;
+                        Clocks[4].SecondArm.State = ArmState.Six;
+                        Clocks[2].FirstArm.State = ArmState.Zero;
+                        Clocks[2].SecondArm.State = ArmState.Three;
+                        Clocks[5].FirstArm.State = ArmState.Zero;
+                        Clocks[5].SecondArm.State = ArmState.Nine;
+                        Clocks[3].FirstArm.State = ArmState.Zero;
+                        Clocks[3].SecondArm.State = ArmState.Three;
+                        Clocks[6].FirstArm.State = ArmState.Zero;
+                        Clocks[6].SecondArm.State = ArmState.Nine;
                         break;
 
                     case 9:
-                        Clocks[7].FirstArm.State = ArmState.Three;
-                        Clocks[7].SecondArm.State = ArmState.Six;
-                        Clocks[8].FirstArm.State = ArmState.Nine;
-                        Clocks[8].SecondArm.State = ArmState.Six;
-                        Clocks[15].FirstArm.State = ArmState.Zero;
-                        Clocks[15].SecondArm.State = ArmState.Three;
-                        Clocks[16].FirstArm.State = ArmState.Zero;
-                        Clocks[16].SecondArm.State = ArmState.Six;
-                        Clocks[23].FirstArm.State = ArmState.Three;
-                        Clocks[23].SecondArm.State = ArmState.Three;
-                        Clocks[24].FirstArm.State = ArmState.Zero;
-                        Clocks[24].SecondArm.State = ArmState.Nine;
+                        Clocks[1].FirstArm.State = ArmState.Three;
+                        Clocks[1].SecondArm.State = ArmState.Six;
+                        Clocks[4].FirstArm.State = ArmState.Nine;
+                        Clocks[4].SecondArm.State = ArmState.Six;
+                        Clocks[2].FirstArm.State = ArmState.Zero;
+                        Clocks[2].SecondArm.State = ArmState.Three;
+                        Clocks[5].FirstArm.State = ArmState.Zero;
+                        Clocks[5].SecondArm.State = ArmState.Six;
+                        Clocks[3].FirstArm.State = ArmState.Three;
+                        Clocks[3].SecondArm.State = ArmState.Three;
+                        Clocks[6].FirstArm.State = ArmState.Zero;
+                        Clocks[6].SecondArm.State = ArmState.Nine;
                         break;
                     default:
                         break;
@@ -278,5 +280,6 @@
         Three,
         Six,
         Nine,
+        None
     }
 }
