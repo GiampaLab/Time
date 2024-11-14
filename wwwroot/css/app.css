@@ -2,6 +2,9 @@ html,
 body {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
+.page {
+  background-color: midnightblue;
+}
 
 h1:focus {
   outline: none;
