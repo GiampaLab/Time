@@ -2,9 +2,6 @@ html,
 body {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
-.page {
-  background-color: midnightblue;
-}
 
 h1:focus {
   outline: none;
@@ -119,6 +116,7 @@ code {
   justify-content: center;
   align-items: center;
   background-color: midnightblue;
+  height: 100vh;
 }
 
 .clock-container {

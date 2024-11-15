@@ -1,4 +1,4 @@
-@page "/analogclock"
+@page "/"
 
 <div class="clocks-wrapper">
     @* hour fist digit *@
@@ -285,77 +285,6 @@
             <span class="ctr"></span>
         </div>
     </div>
-    @* second first digit *@
-    @* <div class="clock-container">
-        <div class="clock">
-            <div class="hour"
-                style="transform:rotate(@(controller != null ? controller.Clocks[25].FirstArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <div class="minute"
-                style="transform:rotate(@(controller != null ? controller.Clocks[25].SecondArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <span class="ctr"></span>
-        </div>
-        <div class="clock">
-            <div class="hour"
-                style="transform:rotate(@(controller != null ? controller.Clocks[26].FirstArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <div class="minute"
-                style="transform:rotate(@(controller != null ? controller.Clocks[26].SecondArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <span class="ctr"></span>
-        </div>
-        <div class="clock">
-            <div class="hour"
-                style="transform:rotate(@(controller != null ? controller.Clocks[27].FirstArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <div class="minute"
-                style="transform:rotate(@(controller != null ? controller.Clocks[27].SecondArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <span class="ctr"></span>
-        </div>
-    </div>
-    <div class="clock-container">
-        <div class="clock">
-            <div class="hour"
-                style="transform:rotate(@(controller != null ? controller.Clocks[28].FirstArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <div class="minute"
-                style="transform:rotate(@(controller != null ? controller.Clocks[28].SecondArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <span class="ctr"></span>
-        </div>
-        <div class="clock">
-            <div class="hour"
-                style="transform:rotate(@(controller != null ? controller.Clocks[29].FirstArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <div class="minute"
-                style="transform:rotate(@(controller != null ? controller.Clocks[29].SecondArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <span class="ctr"></span>
-        </div>
-        <div class="clock">
-            <div class="hour"
-                style="transform:rotate(@(controller != null ? controller.Clocks[30].FirstArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <div class="minute"
-                style="transform:rotate(@(controller != null ? controller.Clocks[30].SecondArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <span class="ctr"></span>
-        </div>
-    </div> *@
 </div>
 
 @code {
@@ -385,7 +314,7 @@
                 return 270.0;
             case ArmState.None:
                 return 225.0;
-            case ArmState.OnePointFive:
+            case ArmState.HPOne:
                 return 45.0;
             default: return 0;
         }
@@ -489,23 +418,34 @@
         }
     }
 
-    public static bool Animate(Dictionary<int, Clock> clocks, bool stopAtFinalState = true)
+    public static bool StartAnimation(Dictionary<int, Clock> clocks, bool stopAtFinalState = true)
     {
         var completed = true;
         for (var i = 0; i < 4; i++)
         {
             var j = 6 * i;
-            var result = clocks[j + 1].UpdateState(ArmState.Three, ArmState.Six, stopAtFinalState);
+            var result = clocks[j + 1].UpdateState(ArmState.Three, ArmState.Six, 0, 0, stopAtFinalState);
             completed = completed && result;
-            result = clocks[j + 2].UpdateState(ArmState.Three, ArmState.Three, stopAtFinalState);
+            result = clocks[j + 2].UpdateState(ArmState.Three, ArmState.Three, 0, 0, stopAtFinalState);
             completed = completed && result;
-            result = clocks[j + 3].UpdateState(ArmState.Zero, ArmState.Three, stopAtFinalState);
+            result = clocks[j + 3].UpdateState(ArmState.Zero, ArmState.Three, 0, 0, stopAtFinalState);
             completed = completed && result;
-            result = clocks[j + 4].UpdateState(ArmState.Six, ArmState.Nine, stopAtFinalState);
+            result = clocks[j + 4].UpdateState(ArmState.Six, ArmState.Nine, 0, 0, stopAtFinalState);
             completed = completed && result;
-            result = clocks[j + 5].UpdateState(ArmState.Nine, ArmState.Nine, stopAtFinalState);
+            result = clocks[j + 5].UpdateState(ArmState.Nine, ArmState.Nine, 0, 0, stopAtFinalState);
             completed = completed && result;
-            result = clocks[j + 6].UpdateState(ArmState.Nine, ArmState.Zero, stopAtFinalState);
+            result = clocks[j + 6].UpdateState(ArmState.Nine, ArmState.Zero, 0, 0, stopAtFinalState);
+            completed = completed && result;
+        }
+        return completed;
+    }
+
+    public static bool StartAnimation2(Dictionary<int, Clock> clocks, bool stopAtFinalState = true)
+    {
+        var completed = true;
+        for (var i = 0; i < 24; i++)
+        {
+            var result = clocks[i + 1].UpdateState(ArmState.Zero, ArmState.Six, 3 * i, 3 * i, stopAtFinalState);
             completed = completed && result;
         }
         return completed;
@@ -513,6 +453,8 @@
 
     public class Controller
     {
+        //Milliseconds
+        private int timer = 0;
         private bool animationCompleted = false;
         private UpdateStateCallback updateStateCallback;
         public Dictionary<int, Clock> Clocks { get; private set; }
@@ -522,12 +464,35 @@
 
             Clocks = new Dictionary<int, Clock>();
 
-            for (var i = 0; i < 30; i++)
-            {
+            for (var i = 0; i < 24; i++)
                 Clocks.Add(i + 1, new Clock(i + 1));
-            }
+
+            SetClocksConfigs(Clocks,
+            new ArmConfig
+                {
+                    Direction = Direction.Clockwise,
+                    MaxSpeedDegrees = 0.2,
+                    Acceleration = 1,
+                    Deceleration = 1
+                },
+            new ArmConfig
+                {
+                    Direction = Direction.Anticlockwise,
+                    MaxSpeedDegrees = 0.2,
+                    Acceleration = 1,
+                    Deceleration = 1
+                });
 
             SetClock(null);
+        }
+
+        private void SetClocksConfigs(Dictionary<int, Clock> clocks, ArmConfig firstArmConfig, ArmConfig secondArmConfig)
+        {
+            for (var i = 0; i < 24; i++)
+            {
+                Clocks[i + 1].FirstArm.Config = firstArmConfig;
+                Clocks[i + 1].FirstArm.Config = secondArmConfig;
+            }
         }
 
         public void SetClock(object? stateInfo)
@@ -542,67 +507,106 @@
 
             var minuteSecondDigit = time.Minute % 10;
 
-            @* var secondsFirstDigit = time.Second / 10; *@
-
             if (minuteSecondDigit == 1 || minuteSecondDigit == 4 || minuteSecondDigit == 7)
             {
                 if (animationCompleted)
-                    Animate(Clocks, false);
+                    if (timer == 1000)
+                        StartAnimation2(Clocks, false);
+                    else
+                    {
+                        SetClocksConfigs(Clocks, new ArmConfig
+                            {
+                                Direction = Direction.Clockwise,
+                                MaxSpeedDegrees = 0.2,
+                                Acceleration = 1,
+                                Deceleration = 1
+                            },
+                        new ArmConfig
+                            {
+                                Direction = Direction.Clockwise,
+                                MaxSpeedDegrees = 0.2,
+                                Acceleration = 1,
+                                Deceleration = 1
+                            });
+                        timer += 10;
+                    }
                 else
-                    animationCompleted = Animate(Clocks);
+                    animationCompleted = StartAnimation2(Clocks);
             }
             else
             {
                 animationCompleted = false;
+                timer = 0;
+
                 SetNumber(hoursFirstDigit, new List<int> { 1, 2, 3, 4, 5, 6 }, Clocks);
                 SetNumber(hoursSecondDigit, new List<int> { 7, 8, 9, 10, 11, 12 }, Clocks);
                 SetNumber(minutFirstDigit, new List<int> { 13, 14, 15, 16, 17, 18 }, Clocks);
                 SetNumber(minuteSecondDigit, new List<int> { 19, 20, 21, 22, 23, 24 }, Clocks);
-                @* SetNumber(secondsFirstDigit, new List<int> { 25, 26, 27, 28, 29, 30 }, Clocks); *@
+
+                SetClocksConfigs(Clocks,
+                new ArmConfig
+                    {
+                        Direction = Direction.Clockwise,
+                        MaxSpeedDegrees = 0.2,
+                        Acceleration = 1,
+                        Deceleration = 1
+                    },
+                new ArmConfig
+                    {
+                        Direction = Direction.Anticlockwise,
+                        MaxSpeedDegrees = 0.2,
+                        Acceleration = 1,
+                        Deceleration = 1
+                    });
             }
 
-            updateStateCallback(); // MUST CALL StateHasChanged() BECAUSE THIS IS TRIGGERED BY A TIMER INSTEAD OF A USER EVENT
+            updateStateCallback();
         }
     }
 
     public class Clock
     {
+        private ArmConfig _defaultFirstArmConfig = new ArmConfig
+            {
+                Direction = Direction.Clockwise,
+                MaxSpeedDegrees = 0.2,
+                Acceleration = 1,
+                Deceleration = 1
+            };
+        private ArmConfig _defaultSecondArmConfig = new ArmConfig
+            {
+                Direction = Direction.Clockwise,
+                MaxSpeedDegrees = 0.2,
+                Acceleration = 1,
+                Deceleration = 1
+            };
         public int Id { get; private set; }
         public ClockArm FirstArm { get; private set; } = new ClockArm();
         public ClockArm SecondArm { get; private set; } = new ClockArm();
-        public Clock(int Id)
+        public Clock(int Id, ArmConfig? firstArmConfig = null, ArmConfig? secondArmConfig = null)
         {
             this.Id = Id;
             FirstArm.CurrentState = 0.0;
-            FirstArm.Config = new ArmConfig
-                {
-                    Direction = Direction.Clockwise,
-                    MaxSpeedDegrees = 0.2,
-                    Acceleration = 1,
-                    Deceleration = 1
-                };
+            FirstArm.Config = firstArmConfig != null ? firstArmConfig : _defaultFirstArmConfig;
             SecondArm.CurrentState = 0.0;
-            SecondArm.Config = new ArmConfig
-                {
-                    Direction = Direction.Anticlockwise,
-                    MaxSpeedDegrees = 0.2,
-                    Acceleration = 1,
-                    Deceleration = 1
-                };
+            SecondArm.Config = secondArmConfig != null ? secondArmConfig : _defaultSecondArmConfig;
         }
 
-        public bool UpdateState(ArmState firstArmState, ArmState secondArmstate, bool stopAtFinalState = true)
+        public bool UpdateState(ArmState firstArmState, ArmState secondArmState, double firstArmStateDeltaDegrees = 0, double
+        secondArmStateDeltaDegrees = 0, bool stopAtFinalState = true)
         {
-            if (!stopAtFinalState || (FirstArm.CurrentState != ArmStateToDegree(firstArmState)))
+            var firstArmFinalStateDegrees = Math.Round(ArmStateToDegree(firstArmState) + firstArmStateDeltaDegrees, 2);
+            var secondArmFinalStateDegrees = Math.Round(ArmStateToDegree(secondArmState) + secondArmStateDeltaDegrees, 2);
+            if (!stopAtFinalState || (FirstArm.CurrentState != firstArmFinalStateDegrees))
             {
                 UpdateArmState(FirstArm);
             }
-            if (!stopAtFinalState || (SecondArm.CurrentState != ArmStateToDegree(secondArmstate)))
+            if (!stopAtFinalState || (SecondArm.CurrentState != secondArmFinalStateDegrees))
             {
                 UpdateArmState(SecondArm);
             }
-            return stopAtFinalState && (FirstArm.CurrentState == ArmStateToDegree(firstArmState)) && (SecondArm.CurrentState ==
-            ArmStateToDegree(secondArmstate)) ? true : false;
+            return stopAtFinalState && (FirstArm.CurrentState == firstArmFinalStateDegrees) && (SecondArm.CurrentState ==
+            secondArmFinalStateDegrees) ? true : false;
         }
 
         private void UpdateArmState(ClockArm arm)
@@ -645,6 +649,6 @@
         Six,
         Nine,
         None,
-        OnePointFive
+        HPOne
     }
 }
