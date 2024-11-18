@@ -288,6 +288,7 @@
 </div>
 
 @code {
+    private int timeIntervalMilliseconds = 16;
     public delegate void UpdateStateCallback();
     Controller? controller;
     System.Threading.Timer timer;
@@ -295,11 +296,17 @@
     {
         await base.OnInitializedAsync();
 
-        controller = new Controller(StateHasChanged);
+        controller = new Controller(StateHasChanged, timeIntervalMilliseconds);
 
-        timer = new System.Threading.Timer(controller.SetClock, new System.Threading.AutoResetEvent(false), 0, 10);
+        timer = new System.Threading.Timer(UpdateState, new System.Threading.AutoResetEvent(false), 0,
+        timeIntervalMilliseconds);
     }
 
+    public void UpdateState(object? stateInfo)
+    {
+        controller.SetClock();
+        InvokeAsync(StateHasChanged);
+    }
     public static double ArmStateToDegree(ArmState state)
     {
         switch (state)
@@ -533,50 +540,48 @@
 
     public class Controller
     {
+        private int timeIntervalMilliseconds = 0;
+        private int timer = 0;
+        private double maxSpeedDegrees = 1;
         private bool clockSettingsCompleted = false;
         private bool animationSettingsCompleted = false;
         private bool animationSetupCompleted = false;
         private bool timeSetupCompleted = true;
         private UpdateStateCallback updateStateCallback;
         public Dictionary<int, Clock> Clocks { get; private set; }
-        public Controller(UpdateStateCallback callback)
+        public Controller(UpdateStateCallback callback, int timeIntervalMilliseconds)
         {
             updateStateCallback = callback;
+            this.timeIntervalMilliseconds = timeIntervalMilliseconds;
+
 
             Clocks = new Dictionary<int, Clock>();
 
             for (var i = 0; i < 24; i++)
-                Clocks.Add(i + 1, new Clock(i + 1));
+                Clocks.Add(i + 1, new Clock(i + 1, new ArmConfig
+                    {
+                        Direction = Direction.Clockwise,
+                        MaxSpeedDegrees = maxSpeedDegrees,
+                        Acceleration = 1,
+                        Deceleration = 1
+                    }, new ArmConfig
+                    {
+                        Direction = Direction.Anticlockwise,
+                        MaxSpeedDegrees = maxSpeedDegrees,
+                        Acceleration = 1,
+                        Deceleration = 1
+                    }));
 
-            SetClocksConfigs(Clocks,
-            new ArmConfig
-                {
-                    Direction = Direction.Clockwise,
-                    MaxSpeedDegrees = 0.2,
-                    Acceleration = 1,
-                    Deceleration = 1
-                },
-            new ArmConfig
-                {
-                    Direction = Direction.Anticlockwise,
-                    MaxSpeedDegrees = 0.2,
-                    Acceleration = 1,
-                    Deceleration = 1
-                });
-
-            SetClock(null);
+            SetClock();
         }
 
         private void SetClocksConfigs(Dictionary<int, Clock> clocks, ArmConfig firstArmConfig, ArmConfig secondArmConfig)
         {
             for (var i = 0; i < 24; i++)
-            {
-                Clocks[i + 1].FirstArm.Config = firstArmConfig;
-                Clocks[i + 1].FirstArm.Config = secondArmConfig;
-            }
+                Clocks[i + 1].UpdateClockArmsConfig(firstArmConfig, secondArmConfig);
         }
 
-        public async void SetClock(object? stateInfo)
+        public async void SetClock()
         {
             var time = DateTime.Now;
 
@@ -591,8 +596,6 @@
             //Define when the animation should start
             if (minuteSecondDigit == 1 || minuteSecondDigit == 4 || minuteSecondDigit == 7 || minuteSecondDigit == 9)
             {
-                animationSetupCompleted = StartAnimation2(Clocks);
-
                 if (animationSetupCompleted)
                 {
                     if (!animationSettingsCompleted)
@@ -601,29 +604,41 @@
                         SetClocksConfigs(Clocks, new ArmConfig
                             {
                                 Direction = Direction.Clockwise,
-                                MaxSpeedDegrees = 0.2,
+                                MaxSpeedDegrees = maxSpeedDegrees,
                                 Acceleration = 1,
                                 Deceleration = 1
                             },
                         new ArmConfig
                             {
                                 Direction = Direction.Clockwise,
-                                MaxSpeedDegrees = 0.2,
+                                MaxSpeedDegrees = maxSpeedDegrees,
                                 Acceleration = 1,
                                 Deceleration = 1
                             });
+
                         animationSettingsCompleted = true;
                         clockSettingsCompleted = false;
                     }
+                    if (timer > 1000)
+                        StartAnimation2(Clocks, false);
+                    else
+                        timer += timeIntervalMilliseconds;
                     //wait one sec brefore starting the animation
-                    await Task.Delay(1000).ContinueWith(_ =>
+                    @* await Task.Delay(1000).ContinueWith(_ =>
                     {
                         StartAnimation2(Clocks, false);
-                    });
+                    }); *@
                 }
+                else
+                    animationSetupCompleted = StartAnimation2(Clocks);
             }
             else
             {
+                timer = 0;
+
+                animationSetupCompleted = false;
+                animationSettingsCompleted = false;
+
                 timeSetupCompleted = SetNumbers(hoursFirstDigit, hoursSecondDigit, minutFirstDigit, minuteSecondDigit, Clocks);
 
                 if (!clockSettingsCompleted && timeSetupCompleted)
@@ -633,19 +648,18 @@
                     new ArmConfig
                         {
                             Direction = Direction.Clockwise,
-                            MaxSpeedDegrees = 0.2,
+                            MaxSpeedDegrees = maxSpeedDegrees,
                             Acceleration = 1,
                             Deceleration = 1
                         },
                     new ArmConfig
                         {
                             Direction = Direction.Anticlockwise,
-                            MaxSpeedDegrees = 0.2,
+                            MaxSpeedDegrees = maxSpeedDegrees,
                             Acceleration = 1,
                             Deceleration = 1
                         });
                     clockSettingsCompleted = true;
-                    animationSettingsCompleted = false;
                 }
             }
 
@@ -658,14 +672,14 @@
         private ArmConfig _defaultFirstArmConfig = new ArmConfig
             {
                 Direction = Direction.Clockwise,
-                MaxSpeedDegrees = 0.2,
+                MaxSpeedDegrees = 1,
                 Acceleration = 1,
                 Deceleration = 1
             };
         private ArmConfig _defaultSecondArmConfig = new ArmConfig
             {
                 Direction = Direction.Clockwise,
-                MaxSpeedDegrees = 0.2,
+                MaxSpeedDegrees = 1,
                 Acceleration = 1,
                 Deceleration = 1
             };
@@ -679,6 +693,12 @@
             FirstArm.Config = firstArmConfig != null ? firstArmConfig : _defaultFirstArmConfig;
             SecondArm.CurrentState = 0.0;
             SecondArm.Config = secondArmConfig != null ? secondArmConfig : _defaultSecondArmConfig;
+        }
+
+        public void UpdateClockArmsConfig(ArmConfig firstArmConfig, ArmConfig secondArmConfig)
+        {
+            FirstArm.Config = firstArmConfig;
+            SecondArm.Config = secondArmConfig;
         }
 
         public bool UpdateState(ArmState firstArmState, ArmState secondArmState, double firstArmStateDeltaDegrees = 0, double
