@@ -1,4 +1,5 @@
 @page "/"
+@inject IJSRuntime JSRuntime
 
 <div class="clocks-wrapper">
     @* hour fist digit *@
@@ -288,25 +289,39 @@
 </div>
 
 @code {
+    private DotNetObjectReference<AnalogClock>? dotNetHelper;
     private int timeIntervalMilliseconds = 16;
-    public delegate void UpdateStateCallback();
     Controller? controller;
-    System.Threading.Timer timer;
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
 
-        controller = new Controller(StateHasChanged, timeIntervalMilliseconds);
+        controller = new Controller(timeIntervalMilliseconds);
 
-        timer = new System.Threading.Timer(UpdateState, new System.Threading.AutoResetEvent(false), 0,
-        timeIntervalMilliseconds);
+        await StartAnimation();
     }
 
-    public void UpdateState(object? stateInfo)
+    private async Task StartAnimation()
     {
-        controller.SetClock();
-        InvokeAsync(StateHasChanged);
+        dotNetHelper = DotNetObjectReference.Create(this);
+        // Start the JS animation loop
+        await JSRuntime.InvokeVoidAsync("animationLoop.requestAnimationFrame", dotNetHelper);
     }
+
+    public void Dispose()
+    {
+        dotNetHelper?.Dispose();
+    }
+
+    [JSInvokable]
+    public async void UpdateFrame()
+    {
+        await controller.SetClock();
+        // Trigger the next frame
+        await InvokeAsync(StateHasChanged);
+        await Task.Yield();
+    }
+
     public static double ArmStateToDegree(ArmState state)
     {
         switch (state)
@@ -547,11 +562,9 @@
         private bool animationSettingsCompleted = false;
         private bool animationSetupCompleted = false;
         private bool timeSetupCompleted = true;
-        private UpdateStateCallback updateStateCallback;
         public Dictionary<int, Clock> Clocks { get; private set; }
-        public Controller(UpdateStateCallback callback, int timeIntervalMilliseconds)
+        public Controller(int timeIntervalMilliseconds)
         {
-            updateStateCallback = callback;
             this.timeIntervalMilliseconds = timeIntervalMilliseconds;
 
 
@@ -571,8 +584,6 @@
                         Acceleration = 1,
                         Deceleration = 1
                     }));
-
-            SetClock();
         }
 
         private void SetClocksConfigs(Dictionary<int, Clock> clocks, ArmConfig firstArmConfig, ArmConfig secondArmConfig)
@@ -581,7 +592,7 @@
                 Clocks[i + 1].UpdateClockArmsConfig(firstArmConfig, secondArmConfig);
         }
 
-        public async void SetClock()
+        public async Task SetClock()
         {
             var time = DateTime.Now;
 
@@ -619,11 +630,13 @@
                         animationSettingsCompleted = true;
                         clockSettingsCompleted = false;
                     }
-                    if (timer > 1000)
+                    @* if (timer > 1000)
                         StartAnimation2(Clocks, false);
                     else
-                        timer += timeIntervalMilliseconds;
+                        timer += timeIntervalMilliseconds; *@
                     //wait one sec brefore starting the animation
+                    await Task.Delay(1000);
+                    StartAnimation2(Clocks, false);
                     @* await Task.Delay(1000).ContinueWith(_ =>
                     {
                         StartAnimation2(Clocks, false);
@@ -662,8 +675,6 @@
                     clockSettingsCompleted = true;
                 }
             }
-
-            updateStateCallback();
         }
     }
 
