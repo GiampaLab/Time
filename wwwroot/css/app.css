@@ -194,7 +194,7 @@ code {
 }
 .clock .ctr {
   width: 2.5vh;
-  height: 2.5vh;
+  height: 2.55vh;
   border-radius: 50%;
   left: 50%;
   top: 50%;
@@ -205,17 +205,17 @@ code {
 .clock .hour div {
   top: 10%;
   height: 40%;
-  width: 2.5vh;
+  width: 2.6vh;
   background-color: white;
-  margin-left: -1.25vh;
+  margin-left: -1.3vh;
 }
 
 .clock .minute div {
   top: 10%;
   height: 40%;
-  width: 2.5vh;
+  width: 2.6vh;
   background-color: white;
-  margin-left: -1.25vh;
+  margin-left: -1.3vh;
 }
 
 .clock .second div {
