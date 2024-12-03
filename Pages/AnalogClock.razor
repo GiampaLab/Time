@@ -2,301 +2,47 @@
 @inject IJSRuntime JSRuntime
 
 <div class="clocks-wrapper">
-    @* hour fist digit *@
-    <div class="clock-container hours">
-        <div class="clock">
-            <div class="hour"
-                style="transform:rotate(@(controller != null ? controller.Clocks[1].FirstArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <div class="minute"
-                style="transform:rotate(@(controller != null ? controller.Clocks[1].SecondArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <span class="ctr"></span>
+    @for (int j = 0; j < 8; j++)
+    {
+        <div class="clock-container">
+            @for (int i = 1; i < 4; i++)
+            {
+                <div class="clock">
+                    <div class="hour" @ref=HourReference
+                        style="transform:rotate(@(controller != null ? controller.Clocks[i + j*3].FirstArm.CurrentState : 0)deg);">
+                        <div></div>
+                    </div>
+                    <div class="minute" @ref=MinuteReference
+                        style="transform:rotate(@(controller != null ? controller.Clocks[i + j*3].SecondArm.CurrentState : 0)deg);">
+                        <div></div>
+                    </div>
+                    <span class="ctr"></span>
+                </div>
+            }
         </div>
-        <div class="clock">
-            <div class="hour"
-                style="transform:rotate(@(controller != null ? controller.Clocks[2].FirstArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <div class="minute"
-                style="transform:rotate(@(controller != null ? controller.Clocks[2].SecondArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <span class="ctr"></span>
-        </div>
-        <div class="clock">
-            <div class="hour"
-                style="transform:rotate(@(controller != null ? controller.Clocks[3].FirstArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <div class="minute"
-                style="transform:rotate(@(controller != null ? controller.Clocks[3].SecondArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <span class="ctr"></span>
-        </div>
-    </div>
-    <div class="clock-container">
-        <div class="clock">
-            <div class="hour"
-                style="transform:rotate(@(controller != null ? controller.Clocks[4].FirstArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <div class="minute"
-                style="transform:rotate(@(controller != null ? controller.Clocks[4].SecondArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <span class="ctr"></span>
-        </div>
-        <div class="clock">
-            <div class="hour"
-                style="transform:rotate(@(controller != null ? controller.Clocks[5].FirstArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <div class="minute"
-                style="transform:rotate(@(controller != null ? controller.Clocks[5].SecondArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <span class="ctr"></span>
-        </div>
-        <div class="clock">
-            <div class="hour"
-                style="transform:rotate(@(controller != null ? controller.Clocks[6].FirstArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <div class="minute"
-                style="transform:rotate(@(controller != null ? controller.Clocks[6].SecondArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <span class="ctr"></span>
-        </div>
-    </div>
-    @* hour second digit *@
-    <div class="clock-container">
-        <div class="clock">
-            <div class="hour"
-                style="transform:rotate(@(controller != null ? controller.Clocks[7].FirstArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <div class="minute"
-                style="transform:rotate(@(controller != null ? controller.Clocks[7].SecondArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <span class="ctr"></span>
-        </div>
-        <div class="clock">
-            <div class="hour"
-                style="transform:rotate(@(controller != null ? controller.Clocks[8].FirstArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <div class="minute"
-                style="transform:rotate(@(controller != null ? controller.Clocks[8].SecondArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <span class="ctr"></span>
-        </div>
-        <div class="clock">
-            <div class="hour"
-                style="transform:rotate(@(controller != null ? controller.Clocks[9].FirstArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <div class="minute"
-                style="transform:rotate(@(controller != null ? controller.Clocks[9].SecondArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <span class="ctr"></span>
-        </div>
-    </div>
-    <div class="clock-container">
-        <div class="clock">
-            <div class="hour"
-                style="transform:rotate(@(controller != null ? controller.Clocks[10].FirstArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <div class="minute"
-                style="transform:rotate(@(controller != null ? controller.Clocks[10].SecondArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <span class="ctr"></span>
-        </div>
-        <div class="clock">
-            <div class="hour"
-                style="transform:rotate(@(controller != null ? controller.Clocks[11].FirstArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <div class="minute"
-                style="transform:rotate(@(controller != null ? controller.Clocks[11].SecondArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <span class="ctr"></span>
-        </div>
-        <div class="clock">
-            <div class="hour"
-                style="transform:rotate(@(controller != null ? controller.Clocks[12].FirstArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <div class="minute"
-                style="transform:rotate(@(controller != null ? controller.Clocks[12].SecondArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <span class="ctr"></span>
-        </div>
-    </div>
-    @* minute first digit *@
-    <div class="clock-container">
-        <div class="clock">
-            <div class="hour"
-                style="transform:rotate(@(controller != null ? controller.Clocks[13].FirstArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <div class="minute"
-                style="transform:rotate(@(controller != null ? controller.Clocks[13].SecondArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <span class="ctr"></span>
-        </div>
-        <div class="clock">
-            <div class="hour"
-                style="transform:rotate(@(controller != null ? controller.Clocks[14].FirstArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <div class="minute"
-                style="transform:rotate(@(controller != null ? controller.Clocks[14].SecondArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <span class="ctr"></span>
-        </div>
-        <div class="clock">
-            <div class="hour"
-                style="transform:rotate(@(controller != null ? controller.Clocks[15].FirstArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <div class="minute"
-                style="transform:rotate(@(controller != null ? controller.Clocks[15].SecondArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <span class="ctr"></span>
-        </div>
-    </div>
-    <div class="clock-container">
-        <div class="clock">
-            <div class="hour"
-                style="transform:rotate(@(controller != null ? controller.Clocks[16].FirstArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <div class="minute"
-                style="transform:rotate(@(controller != null ? controller.Clocks[16].SecondArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <span class="ctr"></span>
-        </div>
-        <div class="clock">
-            <div class="hour"
-                style="transform:rotate(@(controller != null ? controller.Clocks[17].FirstArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <div class="minute"
-                style="transform:rotate(@(controller != null ? controller.Clocks[17].SecondArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <span class="ctr"></span>
-        </div>
-        <div class="clock">
-            <div class="hour"
-                style="transform:rotate(@(controller != null ? controller.Clocks[18].FirstArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <div class="minute"
-                style="transform:rotate(@(controller != null ? controller.Clocks[18].SecondArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <span class="ctr"></span>
-        </div>
-    </div>
-    @* minute second digit *@
-    <div class="clock-container">
-        <div class="clock">
-            <div class="hour"
-                style="transform:rotate(@(controller != null ? controller.Clocks[19].FirstArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <div class="minute"
-                style="transform:rotate(@(controller != null ? controller.Clocks[19].SecondArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <span class="ctr"></span>
-        </div>
-        <div class="clock">
-            <div class="hour"
-                style="transform:rotate(@(controller != null ? controller.Clocks[20].FirstArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <div class="minute"
-                style="transform:rotate(@(controller != null ? controller.Clocks[20].SecondArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <span class="ctr"></span>
-        </div>
-        <div class="clock">
-            <div class="hour"
-                style="transform:rotate(@(controller != null ? controller.Clocks[21].FirstArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <div class="minute"
-                style="transform:rotate(@(controller != null ? controller.Clocks[21].SecondArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <span class="ctr"></span>
-        </div>
-    </div>
-    <div class="clock-container">
-        <div class="clock">
-            <div class="hour"
-                style="transform:rotate(@(controller != null ? controller.Clocks[22].FirstArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <div class="minute"
-                style="transform:rotate(@(controller != null ? controller.Clocks[22].SecondArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <span class="ctr"></span>
-        </div>
-        <div class="clock">
-            <div class="hour"
-                style="transform:rotate(@(controller != null ? controller.Clocks[23].FirstArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <div class="minute"
-                style="transform:rotate(@(controller != null ? controller.Clocks[23].SecondArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <span class="ctr"></span>
-        </div>
-        <div class="clock">
-            <div class="hour"
-                style="transform:rotate(@(controller != null ? controller.Clocks[24].FirstArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <div class="minute"
-                style="transform:rotate(@(controller != null ? controller.Clocks[24].SecondArm.CurrentState : 0)deg);">
-                <div></div>
-            </div>
-            <span class="ctr"></span>
-        </div>
-    </div>
+    }
 </div>
 
 @code {
     private DotNetObjectReference<AnalogClock>? dotNetHelper;
     private int timeIntervalMilliseconds = 16;
     Controller? controller;
+    List<ElementReference> hourReferences = new List<ElementReference>();
+    List<ElementReference> minuteReferences = new List<ElementReference>();
+    ElementReference HourReference
+    {
+        set { hourReferences.Add(value); }
+    }
+
+    ElementReference MinuteReference
+    {
+        set { minuteReferences.Add(value); }
+    }
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
 
-        controller = new Controller(timeIntervalMilliseconds);
+        controller = new Controller();
 
         await StartAnimation();
     }
@@ -314,11 +60,18 @@
     }
 
     [JSInvokable]
-    public async void UpdateFrame()
+    public async void UpdateFrame(double timeElapsed)
     {
-        await controller.SetClock();
+        await controller.SetClock(timeElapsed);
         // Trigger the next frame
-        await InvokeAsync(StateHasChanged);
+        //await InvokeAsync(StateHasChanged);
+
+        for (int i = 1; i <= 24; i++)
+        {
+            await JSRuntime.InvokeVoidAsync("animationLoop.updateState", hourReferences[i - 1], minuteReferences[i - 1],
+            controller.Clocks[i].FirstArm.CurrentState, controller.Clocks[i].SecondArm.CurrentState);
+        }
+
         await Task.Yield();
     }
 
@@ -542,32 +295,44 @@
         return completed;
     }
 
-    public static bool StartAnimation2(Dictionary<int, Clock> clocks, bool stopAtFinalState = true)
+    public static bool StartAnimation2(Dictionary<int, Clock> clocks, bool stopAtFinalState = true,
+    double timeElapsedMillisec = 0)
     {
         var completed = true;
         for (var i = 0; i < 24; i++)
         {
-            var result = clocks[i + 1].UpdateState(ArmState.Zero, ArmState.Six, 3 * i, 3 * i, stopAtFinalState);
-            completed = completed && result;
+            if (stopAtFinalState || (!stopAtFinalState && clocks[i + 1].delayAnimation.TimeIsUp(timeElapsedMillisec)))
+            {
+                var result = clocks[i + 1].UpdateState(ArmState.Zero, ArmState.Six, 0, 0, stopAtFinalState);
+                completed = completed && result;
+            }
+            else
+                completed = false;
         }
         return completed;
     }
 
+    private static void SetClocksConfigs(Dictionary<int, Clock> clocks, ArmConfig firstArmConfig, ArmConfig secondArmConfig)
+    {
+        for (var i = 0; i < 24; i++)
+        {
+            clocks[i + 1].UpdateClockArmsConfig(firstArmConfig, secondArmConfig);
+            clocks[i + 1].delayAnimation.Started = false;
+            clocks[i + 1].delayAnimation.DelayMillisec = 60 * (i + 1);
+        }
+    }
+
     public class Controller
     {
-        private int timeIntervalMilliseconds = 0;
-        private int timer = 0;
         private double maxSpeedDegrees = 1;
         private bool clockSettingsCompleted = false;
         private bool animationSettingsCompleted = false;
         private bool animationSetupCompleted = false;
         private bool timeSetupCompleted = true;
+        private DelayAnimation delayAnimation = new DelayAnimation();
         public Dictionary<int, Clock> Clocks { get; private set; }
-        public Controller(int timeIntervalMilliseconds)
+        public Controller()
         {
-            this.timeIntervalMilliseconds = timeIntervalMilliseconds;
-
-
             Clocks = new Dictionary<int, Clock>();
 
             for (var i = 0; i < 24; i++)
@@ -586,13 +351,7 @@
                     }));
         }
 
-        private void SetClocksConfigs(Dictionary<int, Clock> clocks, ArmConfig firstArmConfig, ArmConfig secondArmConfig)
-        {
-            for (var i = 0; i < 24; i++)
-                Clocks[i + 1].UpdateClockArmsConfig(firstArmConfig, secondArmConfig);
-        }
-
-        public async Task SetClock()
+        public async Task SetClock(double timeElapsed)
         {
             var time = DateTime.Now;
 
@@ -630,25 +389,15 @@
                         animationSettingsCompleted = true;
                         clockSettingsCompleted = false;
                     }
-                    @* if (timer > 1000)
-                        StartAnimation2(Clocks, false);
-                    else
-                        timer += timeIntervalMilliseconds; *@
-                    //wait one sec brefore starting the animation
-                    await Task.Delay(1000);
-                    StartAnimation2(Clocks, false);
-                    @* await Task.Delay(1000).ContinueWith(_ =>
-                    {
-                        StartAnimation2(Clocks, false);
-                    }); *@
+                    if (delayAnimation.TimeIsUp(timeElapsed))
+                        StartAnimation2(Clocks, false, timeElapsed);
                 }
                 else
-                    animationSetupCompleted = StartAnimation2(Clocks);
+                    animationSetupCompleted = StartAnimation2(Clocks, true, timeElapsed);
             }
             else
             {
-                timer = 0;
-
+                delayAnimation.Started = false;
                 animationSetupCompleted = false;
                 animationSettingsCompleted = false;
 
@@ -678,6 +427,22 @@
         }
     }
 
+    public class DelayAnimation
+    {
+        private double delayStartTimeMillisec = 0;
+        public bool Started { get; set; } = false;
+        public int DelayMillisec { get; set; } = 1000;
+        public bool TimeIsUp(double timeElapsed)
+        {
+            if (!Started)
+            {
+                delayStartTimeMillisec = timeElapsed;
+                Started = true;
+            }
+            return timeElapsed - delayStartTimeMillisec >= DelayMillisec;
+        }
+    }
+
     public class Clock
     {
         private ArmConfig _defaultFirstArmConfig = new ArmConfig
@@ -697,6 +462,7 @@
         public int Id { get; private set; }
         public ClockArm FirstArm { get; private set; } = new ClockArm();
         public ClockArm SecondArm { get; private set; } = new ClockArm();
+        public DelayAnimation delayAnimation { get; private set; } = new DelayAnimation();
         public Clock(int Id, ArmConfig? firstArmConfig = null, ArmConfig? secondArmConfig = null)
         {
             this.Id = Id;
