@@ -27,7 +27,6 @@
 
 @code {
     private DotNetObjectReference<AnalogClock>? dotNetHelper;
-    private int timeIntervalMilliseconds = 16;
     Controller? controller;
     List<ElementReference> hourReferences = new List<ElementReference>();
     List<ElementReference> minuteReferences = new List<ElementReference>();
@@ -82,9 +81,9 @@
 
     public class Controller
     {
-        private Animation animation1;
-        private Animation animation2;
-        private Animation animation3;
+        private AnimationLifecycleManager animation1;
+        private AnimationLifecycleManager mainTimeAnimation;
+        private AnimationLifecycleManager animation3;
         private double maxSpeedDegrees = 1;
         public Dictionary<int, Clock> Clocks { get; private set; }
         public Controller()
@@ -106,7 +105,7 @@
                         Deceleration = 1
                     }));
 
-            animation1 = new Animation();
+            animation1 = new AnimationLifecycleManager();
             animation1.OnStatusChanged += (AnimationStatus status, double timeElapsed) =>
             {
                 switch (status)
@@ -136,9 +135,9 @@
                 }
             };
 
-            animation2 = new Animation();
-            animation2.DelayAnimation.DelayMillisec = 0;
-            animation2.OnStatusChanged += (AnimationStatus status, double timeElapsed) =>
+            mainTimeAnimation = new AnimationLifecycleManager();
+            mainTimeAnimation.DelayAnimation.DelayMillisec = 0;
+            mainTimeAnimation.OnStatusChanged += (AnimationStatus status, double timeElapsed) =>
             {
                 switch (status)
                 {
@@ -167,7 +166,7 @@
                 }
             };
 
-            animation3 = new Animation();
+            animation3 = new AnimationLifecycleManager();
             animation3.OnStatusChanged += (AnimationStatus status, double timeElapsed) =>
             {
                 switch (status)
@@ -197,27 +196,19 @@
                 }
             };
 
-            animation1.OnSettingsCompleted += animation2.OnNextAnimationSettingsCompleted;
-            animation3.OnSettingsCompleted += animation2.OnNextAnimationSettingsCompleted;
-            animation2.OnSettingsCompleted += animation1.OnNextAnimationSettingsCompleted;
+            mainTimeAnimation.Chain(new List<AnimationLifecycleManager> { animation1, animation3 }, 60000, 60000);
+
+            animation1.OnSettingsCompleted += mainTimeAnimation.OnNextAnimationSettingsCompleted;
+            animation3.OnSettingsCompleted += mainTimeAnimation.OnNextAnimationSettingsCompleted;
+            mainTimeAnimation.OnSettingsCompleted += animation1.OnNextAnimationSettingsCompleted;
             animation3.OnSettingsCompleted += animation1.OnNextAnimationSettingsCompleted;
-            animation2.OnSettingsCompleted += animation3.OnNextAnimationSettingsCompleted;
+            mainTimeAnimation.OnSettingsCompleted += animation3.OnNextAnimationSettingsCompleted;
             animation1.OnSettingsCompleted += animation3.OnNextAnimationSettingsCompleted;
         }
 
         public void SetClock(double timeElapsed)
         {
-            var time = DateTime.Now;
-
-            var minuteSecondDigit = time.Minute % 10;
-
-            //Define when the animation should start
-            if (minuteSecondDigit == 7 || minuteSecondDigit == 9)
-                animation1.Start("animation1", timeElapsed);
-            else if (minuteSecondDigit == 1 || minuteSecondDigit == 3 || minuteSecondDigit == 4)
-                animation3.Start("animation3", timeElapsed);
-            else
-                animation2.Start("animation2", timeElapsed);
+            mainTimeAnimation.Start("mainTimeAnimation", timeElapsed);
         }
     }
 }
