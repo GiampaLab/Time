@@ -27,7 +27,7 @@
 
 @code {
     private DotNetObjectReference<AnalogClock>? dotNetHelper;
-    Controller? controller;
+    Controller controller = new Controller();
     List<ElementReference> hourReferences = new List<ElementReference>();
     List<ElementReference> minuteReferences = new List<ElementReference>();
     ElementReference HourReference
@@ -42,8 +42,6 @@
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-
-        controller = new Controller();
 
         await StartAnimation();
     }
@@ -63,18 +61,15 @@
     [JSInvokable]
     public async void UpdateFrame(double timeElapsed)
     {
-        if (controller != null)
-        {
-            controller.SetClock(timeElapsed);
-            // Trigger the next frame
-            //await InvokeAsync(StateHasChanged);
+        controller.SetClock(timeElapsed);
+        // Trigger the next frame
+        await InvokeAsync(StateHasChanged);
 
-            for (int i = 1; i <= 24; i++)
+        @* for (int i = 1; i <= 24; i++)
             {
                 await JSRuntime.InvokeVoidAsync("animationLoop.updateState", hourReferences[i - 1], minuteReferences[i - 1],
                 controller.Clocks[i].FirstArm.CurrentState, controller.Clocks[i].SecondArm.CurrentState);
-            }
-        }
+            } *@
 
         await Task.Yield();
     }

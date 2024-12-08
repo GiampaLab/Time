@@ -23,14 +23,11 @@ public class AnimationLifecycleManager
 
     public void Start(string animationName, double timeElapsed)
     {
-        //checks if and when to run chained animations
+        //checks if and when to run chained animations loop
         if (animationLifecycleManagers.Count() > 0 && chainedAnimationInterval.TimeIsUp(timeElapsed))
         {
             if (!chainedAnimationLength.TimeIsUp(timeElapsed))
-            {
-
                 animationLifecycleManagers[chainedAnimationsIndex].Start($"anim {chainedAnimationsIndex}", timeElapsed);
-            }
             else
             {
                 //Reset the chainedAnimationInterval
@@ -38,6 +35,7 @@ public class AnimationLifecycleManager
                 chainedAnimationsIndex = chainedAnimationsIndex < animationLifecycleManagers.Count() - 1 ? ++chainedAnimationsIndex : 0;
             }
         }
+        //animation loop
         else
         {
             //Reset the chainedAnimationLength
@@ -46,22 +44,15 @@ public class AnimationLifecycleManager
             {
                 if (!animationSettingsCompleted)
                 {
-                    Console.WriteLine($"Animation setup {animationName}");
                     animationSettingsCompleted = true;
                     OnSettingsCompleted?.Invoke(this, EventArgs.Empty);
                     OnStatusChanged?.Invoke(AnimationStatus.PerformPreAnimationSettings, timeElapsed);
                 }
                 if (DelayAnimation.TimeIsUp(timeElapsed))
-                {
-                    Console.WriteLine($"Animation Start {animationName}");
                     OnStatusChanged?.Invoke(AnimationStatus.StartAnimation, timeElapsed);
-                }
             }
             else
-            {
-                Console.WriteLine($"Animation Init {animationName}");
                 animationSetupCompleted = OnStatusChanged?.Invoke(AnimationStatus.StartInitAnimation, timeElapsed);
-            }
         }
     }
 
