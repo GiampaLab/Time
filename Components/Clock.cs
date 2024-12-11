@@ -1,4 +1,5 @@
 namespace Time.Components;
+using Time.Utils;
 using Time.AnimationConfig;
 public class Clock
 {
@@ -7,7 +8,8 @@ public class Clock
         Direction = Direction.Clockwise,
         MaxSpeedDegrees = 1,
         Acceleration = 1,
-        Deceleration = 1
+        Deceleration = 1,
+
     };
     private ArmConfig _defaultSecondArmConfig = new ArmConfig
     {
@@ -23,30 +25,48 @@ public class Clock
     public Clock(int Id, ArmConfig? firstArmConfig = null, ArmConfig? secondArmConfig = null)
     {
         this.Id = Id;
-        FirstArm.CurrentState = 0.0;
+        FirstArm.CurrentState = 0;
         FirstArm.Config = firstArmConfig != null ? firstArmConfig : _defaultFirstArmConfig;
-        SecondArm.CurrentState = 0.0;
+        SecondArm.CurrentState = 0;
         SecondArm.Config = secondArmConfig != null ? secondArmConfig : _defaultSecondArmConfig;
     }
 
     public void UpdateClockArmsConfig(ArmConfig firstArmConfig, ArmConfig secondArmConfig)
     {
-        FirstArm.Config = firstArmConfig;
-        SecondArm.Config = secondArmConfig;
+        FirstArm.Config.Direction = firstArmConfig.Direction;
+        FirstArm.Config.EasingFunction = firstArmConfig.EasingFunction;
+        FirstArm.Config.MaxSpeedDegrees = firstArmConfig.MaxSpeedDegrees;
+        SecondArm.Config.Direction = secondArmConfig.Direction;
+        SecondArm.Config.EasingFunction = secondArmConfig.EasingFunction;
+        SecondArm.Config.MaxSpeedDegrees = secondArmConfig.MaxSpeedDegrees;
     }
 
-    public bool UpdateState(ArmState firstArmState, ArmState secondArmState, double firstArmStateDeltaDegrees = 0, double
+    public void ResetClock()
+    {
+        delayAnimation.Started = false;
+        FirstArm.Config.EasingAnimation.ResetEasingAnimation();
+        SecondArm.Config.EasingAnimation.ResetEasingAnimation();
+    }
+
+    public bool UpdateState(ArmState firstArmState, ArmState secondArmState, double timeElapsedMillisec, int firstArmStateDeltaDegrees = 0, int
     secondArmStateDeltaDegrees = 0, bool stopAtFinalState = true)
     {
-        var firstArmFinalStateDegrees = Math.Round(AnimationUtils.ArmStateToDegree(firstArmState) + firstArmStateDeltaDegrees, 2);
-        var secondArmFinalStateDegrees = Math.Round(AnimationUtils.ArmStateToDegree(secondArmState) + secondArmStateDeltaDegrees, 2);
+        int firstArmFinalStateDegrees = 0;
+        int secondArmFinalStateDegrees = 0;
+        if (stopAtFinalState)
+        {
+            firstArmFinalStateDegrees = AnimationUtils.ArmStateToDegree(firstArmState) + firstArmStateDeltaDegrees;
+            secondArmFinalStateDegrees = AnimationUtils.ArmStateToDegree(secondArmState) + secondArmStateDeltaDegrees;
+        }
         if (!stopAtFinalState || (FirstArm.CurrentState != firstArmFinalStateDegrees))
         {
-            UpdateArmState(FirstArm);
+            if (delayAnimation.TimeIsUp(timeElapsedMillisec))
+                UpdateArmState(FirstArm);
         }
         if (!stopAtFinalState || (SecondArm.CurrentState != secondArmFinalStateDegrees))
         {
-            UpdateArmState(SecondArm);
+            if (delayAnimation.TimeIsUp(timeElapsedMillisec))
+                UpdateArmState(SecondArm);
         }
         return stopAtFinalState && (FirstArm.CurrentState == firstArmFinalStateDegrees) && (SecondArm.CurrentState ==
         secondArmFinalStateDegrees) ? true : false;
@@ -55,28 +75,35 @@ public class Clock
     private void UpdateArmState(ClockArm arm)
     {
         arm.CurrentState = arm.Config.Direction == Direction.Clockwise ?
-        Math.Round(arm.CurrentState + arm.Config.MaxSpeedDegrees, 2) :
-        Math.Round(arm.CurrentState - arm.Config.MaxSpeedDegrees, 2);
+        arm.CurrentState + arm.Config.EasingAnimation.GetEasingValue() :
+        arm.CurrentState - arm.Config.EasingAnimation.GetEasingValue();
     }
 }
 
 public class ClockArm
 {
-    private double _currentState;
-    public double CurrentState
+    private int _currentState;
+    public int CurrentState
     {
         get { return _currentState; }
-        set { _currentState = value > 0 ? value % 360.0 : (value + 360.0) % 360.0; }
+        set { _currentState = value > 0 ? value % 360 : (value + 360) % 360; }
     }
     public ArmConfig Config { get; set; } = new ArmConfig();
 }
 
 public class ArmConfig
 {
+    public EasingAnimation EasingAnimation { get; private set; } = new EasingAnimation(EasingFunctions.Linear);
     public Direction Direction { get; set; } = Direction.Clockwise;
-    public double MaxSpeedDegrees { get; set; } = 1;
+    public int MaxSpeedDegrees { get; set; } = 1;
     public int Acceleration { get; set; } = 1;
     public int Deceleration { get; set; } = 1;
+
+    public Func<float, float> EasingFunction
+    {
+        get { return EasingAnimation.EasingFunction; }
+        set { if (value is null) EasingAnimation.EasingFunction = EasingFunctions.Linear; else EasingAnimation.EasingFunction = value; }
+    }
 }
 
 public enum Direction

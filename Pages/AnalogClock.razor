@@ -1,6 +1,8 @@
 @page "/"
 @inject IJSRuntime JSRuntime
 @using Time.AnimationConfig;
+@using Time.AnimationEngine;
+@using Time.Utils;
 @using Time.Components;
 
 <div class="clocks-wrapper">
@@ -63,142 +65,127 @@
     {
         controller.SetClock(timeElapsed);
         // Trigger the next frame
-        await InvokeAsync(StateHasChanged);
+        //await InvokeAsync(StateHasChanged);
 
-        @* for (int i = 1; i <= 24; i++)
-            {
-                await JSRuntime.InvokeVoidAsync("animationLoop.updateState", hourReferences[i - 1], minuteReferences[i - 1],
-                controller.Clocks[i].FirstArm.CurrentState, controller.Clocks[i].SecondArm.CurrentState);
-            } *@
-
+        for (int i = 1; i <= 24; i++)
+        {
+            await JSRuntime.InvokeVoidAsync("animationLoop.updateState", hourReferences[i - 1], minuteReferences[i - 1],
+            controller.Clocks[i].FirstArm.CurrentState, controller.Clocks[i].SecondArm.CurrentState);
+        }
         await Task.Yield();
     }
 
     public class Controller
     {
-        private AnimationLifecycleManager animation1;
+        private AnimationLifecycleManager waveAnimation;
         private AnimationLifecycleManager mainTimeAnimation;
-        private AnimationLifecycleManager animation3;
-        private double maxSpeedDegrees = 1;
+        private AnimationLifecycleManager patternAnimation;
+        private int maxSpeedDegrees = 1;
         public Dictionary<int, Clock> Clocks { get; private set; }
         public Controller()
         {
             Clocks = new Dictionary<int, Clock>();
 
             for (var i = 0; i < 24; i++)
-                Clocks.Add(i + 1, new Clock(i + 1, new ArmConfig
-                    {
-                        Direction = Direction.Clockwise,
-                        MaxSpeedDegrees = maxSpeedDegrees,
-                        Acceleration = 1,
-                        Deceleration = 1
-                    }, new ArmConfig
-                    {
-                        Direction = Direction.Anticlockwise,
-                        MaxSpeedDegrees = maxSpeedDegrees,
-                        Acceleration = 1,
-                        Deceleration = 1
-                    }));
+                Clocks.Add(i + 1, new Clock(i + 1));
 
-            animation1 = new AnimationLifecycleManager();
-            animation1.OnStatusChanged += (AnimationStatus status, double timeElapsed) =>
+            waveAnimation = new AnimationLifecycleManager();
+            waveAnimation.DelayAnimation.DelayMillisec = 1000;
+            waveAnimation.OnStatusChanged += (AnimationStatus status, double timeElapsed) =>
             {
                 switch (status)
                 {
                     case AnimationStatus.StartInitAnimation:
-                        return AnimationConfigs.StartAnimation2(Clocks, true, timeElapsed);
+                        return AnimationConfigs.StartWaveAnimation(Clocks, timeElapsed, true);
                     case AnimationStatus.StartAnimation:
-                        return AnimationConfigs.StartAnimation2(Clocks, false, timeElapsed);
+                        return AnimationConfigs.StartWaveAnimation(Clocks, timeElapsed, false);
                     case AnimationStatus.PerformPreAnimationSettings:
                         AnimationConfigs.SetClocksConfigs(Clocks,
         new ArmConfig
                 {
                     Direction = Direction.Clockwise,
                     MaxSpeedDegrees = maxSpeedDegrees,
-                    Acceleration = 1,
-                    Deceleration = 1
+                    EasingFunction = EasingFunctions.OutSine
                 },
         new ArmConfig
                 {
                     Direction = Direction.Clockwise,
                     MaxSpeedDegrees = maxSpeedDegrees,
-                    Acceleration = 1,
-                    Deceleration = 1
+                    EasingFunction = EasingFunctions.OutSine
                 });
+                        AnimationConfigs.SetClockProgressiveDelays(Clocks, 60);
                         return false;
                     default: return false;
                 }
             };
 
             mainTimeAnimation = new AnimationLifecycleManager();
-            mainTimeAnimation.DelayAnimation.DelayMillisec = 0;
-            mainTimeAnimation.OnStatusChanged += (AnimationStatus status, double timeElapsed) =>
+            mainTimeAnimation.OnStatusChanged += (AnimationStatus status, double timeElapsedMillisec) =>
             {
                 switch (status)
                 {
                     case AnimationStatus.StartInitAnimation:
-                        return AnimationConfigs.SetNumbers(Clocks);
+                        return AnimationConfigs.SetNumbers(Clocks, timeElapsedMillisec);
                     case AnimationStatus.StartAnimation:
-                        return AnimationConfigs.SetNumbers(Clocks);
+                        return AnimationConfigs.SetNumbers(Clocks, timeElapsedMillisec);
                     case AnimationStatus.PerformPreAnimationSettings:
                         AnimationConfigs.SetClocksConfigs(Clocks,
         new ArmConfig
                 {
                     Direction = Direction.Clockwise,
                     MaxSpeedDegrees = maxSpeedDegrees,
-                    Acceleration = 1,
-                    Deceleration = 1
+                    EasingFunction = EasingFunctions.Linear
                 },
         new ArmConfig
                 {
                     Direction = Direction.Anticlockwise,
                     MaxSpeedDegrees = maxSpeedDegrees,
-                    Acceleration = 1,
-                    Deceleration = 1
+                    EasingFunction = EasingFunctions.Linear
                 });
+                        AnimationConfigs.SetClockProgressiveDelays(Clocks, 0);
                         return false;
                     default: return false;
                 }
             };
 
-            animation3 = new AnimationLifecycleManager();
-            animation3.OnStatusChanged += (AnimationStatus status, double timeElapsed) =>
+            patternAnimation = new AnimationLifecycleManager();
+            patternAnimation.DelayAnimation.DelayMillisec = 1000;
+            patternAnimation.OnStatusChanged += (AnimationStatus status, double timeElapsed) =>
             {
                 switch (status)
                 {
                     case AnimationStatus.StartInitAnimation:
-                        return AnimationConfigs.StartAnimation(Clocks, true);
+                        return AnimationConfigs.StartAnimation(Clocks, timeElapsed, true);
                     case AnimationStatus.StartAnimation:
-                        return AnimationConfigs.StartAnimation(Clocks, false);
+                        return AnimationConfigs.StartAnimation(Clocks, timeElapsed, false);
                     case AnimationStatus.PerformPreAnimationSettings:
                         AnimationConfigs.SetClocksConfigs(Clocks,
         new ArmConfig
                 {
                     Direction = Direction.Clockwise,
                     MaxSpeedDegrees = maxSpeedDegrees,
-                    Acceleration = 1,
-                    Deceleration = 1
+                    EasingFunction = EasingFunctions.Linear
                 },
         new ArmConfig
                 {
                     Direction = Direction.Anticlockwise,
                     MaxSpeedDegrees = maxSpeedDegrees,
-                    Acceleration = 1,
-                    Deceleration = 1
+                    EasingFunction = EasingFunctions.Linear
                 });
+                        AnimationConfigs.SetClockProgressiveDelays(Clocks, 0);
                         return false;
                     default: return false;
                 }
             };
 
-            mainTimeAnimation.Chain(new List<AnimationLifecycleManager> { animation1, animation3 }, 60000, 60000);
+            mainTimeAnimation.Chain(new List<AnimationLifecycleManager> { waveAnimation, patternAnimation }, 60000, 60000);
 
-            animation1.OnSettingsCompleted += mainTimeAnimation.OnNextAnimationSettingsCompleted;
-            animation3.OnSettingsCompleted += mainTimeAnimation.OnNextAnimationSettingsCompleted;
-            mainTimeAnimation.OnSettingsCompleted += animation1.OnNextAnimationSettingsCompleted;
-            animation3.OnSettingsCompleted += animation1.OnNextAnimationSettingsCompleted;
-            mainTimeAnimation.OnSettingsCompleted += animation3.OnNextAnimationSettingsCompleted;
-            animation1.OnSettingsCompleted += animation3.OnNextAnimationSettingsCompleted;
+            waveAnimation.OnSettingsCompleted += mainTimeAnimation.OnNextAnimationSettingsCompleted;
+            patternAnimation.OnSettingsCompleted += mainTimeAnimation.OnNextAnimationSettingsCompleted;
+            mainTimeAnimation.OnSettingsCompleted += waveAnimation.OnNextAnimationSettingsCompleted;
+            patternAnimation.OnSettingsCompleted += waveAnimation.OnNextAnimationSettingsCompleted;
+            mainTimeAnimation.OnSettingsCompleted += patternAnimation.OnNextAnimationSettingsCompleted;
+            waveAnimation.OnSettingsCompleted += patternAnimation.OnNextAnimationSettingsCompleted;
         }
 
         public void SetClock(double timeElapsed)
