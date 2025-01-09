@@ -96,9 +96,9 @@
                 switch (status)
                 {
                     case AnimationStatus.StartInitAnimation:
-                        return AnimationConfigs.StartWaveAnimation(Clocks, timeElapsed, true);
+                        return AnimationConfigs.SetNextWaveAnimationStatus(Clocks, timeElapsed, true);
                     case AnimationStatus.StartAnimation:
-                        return AnimationConfigs.StartWaveAnimation(Clocks, timeElapsed, false);
+                        return AnimationConfigs.SetNextWaveAnimationStatus(Clocks, timeElapsed, false);
                     case AnimationStatus.PerformPreAnimationSettings:
                         AnimationConfigs.SetClocksConfigs(Clocks,
         new ArmConfig
@@ -112,8 +112,7 @@
                     Direction = Direction.Clockwise,
                     MaxSpeedDegrees = maxSpeedDegrees,
                     EasingFunction = EasingFunctions.OutSine
-                });
-                        AnimationConfigs.SetClockProgressiveDelays(Clocks, 60);
+                }, 60);
                         return false;
                     default: return false;
                 }
@@ -125,9 +124,9 @@
                 switch (status)
                 {
                     case AnimationStatus.StartInitAnimation:
-                        return AnimationConfigs.SetNumbers(Clocks, timeElapsedMillisec);
+                        return AnimationConfigs.SetNextNumbersAnimationStatus(Clocks, timeElapsedMillisec);
                     case AnimationStatus.StartAnimation:
-                        return AnimationConfigs.SetNumbers(Clocks, timeElapsedMillisec);
+                        return AnimationConfigs.SetNextNumbersAnimationStatus(Clocks, timeElapsedMillisec);
                     case AnimationStatus.PerformPreAnimationSettings:
                         AnimationConfigs.SetClocksConfigs(Clocks,
         new ArmConfig
@@ -141,8 +140,7 @@
                     Direction = Direction.Anticlockwise,
                     MaxSpeedDegrees = maxSpeedDegrees,
                     EasingFunction = EasingFunctions.Linear
-                });
-                        AnimationConfigs.SetClockProgressiveDelays(Clocks, 0);
+                }, 0);
                         return false;
                     default: return false;
                 }
@@ -155,9 +153,9 @@
                 switch (status)
                 {
                     case AnimationStatus.StartInitAnimation:
-                        return AnimationConfigs.StartAnimation(Clocks, timeElapsed, true);
+                        return AnimationConfigs.SetNextPatternAnimationStatus(Clocks, timeElapsed, true);
                     case AnimationStatus.StartAnimation:
-                        return AnimationConfigs.StartAnimation(Clocks, timeElapsed, false);
+                        return AnimationConfigs.SetNextPatternAnimationStatus(Clocks, timeElapsed, false);
                     case AnimationStatus.PerformPreAnimationSettings:
                         AnimationConfigs.SetClocksConfigs(Clocks,
         new ArmConfig
@@ -171,8 +169,7 @@
                     Direction = Direction.Anticlockwise,
                     MaxSpeedDegrees = maxSpeedDegrees,
                     EasingFunction = EasingFunctions.Linear
-                });
-                        AnimationConfigs.SetClockProgressiveDelays(Clocks, 0);
+                }, 0);
                         return false;
                     default: return false;
                 }

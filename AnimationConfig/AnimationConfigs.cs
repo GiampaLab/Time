@@ -2,24 +2,17 @@ namespace Time.AnimationConfig;
 using Time.Components;
 public class AnimationConfigs
 {
-    public static void SetClocksConfigs(Dictionary<int, Clock> clocks, ArmConfig firstArmConfig, ArmConfig secondArmConfig)
+    public static void SetClocksConfigs(Dictionary<int, Clock> clocks, ArmConfig firstArmConfig, ArmConfig secondArmConfig, int progressiveDelay)
     {
         for (var i = 0; i < 24; i++)
         {
             clocks[i + 1].UpdateClockArmsConfig(firstArmConfig, secondArmConfig);
             clocks[i + 1].ResetClock();
+            clocks[i + 1].delayAnimation.DelayMillisec = progressiveDelay * (i + 1);
         }
     }
 
-    public static void SetClockProgressiveDelays(Dictionary<int, Clock> clocks, int delay)
-    {
-        for (var i = 0; i < 24; i++)
-        {
-            clocks[i + 1].delayAnimation.DelayMillisec = delay * (i + 1);
-        }
-    }
-
-    public static bool SetNumbers(Dictionary<int, Clock> clocks, double timeElapsedMillisec)
+    public static bool SetNextNumbersAnimationStatus(Dictionary<int, Clock> clocks, double timeElapsedMillisec)
     {
         var timeSetupCompleted = true;
 
@@ -45,7 +38,7 @@ public class AnimationConfigs
         return timeSetupCompleted;
     }
 
-    public static bool SetNumber(int number, List<int> clockIndexes, Dictionary<int, Clock> clocks, double timeElapsedMillisec)
+    private static bool SetNumber(int number, List<int> clockIndexes, Dictionary<int, Clock> clocks, double timeElapsedMillisec)
     {
         var completed = true;
         var result = false;
@@ -206,7 +199,7 @@ public class AnimationConfigs
         return completed;
     }
 
-    public static bool StartAnimation(Dictionary<int, Clock> clocks, double timeElapsedMillisec, bool stopAtFinalState = true)
+    public static bool SetNextPatternAnimationStatus(Dictionary<int, Clock> clocks, double timeElapsedMillisec, bool stopAtFinalState = true)
     {
         var completed = true;
         for (var i = 0; i < 4; i++)
@@ -228,7 +221,7 @@ public class AnimationConfigs
         return completed;
     }
 
-    public static bool StartWaveAnimation(Dictionary<int, Clock> clocks, double timeElapsedMillisec, bool stopAtFinalState = true)
+    public static bool SetNextWaveAnimationStatus(Dictionary<int, Clock> clocks, double timeElapsedMillisec, bool stopAtFinalState = true)
     {
         var completed = true;
         for (var i = 0; i < 24; i++)

@@ -15,7 +15,7 @@ public class AnimationLifecycleManager
     public event EventHandler? OnSettingsCompleted;
     public DelayAnimation DelayAnimation { get; set; } = new DelayAnimation();
 
-    public void OnNextAnimationSettingsCompleted(object sender, EventArgs args)
+    public void OnNextAnimationSettingsCompleted(object? sender, EventArgs args)
     {
         animationSettingsCompleted = false;
         animationSetupCompleted = false;
