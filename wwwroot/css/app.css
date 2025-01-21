@@ -202,6 +202,14 @@ code {
   background-color: white;
 }
 
+.clock .hour {
+  transition: transform 1ms linear;
+}
+
+.clock .minute {
+  transition: transform 1ms linear;
+}
+
 .clock .hour div {
   top: 10%;
   height: 40%;

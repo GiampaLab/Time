@@ -6,9 +6,9 @@ public class AnimationLifecycleManager
     private bool? animationSetupCompleted = false;
     private bool animationSettingsCompleted = false;
     private List<AnimationLifecycleManager> animationLifecycleManagers = [];
-    private DelayAnimation chainedAnimationInterval { get; set; } = new DelayAnimation();
-    private DelayAnimation chainedAnimationLength { get; set; } = new DelayAnimation();
-    private Random rnd = new Random();
+    private DelayAnimation chainedAnimationInterval = new();
+    private DelayAnimation chainedAnimationLength = new();
+    private Random rnd = new();
     private int chainedAnimationsIndex = 0;
     public delegate bool? CallbackEventHandler(AnimationStatus status, double timeElapsed);
     public event CallbackEventHandler? OnStatusChanged;
