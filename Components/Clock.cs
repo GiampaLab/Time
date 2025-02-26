@@ -48,15 +48,16 @@ public class Clock
         SecondArm.Config.EasingAnimation.ResetEasingAnimation();
     }
 
-    public bool UpdateState(ArmState firstArmState, ArmState secondArmState, double timeElapsedMillisec, int firstArmStateDeltaDegrees = 0, int
-    secondArmStateDeltaDegrees = 0, bool stopAtFinalState = true)
+    public bool UpdateState(ArmState firstArmState, ArmState secondArmState, double timeElapsedMillisec, bool stopAtFinalState = true)
     {
         int firstArmFinalStateDegrees = 0;
         int secondArmFinalStateDegrees = 0;
         if (stopAtFinalState)
         {
-            firstArmFinalStateDegrees = AnimationUtils.ArmStateToDegree(firstArmState) + firstArmStateDeltaDegrees;
-            secondArmFinalStateDegrees = AnimationUtils.ArmStateToDegree(secondArmState) + secondArmStateDeltaDegrees;
+            firstArmFinalStateDegrees = AnimationUtils.ArmStateToDegree(firstArmState);
+            secondArmFinalStateDegrees = AnimationUtils.ArmStateToDegree(secondArmState);
+            FirstArm.FinalState = firstArmFinalStateDegrees;
+            SecondArm.FinalState = secondArmFinalStateDegrees;
         }
         if (!stopAtFinalState || (FirstArm.CurrentState != firstArmFinalStateDegrees))
         {
@@ -83,11 +84,44 @@ public class Clock
 public class ClockArm
 {
     private int _currentState;
+    private int _finalState;
     public int CurrentState
     {
         get { return _currentState; }
         set { _currentState = value > 0 ? value % 360 : (value + 360) % 360; }
     }
+    public int FinalState
+    {
+        get { return _finalState; }
+
+        set
+        {
+            if (Math.Abs(_finalState) % 360 != value)
+            {
+                if (Config.Direction == Direction.Clockwise)
+                {
+                    var deltaDegrees = value - _finalState % 360;
+                    if (deltaDegrees >= 0)
+                        _finalState = _finalState + deltaDegrees;
+                    else
+                        _finalState = _finalState + 360 - _finalState % 360 + value;
+                }
+                if (Config.Direction == Direction.Anticlockwise)
+                {
+                    var convertedValueDegrees = -360 + value;
+                    var convertedFinalState = _finalState <= 0 ? _finalState : -360 + _finalState % 360;
+
+                    var deltaDegrees = Math.Abs(convertedValueDegrees) - Math.Abs(convertedFinalState) % 360;
+                    if (deltaDegrees >= 0)
+                        _finalState = _finalState - deltaDegrees;
+                    else
+                        _finalState = _finalState - (360 - Math.Abs(_finalState) % 360) + convertedValueDegrees;
+                }
+            }
+        }
+    }
+
+
     public ArmConfig Config { get; set; } = new ArmConfig();
 }
 

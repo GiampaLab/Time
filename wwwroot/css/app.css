@@ -203,11 +203,11 @@ code {
 }
 
 .clock .hour {
-  transition: transform 1ms linear;
+  transition: transform 3000ms ease-in-out;
 }
 
 .clock .minute {
-  transition: transform 1ms linear;
+  transition: transform 3000ms ease-in-out;
 }
 
 .clock .hour div {

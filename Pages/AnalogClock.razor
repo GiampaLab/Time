@@ -13,11 +13,11 @@
             {
                 <div class="clock">
                     <div class="hour" @ref=HourReference
-                        style="transform:rotate(@(controller != null ? controller.Clocks[i + j*3].FirstArm.CurrentState : 0)deg);">
+                        style="transform:rotate(@(controller != null ? controller.Clocks[i + j * 3].FirstArm.FinalState : 0)deg);">
                         <div></div>
                     </div>
                     <div class="minute" @ref=MinuteReference
-                        style="transform:rotate(@(controller != null ? controller.Clocks[i + j*3].SecondArm.CurrentState : 0)deg);">
+                        style="transform:rotate(@(controller != null ? controller.Clocks[i + j * 3].SecondArm.FinalState : 0)deg);">
                         <div></div>
                     </div>
                     <span class="ctr"></span>
@@ -101,18 +101,18 @@
                         return AnimationConfigs.SetNextWaveAnimationStatus(Clocks, timeElapsed, false);
                     case AnimationStatus.PerformPreAnimationSettings:
                         AnimationConfigs.SetClocksConfigs(Clocks,
-        new ArmConfig
-                {
-                    Direction = Direction.Clockwise,
-                    MaxSpeedDegrees = maxSpeedDegrees,
-                    EasingFunction = EasingFunctions.OutSine
-                },
-        new ArmConfig
-                {
-                    Direction = Direction.Clockwise,
-                    MaxSpeedDegrees = maxSpeedDegrees,
-                    EasingFunction = EasingFunctions.OutSine
-                }, 60);
+            new ArmConfig
+            {
+                Direction = Direction.Clockwise,
+                MaxSpeedDegrees = maxSpeedDegrees,
+                EasingFunction = EasingFunctions.OutSine
+            },
+            new ArmConfig
+            {
+                Direction = Direction.Clockwise,
+                MaxSpeedDegrees = maxSpeedDegrees,
+                EasingFunction = EasingFunctions.OutSine
+            }, 60);
                         return false;
                     default: return false;
                 }
@@ -129,18 +129,18 @@
                         return AnimationConfigs.SetNextNumbersAnimationStatus(Clocks, timeElapsedMillisec);
                     case AnimationStatus.PerformPreAnimationSettings:
                         AnimationConfigs.SetClocksConfigs(Clocks,
-        new ArmConfig
-                {
-                    Direction = Direction.Clockwise,
-                    MaxSpeedDegrees = maxSpeedDegrees,
-                    EasingFunction = EasingFunctions.Linear
-                },
-        new ArmConfig
-                {
-                    Direction = Direction.Anticlockwise,
-                    MaxSpeedDegrees = maxSpeedDegrees,
-                    EasingFunction = EasingFunctions.Linear
-                }, 0);
+            new ArmConfig
+            {
+                Direction = Direction.Clockwise,
+                MaxSpeedDegrees = maxSpeedDegrees,
+                EasingFunction = EasingFunctions.Linear
+            },
+            new ArmConfig
+            {
+                Direction = Direction.Anticlockwise,
+                MaxSpeedDegrees = maxSpeedDegrees,
+                EasingFunction = EasingFunctions.Linear
+            }, 0);
                         return false;
                     default: return false;
                 }
@@ -158,31 +158,31 @@
                         return AnimationConfigs.SetNextPatternAnimationStatus(Clocks, timeElapsed, false);
                     case AnimationStatus.PerformPreAnimationSettings:
                         AnimationConfigs.SetClocksConfigs(Clocks,
-        new ArmConfig
-                {
-                    Direction = Direction.Clockwise,
-                    MaxSpeedDegrees = maxSpeedDegrees,
-                    EasingFunction = EasingFunctions.Linear
-                },
-        new ArmConfig
-                {
-                    Direction = Direction.Anticlockwise,
-                    MaxSpeedDegrees = maxSpeedDegrees,
-                    EasingFunction = EasingFunctions.Linear
-                }, 0);
+            new ArmConfig
+            {
+                Direction = Direction.Clockwise,
+                MaxSpeedDegrees = maxSpeedDegrees,
+                EasingFunction = EasingFunctions.Linear
+            },
+            new ArmConfig
+            {
+                Direction = Direction.Anticlockwise,
+                MaxSpeedDegrees = maxSpeedDegrees,
+                EasingFunction = EasingFunctions.Linear
+            }, 0);
                         return false;
                     default: return false;
                 }
             };
 
-            mainTimeAnimation.Chain(new List<AnimationLifecycleManager> { waveAnimation, patternAnimation }, 60000, 60000);
+            @* mainTimeAnimation.Chain(new List<AnimationLifecycleManager> { waveAnimation, patternAnimation }, 60000, 60000);
 
             waveAnimation.OnSettingsCompleted += mainTimeAnimation.OnNextAnimationSettingsCompleted;
             patternAnimation.OnSettingsCompleted += mainTimeAnimation.OnNextAnimationSettingsCompleted;
             mainTimeAnimation.OnSettingsCompleted += waveAnimation.OnNextAnimationSettingsCompleted;
             patternAnimation.OnSettingsCompleted += waveAnimation.OnNextAnimationSettingsCompleted;
             mainTimeAnimation.OnSettingsCompleted += patternAnimation.OnNextAnimationSettingsCompleted;
-            waveAnimation.OnSettingsCompleted += patternAnimation.OnNextAnimationSettingsCompleted;
+            waveAnimation.OnSettingsCompleted += patternAnimation.OnNextAnimationSettingsCompleted; *@
         }
 
         public void SetClock(double timeElapsed)
