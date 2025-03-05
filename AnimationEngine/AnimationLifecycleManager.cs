@@ -1,4 +1,8 @@
 namespace Time.AnimationEngine;
+
+using Microsoft.JSInterop;
+using Time.AnimationConfig;
+using Time.Components;
 using Time.Utils;
 
 public class AnimationLifecycleManager
@@ -10,10 +14,20 @@ public class AnimationLifecycleManager
     private DelayAnimation chainedAnimationLength = new();
     private Random rnd = new();
     private int chainedAnimationsIndex = 0;
+    private readonly IJSRuntime jSRuntime;
+    private readonly IList<ArmConfig> armConfigs;
+
+    public AnimationLifecycleManager(IJSRuntime jSRuntime, IList<ArmConfig> armConfigs)
+    {
+        this.jSRuntime = jSRuntime;
+        this.armConfigs = armConfigs;
+    }
+
     public delegate bool? CallbackEventHandler(AnimationStatus status, double timeElapsed);
     public event CallbackEventHandler? OnStatusChanged;
     public event EventHandler? OnSettingsCompleted;
     public DelayAnimation DelayAnimation { get; set; } = new DelayAnimation();
+
 
     public void OnNextAnimationSettingsCompleted(object? sender, EventArgs args)
     {
@@ -22,7 +36,7 @@ public class AnimationLifecycleManager
         DelayAnimation.Started = false;
     }
 
-    public void Start(string animationName, double timeElapsed)
+    public async void Start(string animationName, double timeElapsed)
     {
         //checks if and when to run chained animations loop
         if (animationLifecycleManagers.Count() > 0 && chainedAnimationInterval.TimeIsUp(timeElapsed))
@@ -50,10 +64,16 @@ public class AnimationLifecycleManager
                     OnStatusChanged?.Invoke(AnimationStatus.PerformPreAnimationSettings, timeElapsed);
                 }
                 if (DelayAnimation.TimeIsUp(timeElapsed))
+                {
                     OnStatusChanged?.Invoke(AnimationStatus.StartAnimation, timeElapsed);
+                    await jSRuntime.InvokeVoidAsync("animationLoop.animateClockArm", (object)armConfigs.Select(config => new { state = config.State, elementReference = config.ElementReference }).ToArray());
+                }
             }
             else
-                animationSetupCompleted = OnStatusChanged?.Invoke(AnimationStatus.StartInitAnimation, timeElapsed);
+            {
+                OnStatusChanged?.Invoke(AnimationStatus.StartInitAnimation, timeElapsed);
+                animationSetupCompleted = true;
+            }
         }
     }
 

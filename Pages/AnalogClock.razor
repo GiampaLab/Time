@@ -12,12 +12,10 @@
             @for (int i = 1; i < 4; i++)
             {
                 <div class="clock">
-                    <div class="hour" @ref=HourReference
-                        style="transform:rotate(@(controller != null ? controller.Clocks[i + j * 3].FirstArm.FinalState : 0)deg);">
+                    <div class="hour" @ref=HourReference>
                         <div></div>
                     </div>
-                    <div class="minute" @ref=MinuteReference
-                        style="transform:rotate(@(controller != null ? controller.Clocks[i + j * 3].SecondArm.FinalState : 0)deg);">
+                    <div class="minute" @ref=MinuteReference>
                         <div></div>
                     </div>
                     <span class="ctr"></span>
@@ -29,7 +27,8 @@
 
 @code {
     private DotNetObjectReference<AnalogClock>? dotNetHelper;
-    Controller controller = new Controller();
+    private System.Threading.Timer timer;
+    Controller controller;
     List<ElementReference> hourReferences = new List<ElementReference>();
     List<ElementReference> minuteReferences = new List<ElementReference>();
     ElementReference HourReference
@@ -41,55 +40,56 @@
     {
         set { minuteReferences.Add(value); }
     }
-    protected override async Task OnInitializedAsync()
-    {
-        await base.OnInitializedAsync();
 
-        await StartAnimation();
-    }
-
-    private async Task StartAnimation()
+    protected override void OnAfterRender(bool firstRender)
     {
-        dotNetHelper = DotNetObjectReference.Create(this);
-        // Start the JS animation loop
-        await JSRuntime.InvokeVoidAsync("animationLoop.requestAnimationFrame", dotNetHelper);
+        if (firstRender)
+        {
+            controller = new Controller(JSRuntime, hourReferences, minuteReferences);
+            controller.SetClock();
+        }
     }
 
     public void Dispose()
     {
         dotNetHelper?.Dispose();
     }
-
-    [JSInvokable]
-    public async void UpdateFrame(double timeElapsed)
-    {
-        controller.SetClock(timeElapsed);
-        // Trigger the next frame
-        await InvokeAsync(StateHasChanged);
-
-        @* for (int i = 1; i <= 24; i++)
-        {
-            await JSRuntime.InvokeVoidAsync("animationLoop.updateState", hourReferences[i - 1], minuteReferences[i - 1],
-            controller.Clocks[i].FirstArm.CurrentState, controller.Clocks[i].SecondArm.CurrentState);
-        } *@
-        await Task.Yield();
-    }
-
     public class Controller
     {
+        private int timeElapsed = 0;
         private AnimationLifecycleManager waveAnimation;
         private AnimationLifecycleManager mainTimeAnimation;
         private AnimationLifecycleManager patternAnimation;
         private int maxSpeedDegrees = 1;
+        private AnimationManager animationManager;
         public Dictionary<int, Clock> Clocks { get; private set; }
-        public Controller()
+        public Controller(IJSRuntime JSRuntime, List<ElementReference> hourReferences, List<ElementReference> minuteReferences)
         {
             Clocks = new Dictionary<int, Clock>();
 
             for (var i = 0; i < 24; i++)
                 Clocks.Add(i + 1, new Clock(i + 1));
 
-            waveAnimation = new AnimationLifecycleManager();
+            Console.WriteLine($"hourReference: {hourReferences.Count}");
+
+            AnimationConfigs.SetClocksConfigs(Clocks,
+            new ArmConfig
+            {
+                Direction = Direction.Clockwise,
+                MaxSpeedDegrees = maxSpeedDegrees,
+                EasingFunction = EasingFunctions.OutSine
+            },
+            new ArmConfig
+            {
+                Direction = Direction.Anticlockwise,
+                MaxSpeedDegrees = maxSpeedDegrees,
+                EasingFunction = EasingFunctions.OutSine
+            }, 60, hourReferences, minuteReferences);
+
+            animationManager = new AnimationManager(JSRuntime, Clocks);
+
+            @* waveAnimation = new AnimationLifecycleManager(JSRuntime, Clocks.Values.Select(x =>
+            x.FirstArm.Config).ToList().Union(Clocks.Values.Select(x => x.SecondArm.Config).ToList()).ToList());
             waveAnimation.DelayAnimation.DelayMillisec = 1000;
             waveAnimation.OnStatusChanged += (AnimationStatus status, double timeElapsed) =>
             {
@@ -112,22 +112,19 @@
                 Direction = Direction.Clockwise,
                 MaxSpeedDegrees = maxSpeedDegrees,
                 EasingFunction = EasingFunctions.OutSine
-            }, 60);
+            }, 60, hourReferences, minuteReferences);
                         return false;
                     default: return false;
                 }
             };
 
-            mainTimeAnimation = new AnimationLifecycleManager();
+            mainTimeAnimation = new AnimationLifecycleManager(JSRuntime, Clocks.Values.Select(x =>
+            x.FirstArm.Config).ToList().Union(Clocks.Values.Select(x => x.SecondArm.Config).ToList()).ToList());
             mainTimeAnimation.OnStatusChanged += (AnimationStatus status, double timeElapsedMillisec) =>
             {
                 switch (status)
                 {
                     case AnimationStatus.StartInitAnimation:
-                        return AnimationConfigs.SetNextNumbersAnimationStatus(Clocks, timeElapsedMillisec);
-                    case AnimationStatus.StartAnimation:
-                        return AnimationConfigs.SetNextNumbersAnimationStatus(Clocks, timeElapsedMillisec);
-                    case AnimationStatus.PerformPreAnimationSettings:
                         AnimationConfigs.SetClocksConfigs(Clocks,
             new ArmConfig
             {
@@ -140,13 +137,18 @@
                 Direction = Direction.Anticlockwise,
                 MaxSpeedDegrees = maxSpeedDegrees,
                 EasingFunction = EasingFunctions.Linear
-            }, 0);
-                        return false;
+            }, 0, hourReferences, minuteReferences);
+                        return true;
+                    case AnimationStatus.StartAnimation:
+                        return AnimationConfigs.SetNextNumbersAnimationStatus(Clocks, timeElapsedMillisec);
+                    case AnimationStatus.PerformPreAnimationSettings:
+                        return true;
                     default: return false;
                 }
             };
 
-            patternAnimation = new AnimationLifecycleManager();
+            patternAnimation = new AnimationLifecycleManager(JSRuntime, Clocks.Values.Select(x =>
+            x.FirstArm.Config).ToList().Union(Clocks.Values.Select(x => x.SecondArm.Config).ToList()).ToList());
             patternAnimation.DelayAnimation.DelayMillisec = 1000;
             patternAnimation.OnStatusChanged += (AnimationStatus status, double timeElapsed) =>
             {
@@ -169,12 +171,13 @@
                 Direction = Direction.Anticlockwise,
                 MaxSpeedDegrees = maxSpeedDegrees,
                 EasingFunction = EasingFunctions.Linear
-            }, 0);
+            }, 0, hourReferences, minuteReferences);
                         return false;
                     default: return false;
                 }
             };
-
+            this.hourReferences = hourReferences;
+            this.minuteReferences = minuteReferences; *@
             @* mainTimeAnimation.Chain(new List<AnimationLifecycleManager> { waveAnimation, patternAnimation }, 60000, 60000);
 
             waveAnimation.OnSettingsCompleted += mainTimeAnimation.OnNextAnimationSettingsCompleted;
@@ -185,9 +188,9 @@
             waveAnimation.OnSettingsCompleted += patternAnimation.OnNextAnimationSettingsCompleted; *@
         }
 
-        public void SetClock(double timeElapsed)
+        public void SetClock()
         {
-            mainTimeAnimation.Start("mainTimeAnimation", timeElapsed);
+            animationManager.Start();
         }
     }
 }

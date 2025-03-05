@@ -1,234 +1,144 @@
 namespace Time.AnimationConfig;
+
+using Microsoft.AspNetCore.Components;
 using Time.Components;
 public class AnimationConfigs
 {
-    public static void SetClocksConfigs(Dictionary<int, Clock> clocks, ArmConfig firstArmConfig, ArmConfig secondArmConfig, int progressiveDelay)
+    public static void SetClocksConfigs(Dictionary<int, Clock> clocks, ArmConfig firstArmConfig, ArmConfig secondArmConfig, int progressiveDelay, List<ElementReference> hourReferences, List<ElementReference> minuteReferences)
     {
         for (var i = 0; i < 24; i++)
         {
-            clocks[i + 1].UpdateClockArmsConfig(firstArmConfig, secondArmConfig);
+            clocks[i + 1].UpdateClockArmsConfig(firstArmConfig, secondArmConfig, hourReferences[i], minuteReferences[i]);
             clocks[i + 1].ResetClock();
             clocks[i + 1].delayAnimation.DelayMillisec = progressiveDelay * (i + 1);
         }
     }
 
-    public static bool SetNextNumbersAnimationStatus(Dictionary<int, Clock> clocks, double timeElapsedMillisec)
+    public static void SetNextNumbersAnimationStatus(Dictionary<int, Clock> clocks, int hoursFirstDigit, int hoursSecondDigit, int minuteFirstDigit, int minuteSecondDigit)
     {
-        var timeSetupCompleted = true;
-
-        var time = DateTime.Now;
-
-        var hoursFirstDigit = time.Hour / 10;
-
-        var hoursSecondDigit = time.Hour % 10;
-
-        var minuteFirstDigit = time.Minute / 10;
-
-        var minuteSecondDigit = time.Minute % 10;
-
-        var completed = SetNumber(hoursFirstDigit, new List<int> { 1, 2, 3, 4, 5, 6 }, clocks, timeElapsedMillisec);
-        timeSetupCompleted &= completed;
-        completed = SetNumber(hoursSecondDigit, new List<int> { 7, 8, 9, 10, 11, 12 }, clocks, timeElapsedMillisec);
-        timeSetupCompleted &= completed;
-        completed = SetNumber(minuteFirstDigit, new List<int> { 13, 14, 15, 16, 17, 18 }, clocks, timeElapsedMillisec);
-        timeSetupCompleted &= completed;
-        completed = SetNumber(minuteSecondDigit, new List<int> { 19, 20, 21, 22, 23, 24 }, clocks, timeElapsedMillisec);
-        timeSetupCompleted &= completed;
-
-        return timeSetupCompleted;
+        SetNumber(hoursFirstDigit, new List<int> { 1, 2, 3, 4, 5, 6 }, clocks);
+        SetNumber(hoursSecondDigit, new List<int> { 7, 8, 9, 10, 11, 12 }, clocks);
+        SetNumber(minuteFirstDigit, new List<int> { 13, 14, 15, 16, 17, 18 }, clocks);
+        SetNumber(minuteSecondDigit, new List<int> { 19, 20, 21, 22, 23, 24 }, clocks);
     }
 
-    private static bool SetNumber(int number, List<int> clockIndexes, Dictionary<int, Clock> clocks, double timeElapsedMillisec)
+    private static void SetNumber(int number, List<int> clockIndexes, Dictionary<int, Clock> clocks)
     {
-        var completed = true;
-        var result = false;
         switch (number)
         {
             case 0:
-                result = clocks[clockIndexes[0]].UpdateState(ArmState.Three, ArmState.Six, timeElapsedMillisec);
-                completed = completed && result;
-                result = clocks[clockIndexes[1]].UpdateState(ArmState.Zero, ArmState.Six, timeElapsedMillisec);
-                completed = completed && result;
-                result = clocks[clockIndexes[2]].UpdateState(ArmState.Zero, ArmState.Three, timeElapsedMillisec);
-                completed = completed && result;
-                result = clocks[clockIndexes[3]].UpdateState(ArmState.Nine, ArmState.Six, timeElapsedMillisec);
-                completed = completed && result;
-                result = clocks[clockIndexes[4]].UpdateState(ArmState.Zero, ArmState.Six, timeElapsedMillisec);
-                completed = completed && result;
-                result = clocks[clockIndexes[5]].UpdateState(ArmState.Zero, ArmState.Nine, timeElapsedMillisec);
-                completed = completed && result;
+                clocks[clockIndexes[0]].UpdateState(ArmState.Three, ArmState.Six);
+                clocks[clockIndexes[1]].UpdateState(ArmState.Zero, ArmState.Six);
+                clocks[clockIndexes[2]].UpdateState(ArmState.Zero, ArmState.Three);
+                clocks[clockIndexes[3]].UpdateState(ArmState.Nine, ArmState.Six);
+                clocks[clockIndexes[4]].UpdateState(ArmState.Zero, ArmState.Six);
+                clocks[clockIndexes[5]].UpdateState(ArmState.Zero, ArmState.Nine);
                 break;
 
             case 1:
-                result = clocks[clockIndexes[0]].UpdateState(ArmState.None, ArmState.None, timeElapsedMillisec);
-                completed = completed && result;
-                result = clocks[clockIndexes[1]].UpdateState(ArmState.None, ArmState.None, timeElapsedMillisec);
-                completed = completed && result;
-                result = clocks[clockIndexes[2]].UpdateState(ArmState.None, ArmState.None, timeElapsedMillisec);
-                completed = completed && result;
-                result = clocks[clockIndexes[3]].UpdateState(ArmState.Six, ArmState.Six, timeElapsedMillisec);
-                completed = completed && result;
-                result = clocks[clockIndexes[4]].UpdateState(ArmState.Zero, ArmState.Six, timeElapsedMillisec);
-                completed = completed && result;
-                result = clocks[clockIndexes[5]].UpdateState(ArmState.Zero, ArmState.Zero, timeElapsedMillisec);
-                completed = completed && result;
+                clocks[clockIndexes[0]].UpdateState(ArmState.None, ArmState.None);
+                clocks[clockIndexes[1]].UpdateState(ArmState.None, ArmState.None);
+                clocks[clockIndexes[2]].UpdateState(ArmState.None, ArmState.None);
+                clocks[clockIndexes[3]].UpdateState(ArmState.Six, ArmState.Six);
+                clocks[clockIndexes[4]].UpdateState(ArmState.Zero, ArmState.Six);
+                clocks[clockIndexes[5]].UpdateState(ArmState.Zero, ArmState.Zero);
                 break;
 
             case 2:
-                result = clocks[clockIndexes[0]].UpdateState(ArmState.Three, ArmState.Three, timeElapsedMillisec);
-                completed = completed && result;
-                result = clocks[clockIndexes[1]].UpdateState(ArmState.Three, ArmState.Six, timeElapsedMillisec);
-                completed = completed && result;
-                result = clocks[clockIndexes[2]].UpdateState(ArmState.Zero, ArmState.Three, timeElapsedMillisec);
-                completed = completed && result;
-                result = clocks[clockIndexes[3]].UpdateState(ArmState.Nine, ArmState.Six, timeElapsedMillisec);
-                completed = completed && result;
-                result = clocks[clockIndexes[4]].UpdateState(ArmState.Zero, ArmState.Nine, timeElapsedMillisec);
-                completed = completed && result;
-                result = clocks[clockIndexes[5]].UpdateState(ArmState.Nine, ArmState.Nine, timeElapsedMillisec);
-                completed = completed && result;
+                clocks[clockIndexes[0]].UpdateState(ArmState.Three, ArmState.Three);
+                clocks[clockIndexes[1]].UpdateState(ArmState.Three, ArmState.Six);
+                clocks[clockIndexes[2]].UpdateState(ArmState.Zero, ArmState.Three);
+                clocks[clockIndexes[3]].UpdateState(ArmState.Nine, ArmState.Six);
+                clocks[clockIndexes[4]].UpdateState(ArmState.Zero, ArmState.Nine);
+                clocks[clockIndexes[5]].UpdateState(ArmState.Nine, ArmState.Nine);
                 break;
 
             case 3:
-                result = clocks[clockIndexes[0]].UpdateState(ArmState.Three, ArmState.Three, timeElapsedMillisec);
-                completed = completed && result;
-                result = clocks[clockIndexes[1]].UpdateState(ArmState.Three, ArmState.Three, timeElapsedMillisec);
-                completed = completed && result;
-                result = clocks[clockIndexes[2]].UpdateState(ArmState.Three, ArmState.Three, timeElapsedMillisec);
-                completed = completed && result;
-                result = clocks[clockIndexes[3]].UpdateState(ArmState.Nine, ArmState.Six, timeElapsedMillisec);
-                completed = completed && result;
-                result = clocks[clockIndexes[4]].UpdateState(ArmState.Zero, ArmState.Six, timeElapsedMillisec);
-                completed = completed && result;
-                result = clocks[clockIndexes[5]].UpdateState(ArmState.Zero, ArmState.Nine, timeElapsedMillisec);
-                completed = completed && result;
+                clocks[clockIndexes[0]].UpdateState(ArmState.Three, ArmState.Three);
+                clocks[clockIndexes[1]].UpdateState(ArmState.Three, ArmState.Three);
+                clocks[clockIndexes[2]].UpdateState(ArmState.Three, ArmState.Three);
+                clocks[clockIndexes[3]].UpdateState(ArmState.Nine, ArmState.Six);
+                clocks[clockIndexes[4]].UpdateState(ArmState.Zero, ArmState.Six);
+                clocks[clockIndexes[5]].UpdateState(ArmState.Zero, ArmState.Nine);
                 break;
 
             case 4:
-                result = clocks[clockIndexes[0]].UpdateState(ArmState.Six, ArmState.Six, timeElapsedMillisec);
-                completed = completed && result;
-                result = clocks[clockIndexes[1]].UpdateState(ArmState.Zero, ArmState.Three, timeElapsedMillisec);
-                completed = completed && result;
-                result = clocks[clockIndexes[2]].UpdateState(ArmState.None, ArmState.None, timeElapsedMillisec);
-                completed = completed && result;
-                result = clocks[clockIndexes[3]].UpdateState(ArmState.Six, ArmState.Six, timeElapsedMillisec);
-                completed = completed && result;
-                result = clocks[clockIndexes[4]].UpdateState(ArmState.Nine, ArmState.Zero, timeElapsedMillisec);
-                completed = completed && result;
-                result = clocks[clockIndexes[5]].UpdateState(ArmState.Zero, ArmState.Zero, timeElapsedMillisec);
-                completed = completed && result;
+                clocks[clockIndexes[0]].UpdateState(ArmState.Six, ArmState.Six);
+                clocks[clockIndexes[1]].UpdateState(ArmState.Zero, ArmState.Three);
+                clocks[clockIndexes[2]].UpdateState(ArmState.None, ArmState.None);
+                clocks[clockIndexes[3]].UpdateState(ArmState.Six, ArmState.Six);
+                clocks[clockIndexes[4]].UpdateState(ArmState.Nine, ArmState.Zero);
+                clocks[clockIndexes[5]].UpdateState(ArmState.Zero, ArmState.Zero);
                 break;
 
             case 5:
-                result = clocks[clockIndexes[0]].UpdateState(ArmState.Three, ArmState.Six, timeElapsedMillisec);
-                completed = completed && result;
-                result = clocks[clockIndexes[1]].UpdateState(ArmState.Zero, ArmState.Three, timeElapsedMillisec);
-                completed = completed && result;
-                result = clocks[clockIndexes[2]].UpdateState(ArmState.Three, ArmState.Three, timeElapsedMillisec);
-                completed = completed && result;
-                result = clocks[clockIndexes[3]].UpdateState(ArmState.Nine, ArmState.Nine, timeElapsedMillisec);
-                completed = completed && result;
-                result = clocks[clockIndexes[4]].UpdateState(ArmState.Nine, ArmState.Six, timeElapsedMillisec);
-                completed = completed && result;
-                result = clocks[clockIndexes[5]].UpdateState(ArmState.Zero, ArmState.Nine, timeElapsedMillisec);
-                completed = completed && result;
+                clocks[clockIndexes[0]].UpdateState(ArmState.Three, ArmState.Six);
+                clocks[clockIndexes[1]].UpdateState(ArmState.Zero, ArmState.Three);
+                clocks[clockIndexes[2]].UpdateState(ArmState.Three, ArmState.Three);
+                clocks[clockIndexes[3]].UpdateState(ArmState.Nine, ArmState.Nine);
+                clocks[clockIndexes[4]].UpdateState(ArmState.Nine, ArmState.Six);
+                clocks[clockIndexes[5]].UpdateState(ArmState.Zero, ArmState.Nine);
                 break;
 
             case 6:
-                result = clocks[clockIndexes[0]].UpdateState(ArmState.Three, ArmState.Six, timeElapsedMillisec);
-                completed = completed && result;
-                result = clocks[clockIndexes[1]].UpdateState(ArmState.Zero, ArmState.Six, timeElapsedMillisec);
-                completed = completed && result;
-                result = clocks[clockIndexes[2]].UpdateState(ArmState.Zero, ArmState.Three, timeElapsedMillisec);
-                completed = completed && result;
-                result = clocks[clockIndexes[3]].UpdateState(ArmState.Nine, ArmState.Nine, timeElapsedMillisec);
-                completed = completed && result;
-                result = clocks[clockIndexes[4]].UpdateState(ArmState.Nine, ArmState.Six, timeElapsedMillisec);
-                completed = completed && result;
-                result = clocks[clockIndexes[5]].UpdateState(ArmState.Zero, ArmState.Nine, timeElapsedMillisec);
-                completed = completed && result;
+                clocks[clockIndexes[0]].UpdateState(ArmState.Three, ArmState.Six);
+                clocks[clockIndexes[1]].UpdateState(ArmState.Zero, ArmState.Six);
+                clocks[clockIndexes[2]].UpdateState(ArmState.Zero, ArmState.Three);
+                clocks[clockIndexes[3]].UpdateState(ArmState.Nine, ArmState.Nine);
+                clocks[clockIndexes[4]].UpdateState(ArmState.Nine, ArmState.Six);
+                clocks[clockIndexes[5]].UpdateState(ArmState.Zero, ArmState.Nine);
                 break;
 
             case 7:
-                result = clocks[clockIndexes[0]].UpdateState(ArmState.Three, ArmState.Three, timeElapsedMillisec);
-                completed = completed && result;
-                result = clocks[clockIndexes[1]].UpdateState(ArmState.None, ArmState.None, timeElapsedMillisec);
-                completed = completed && result;
-                result = clocks[clockIndexes[2]].UpdateState(ArmState.None, ArmState.None, timeElapsedMillisec);
-                completed = completed && result;
-                result = clocks[clockIndexes[3]].UpdateState(ArmState.Nine, ArmState.Six, timeElapsedMillisec);
-                completed = completed && result;
-                result = clocks[clockIndexes[4]].UpdateState(ArmState.Zero, ArmState.Six, timeElapsedMillisec);
-                completed = completed && result;
-                result = clocks[clockIndexes[5]].UpdateState(ArmState.Zero, ArmState.Zero, timeElapsedMillisec);
-                completed = completed && result;
+                clocks[clockIndexes[0]].UpdateState(ArmState.Three, ArmState.Three);
+                clocks[clockIndexes[1]].UpdateState(ArmState.None, ArmState.None);
+                clocks[clockIndexes[2]].UpdateState(ArmState.None, ArmState.None);
+                clocks[clockIndexes[3]].UpdateState(ArmState.Nine, ArmState.Six);
+                clocks[clockIndexes[4]].UpdateState(ArmState.Zero, ArmState.Six);
+                clocks[clockIndexes[5]].UpdateState(ArmState.Zero, ArmState.Zero);
                 break;
 
             case 8:
-                result = clocks[clockIndexes[0]].UpdateState(ArmState.Three, ArmState.Six, timeElapsedMillisec);
-                completed = completed && result;
-                result = clocks[clockIndexes[1]].UpdateState(ArmState.Zero, ArmState.Three, timeElapsedMillisec);
-                completed = completed && result;
-                result = clocks[clockIndexes[2]].UpdateState(ArmState.Zero, ArmState.Three, timeElapsedMillisec);
-                completed = completed && result;
-                result = clocks[clockIndexes[3]].UpdateState(ArmState.Nine, ArmState.Six, timeElapsedMillisec);
-                completed = completed && result;
-                result = clocks[clockIndexes[4]].UpdateState(ArmState.Zero, ArmState.Nine, timeElapsedMillisec);
-                completed = completed && result;
-                result = clocks[clockIndexes[5]].UpdateState(ArmState.Zero, ArmState.Nine, timeElapsedMillisec);
-                completed = completed && result;
+                clocks[clockIndexes[0]].UpdateState(ArmState.Three, ArmState.Six);
+                clocks[clockIndexes[1]].UpdateState(ArmState.Zero, ArmState.Three);
+                clocks[clockIndexes[2]].UpdateState(ArmState.Zero, ArmState.Three);
+                clocks[clockIndexes[3]].UpdateState(ArmState.Nine, ArmState.Six);
+                clocks[clockIndexes[4]].UpdateState(ArmState.Zero, ArmState.Nine);
+                clocks[clockIndexes[5]].UpdateState(ArmState.Zero, ArmState.Nine);
                 break;
 
             case 9:
-                result = clocks[clockIndexes[0]].UpdateState(ArmState.Three, ArmState.Six, timeElapsedMillisec);
-                completed = completed && result;
-                result = clocks[clockIndexes[1]].UpdateState(ArmState.Zero, ArmState.Three, timeElapsedMillisec);
-                completed = completed && result;
-                result = clocks[clockIndexes[2]].UpdateState(ArmState.Three, ArmState.Three, timeElapsedMillisec);
-                completed = completed && result;
-                result = clocks[clockIndexes[3]].UpdateState(ArmState.Nine, ArmState.Six, timeElapsedMillisec);
-                completed = completed && result;
-                result = clocks[clockIndexes[4]].UpdateState(ArmState.Zero, ArmState.Six, timeElapsedMillisec);
-                completed = completed && result;
-                result = clocks[clockIndexes[5]].UpdateState(ArmState.Zero, ArmState.Nine, timeElapsedMillisec);
-                completed = completed && result;
+                clocks[clockIndexes[0]].UpdateState(ArmState.Three, ArmState.Six);
+                clocks[clockIndexes[1]].UpdateState(ArmState.Zero, ArmState.Three);
+                clocks[clockIndexes[2]].UpdateState(ArmState.Three, ArmState.Three);
+                clocks[clockIndexes[3]].UpdateState(ArmState.Nine, ArmState.Six);
+                clocks[clockIndexes[4]].UpdateState(ArmState.Zero, ArmState.Six);
+                clocks[clockIndexes[5]].UpdateState(ArmState.Zero, ArmState.Nine);
                 break;
             default:
                 break;
         }
-        return completed;
     }
 
-    public static bool SetNextPatternAnimationStatus(Dictionary<int, Clock> clocks, double timeElapsedMillisec, bool stopAtFinalState = true)
+    public static void SetNextPatternAnimationStatus(Dictionary<int, Clock> clocks, double timeElapsedMillisec, bool stopAtFinalState = true)
     {
-        var completed = true;
         for (var i = 0; i < 4; i++)
         {
             var j = 6 * i;
-            var result = clocks[j + 1].UpdateState(ArmState.Three, ArmState.Six, timeElapsedMillisec, 0, 0, stopAtFinalState);
-            completed = completed && result;
-            result = clocks[j + 2].UpdateState(ArmState.Three, ArmState.Three, timeElapsedMillisec, 0, 0, stopAtFinalState);
-            completed = completed && result;
-            result = clocks[j + 3].UpdateState(ArmState.Zero, ArmState.Three, timeElapsedMillisec, 0, 0, stopAtFinalState);
-            completed = completed && result;
-            result = clocks[j + 4].UpdateState(ArmState.Six, ArmState.Nine, timeElapsedMillisec, 0, 0, stopAtFinalState);
-            completed = completed && result;
-            result = clocks[j + 5].UpdateState(ArmState.Nine, ArmState.Nine, timeElapsedMillisec, 0, 0, stopAtFinalState);
-            completed = completed && result;
-            result = clocks[j + 6].UpdateState(ArmState.Nine, ArmState.Zero, timeElapsedMillisec, 0, 0, stopAtFinalState);
-            completed = completed && result;
+            clocks[j + 1].UpdateState(ArmState.Three, ArmState.Six, stopAtFinalState);
+            clocks[j + 2].UpdateState(ArmState.Three, ArmState.Three, stopAtFinalState);
+            clocks[j + 3].UpdateState(ArmState.Zero, ArmState.Three, stopAtFinalState);
+            clocks[j + 4].UpdateState(ArmState.Six, ArmState.Nine, stopAtFinalState);
+            clocks[j + 5].UpdateState(ArmState.Nine, ArmState.Nine, stopAtFinalState);
+            clocks[j + 6].UpdateState(ArmState.Nine, ArmState.Zero, stopAtFinalState);
         }
-        return completed;
     }
 
-    public static bool SetNextWaveAnimationStatus(Dictionary<int, Clock> clocks, double timeElapsedMillisec, bool stopAtFinalState = true)
+    public static void SetNextWaveAnimationStatus(Dictionary<int, Clock> clocks, double timeElapsedMillisec, bool stopAtFinalState = true)
     {
-        var completed = true;
         for (var i = 0; i < 24; i++)
         {
-            var result = clocks[i + 1].UpdateState(ArmState.Zero, ArmState.Six, timeElapsedMillisec, 0, 0, stopAtFinalState);
-            completed = completed && result;
+            clocks[i + 1].UpdateState(ArmState.Zero, ArmState.Six, stopAtFinalState);
         }
-        return completed;
     }
 }

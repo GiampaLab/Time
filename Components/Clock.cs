@@ -1,6 +1,8 @@
 namespace Time.Components;
 using Time.Utils;
 using Time.AnimationConfig;
+using Microsoft.AspNetCore.Components;
+
 public class Clock
 {
     private ArmConfig _defaultFirstArmConfig = new ArmConfig
@@ -31,14 +33,16 @@ public class Clock
         SecondArm.Config = secondArmConfig != null ? secondArmConfig : _defaultSecondArmConfig;
     }
 
-    public void UpdateClockArmsConfig(ArmConfig firstArmConfig, ArmConfig secondArmConfig)
+    public void UpdateClockArmsConfig(ArmConfig firstArmConfig, ArmConfig secondArmConfig, ElementReference hourReference, ElementReference minuteReference)
     {
         FirstArm.Config.Direction = firstArmConfig.Direction;
         FirstArm.Config.EasingFunction = firstArmConfig.EasingFunction;
         FirstArm.Config.MaxSpeedDegrees = firstArmConfig.MaxSpeedDegrees;
+        FirstArm.Config.ElementReference = hourReference;
         SecondArm.Config.Direction = secondArmConfig.Direction;
         SecondArm.Config.EasingFunction = secondArmConfig.EasingFunction;
         SecondArm.Config.MaxSpeedDegrees = secondArmConfig.MaxSpeedDegrees;
+        SecondArm.Config.ElementReference = minuteReference;
     }
 
     public void ResetClock()
@@ -48,29 +52,29 @@ public class Clock
         SecondArm.Config.EasingAnimation.ResetEasingAnimation();
     }
 
-    public bool UpdateState(ArmState firstArmState, ArmState secondArmState, double timeElapsedMillisec, bool stopAtFinalState = true)
+    public void UpdateState(ArmState firstArmState, ArmState secondArmState, bool stopAtFinalState = true)
     {
-        int firstArmFinalStateDegrees = 0;
-        int secondArmFinalStateDegrees = 0;
-        if (stopAtFinalState)
-        {
-            firstArmFinalStateDegrees = AnimationUtils.ArmStateToDegree(firstArmState);
-            secondArmFinalStateDegrees = AnimationUtils.ArmStateToDegree(secondArmState);
-            FirstArm.FinalState = firstArmFinalStateDegrees;
-            SecondArm.FinalState = secondArmFinalStateDegrees;
-        }
-        if (!stopAtFinalState || (FirstArm.CurrentState != firstArmFinalStateDegrees))
-        {
-            if (delayAnimation.TimeIsUp(timeElapsedMillisec))
-                UpdateArmState(FirstArm);
-        }
-        if (!stopAtFinalState || (SecondArm.CurrentState != secondArmFinalStateDegrees))
-        {
-            if (delayAnimation.TimeIsUp(timeElapsedMillisec))
-                UpdateArmState(SecondArm);
-        }
-        return stopAtFinalState && (FirstArm.CurrentState == firstArmFinalStateDegrees) && (SecondArm.CurrentState ==
-        secondArmFinalStateDegrees) ? true : false;
+        // int firstArmFinalStateDegrees = 0;
+        // int secondArmFinalStateDegrees = 0;
+        // if (stopAtFinalState)
+        // {
+        var firstArmFinalStateDegrees = AnimationUtils.ArmStateToDegree(firstArmState);
+        var secondArmFinalStateDegrees = AnimationUtils.ArmStateToDegree(secondArmState);
+        FirstArm.FinalState = firstArmFinalStateDegrees;
+        SecondArm.FinalState = secondArmFinalStateDegrees;
+        // }
+        // if (!stopAtFinalState || (FirstArm.CurrentState != firstArmFinalStateDegrees))
+        // {
+        //     if (delayAnimation.TimeIsUp(timeElapsedMillisec))
+        //         UpdateArmState(FirstArm);
+        // }
+        // if (!stopAtFinalState || (SecondArm.CurrentState != secondArmFinalStateDegrees))
+        // {
+        //     if (delayAnimation.TimeIsUp(timeElapsedMillisec))
+        //         UpdateArmState(SecondArm);
+        // }
+        // return stopAtFinalState && (FirstArm.CurrentState == firstArmFinalStateDegrees) && (SecondArm.CurrentState ==
+        // secondArmFinalStateDegrees) ? true : false;
     }
 
     private void UpdateArmState(ClockArm arm)
@@ -84,7 +88,6 @@ public class Clock
 public class ClockArm
 {
     private int _currentState;
-    private int _finalState;
     public int CurrentState
     {
         get { return _currentState; }
@@ -92,30 +95,30 @@ public class ClockArm
     }
     public int FinalState
     {
-        get { return _finalState; }
+        get { return Config.State; }
 
         set
         {
-            if (Math.Abs(_finalState) % 360 != value)
+            if (Math.Abs(Config.State) % 360 != value)
             {
                 if (Config.Direction == Direction.Clockwise)
                 {
-                    var deltaDegrees = value - _finalState % 360;
+                    var deltaDegrees = value - Config.State % 360;
                     if (deltaDegrees >= 0)
-                        _finalState = _finalState + deltaDegrees;
+                        Config.State = Config.State + deltaDegrees;
                     else
-                        _finalState = _finalState + 360 - _finalState % 360 + value;
+                        Config.State = Config.State + 360 - Config.State % 360 + value;
                 }
                 if (Config.Direction == Direction.Anticlockwise)
                 {
                     var convertedValueDegrees = -360 + value;
-                    var convertedFinalState = _finalState <= 0 ? _finalState : -360 + _finalState % 360;
+                    var convertedFinalState = Config.State <= 0 ? Config.State : -360 + Config.State % 360;
 
                     var deltaDegrees = Math.Abs(convertedValueDegrees) - Math.Abs(convertedFinalState) % 360;
                     if (deltaDegrees >= 0)
-                        _finalState = _finalState - deltaDegrees;
+                        Config.State = Config.State - deltaDegrees;
                     else
-                        _finalState = _finalState - (360 - Math.Abs(_finalState) % 360) + convertedValueDegrees;
+                        Config.State = Config.State - (360 - Math.Abs(Config.State) % 360) + convertedValueDegrees;
                 }
             }
         }
@@ -127,6 +130,7 @@ public class ClockArm
 
 public class ArmConfig
 {
+    public int State { get; internal set; }
     public EasingAnimation EasingAnimation { get; private set; } = new EasingAnimation(EasingFunctions.Linear);
     public Direction Direction { get; set; } = Direction.Clockwise;
     public int MaxSpeedDegrees { get; set; } = 1;
@@ -138,6 +142,8 @@ public class ArmConfig
         get { return EasingAnimation.EasingFunction; }
         set { if (value is null) EasingAnimation.EasingFunction = EasingFunctions.Linear; else EasingAnimation.EasingFunction = value; }
     }
+
+    public ElementReference ElementReference { get; internal set; }
 }
 
 public enum Direction
