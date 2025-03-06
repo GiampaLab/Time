@@ -16,7 +16,7 @@ window.animationLoop = {
           duration: 3000,
           iterations: 1,
           fill: "forwards",
-          easing: "ease-in-out",
+          easing: item.easing,
         }
       );
     });

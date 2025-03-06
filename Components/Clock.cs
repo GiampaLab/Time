@@ -100,13 +100,7 @@ public class ArmConfig
     public int State { get; internal set; }
     public EasingAnimation EasingAnimation { get; private set; } = new EasingAnimation(EasingFunctions.Linear);
     public Direction Direction { get; set; } = Direction.Clockwise;
-
-    public Func<float, float> EasingFunction
-    {
-        get { return EasingAnimation.EasingFunction; }
-        set { if (value is null) EasingAnimation.EasingFunction = EasingFunctions.Linear; else EasingAnimation.EasingFunction = value; }
-    }
-
+    public string EasingFunction { get; set; } = "linear";
     public ElementReference ElementReference { get; internal set; }
 }
 
