@@ -27,7 +27,6 @@
 
 @code {
     private DotNetObjectReference<AnalogClock>? dotNetHelper;
-    private System.Threading.Timer timer;
     Controller controller;
     List<ElementReference> hourReferences = new List<ElementReference>();
     List<ElementReference> minuteReferences = new List<ElementReference>();
@@ -70,23 +69,7 @@
             for (var i = 0; i < 24; i++)
                 Clocks.Add(i + 1, new Clock(i + 1));
 
-            Console.WriteLine($"hourReference: {hourReferences.Count}");
-
-            AnimationConfigs.SetClocksConfigs(Clocks,
-            new ArmConfig
-            {
-                Direction = Direction.Clockwise,
-                MaxSpeedDegrees = maxSpeedDegrees,
-                EasingFunction = EasingFunctions.OutSine
-            },
-            new ArmConfig
-            {
-                Direction = Direction.Anticlockwise,
-                MaxSpeedDegrees = maxSpeedDegrees,
-                EasingFunction = EasingFunctions.OutSine
-            }, 60, hourReferences, minuteReferences);
-
-            animationManager = new AnimationManager(JSRuntime, Clocks);
+            animationManager = new AnimationManager(JSRuntime, Clocks, hourReferences, minuteReferences);
 
             @* waveAnimation = new AnimationLifecycleManager(JSRuntime, Clocks.Values.Select(x =>
             x.FirstArm.Config).ToList().Union(Clocks.Values.Select(x => x.SecondArm.Config).ToList()).ToList());

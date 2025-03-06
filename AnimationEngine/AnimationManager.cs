@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using Time.AnimationConfig;
 using Time.Components;
@@ -5,7 +6,7 @@ using Time.Utils;
 
 namespace Time.AnimationEngine;
 
-public class AnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clocks)
+public class AnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clocks, List<ElementReference> hourReferences, List<ElementReference> minuteReferences)
 {
     private readonly IJSRuntime jSRuntime = jSRuntime;
     private readonly Dictionary<int, Clock> clocks = clocks;
@@ -20,6 +21,18 @@ public class AnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clock
 
     public void Start()
     {
+        AnimationConfigs.SetClocksConfigs(clocks,
+            new ArmConfig
+            {
+                Direction = Direction.Clockwise,
+                EasingFunction = EasingFunctions.OutSine
+            },
+            new ArmConfig
+            {
+                Direction = Direction.Anticlockwise,
+                EasingFunction = EasingFunctions.OutSine
+            }, 60, hourReferences, minuteReferences);
+
         var timer = new Timer(SetAnimationStatus, new AutoResetEvent(false), 0,
            500);
     }
