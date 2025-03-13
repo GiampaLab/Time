@@ -66,28 +66,7 @@ public class ClockArm
 
         set
         {
-            if (Math.Abs(Config.State) % 360 != value)
-            {
-                if (Config.Direction == Direction.Clockwise)
-                {
-                    var deltaDegrees = value - Config.State % 360;
-                    if (deltaDegrees >= 0)
-                        Config.State = Config.State + deltaDegrees;
-                    else
-                        Config.State = Config.State + 360 - Config.State % 360 + value;
-                }
-                if (Config.Direction == Direction.Anticlockwise)
-                {
-                    var convertedValueDegrees = -360 + value;
-                    var convertedFinalState = Config.State <= 0 ? Config.State : -360 + Config.State % 360;
-
-                    var deltaDegrees = Math.Abs(convertedValueDegrees) - Math.Abs(convertedFinalState) % 360;
-                    if (deltaDegrees >= 0)
-                        Config.State = Config.State - deltaDegrees;
-                    else
-                        Config.State = Config.State - (360 - Math.Abs(Config.State) % 360) + convertedValueDegrees;
-                }
-            }
+            Config.State = value;
         }
     }
 

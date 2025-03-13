@@ -24,12 +24,12 @@ public class AnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clock
         AnimationConfigs.SetClocksConfigs(clocks,
             new ArmConfig
             {
-                Direction = Direction.Clockwise,
+                Direction = Direction.Anticlockwise,
                 EasingFunction = "ease-in-out"
             },
             new ArmConfig
             {
-                Direction = Direction.Anticlockwise,
+                Direction = Direction.Clockwise,
                 EasingFunction = "ease-in-out"
             }, 60, hourReferences, minuteReferences);
 
@@ -54,7 +54,7 @@ public class AnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clock
 
             AnimationConfigs.SetNextNumbersAnimationStatus(clocks, currentHourFirstDigit, currentHourSecondDigit, currentMinuteFirstDigit, currentMinuteSecondDigit);
 
-            await jSRuntime.InvokeVoidAsync("animationLoop.animateClockArm", (object)armConfigs.Select(config => new { state = config.State, elementReference = config.ElementReference, easing = config.EasingFunction }).ToArray());
+            await jSRuntime.InvokeVoidAsync("animationLoop.animateClockArm", (object)armConfigs.Select(config => new { state = config.State, elementReference = config.ElementReference, easing = config.EasingFunction, direction = Enum.GetName(typeof(Direction), config.Direction) }).ToArray());
         }
     }
 }
