@@ -5,25 +5,25 @@ using Microsoft.AspNetCore.Components;
 
 public class Clock
 {
-    private ArmConfig _defaultFirstArmConfig = new ArmConfig
+    private ArmConfig _defaultFirstArmConfig = new()
     {
         Direction = Direction.Clockwise,
     };
-    private ArmConfig _defaultSecondArmConfig = new ArmConfig
+    private ArmConfig _defaultSecondArmConfig = new()
     {
         Direction = Direction.Clockwise,
     };
     public int Id { get; private set; }
-    public ClockArm FirstArm { get; private set; } = new ClockArm();
-    public ClockArm SecondArm { get; private set; } = new ClockArm();
-    public DelayAnimation delayAnimation { get; private set; } = new DelayAnimation();
+    public ClockArm FirstArm { get; private set; } = new();
+    public ClockArm SecondArm { get; private set; } = new();
+    public DelayAnimation DelayAnimation { get; private set; } = new();
     public Clock(int Id, ArmConfig? firstArmConfig = null, ArmConfig? secondArmConfig = null)
     {
         this.Id = Id;
         FirstArm.CurrentState = 0;
-        FirstArm.Config = firstArmConfig != null ? firstArmConfig : _defaultFirstArmConfig;
+        FirstArm.Config = firstArmConfig ?? _defaultFirstArmConfig;
         SecondArm.CurrentState = 0;
-        SecondArm.Config = secondArmConfig != null ? secondArmConfig : _defaultSecondArmConfig;
+        SecondArm.Config = secondArmConfig ?? _defaultSecondArmConfig;
     }
 
     public void UpdateClockArmsConfig(ArmConfig firstArmConfig, ArmConfig secondArmConfig, ElementReference hourReference, ElementReference minuteReference)
@@ -31,14 +31,18 @@ public class Clock
         FirstArm.Config.Direction = firstArmConfig.Direction;
         FirstArm.Config.EasingFunction = firstArmConfig.EasingFunction;
         FirstArm.Config.ElementReference = hourReference;
+        FirstArm.Config.Duration = firstArmConfig.Duration;
+        FirstArm.Config.Delay = firstArmConfig.Delay;
         SecondArm.Config.Direction = secondArmConfig.Direction;
         SecondArm.Config.EasingFunction = secondArmConfig.EasingFunction;
         SecondArm.Config.ElementReference = minuteReference;
+        SecondArm.Config.Duration = secondArmConfig.Duration;
+        SecondArm.Config.Delay = secondArmConfig.Delay;
     }
 
     public void ResetClock()
     {
-        delayAnimation.Started = false;
+        DelayAnimation.Started = false;
         FirstArm.Config.EasingAnimation.ResetEasingAnimation();
         SecondArm.Config.EasingAnimation.ResetEasingAnimation();
     }
@@ -64,12 +68,8 @@ public class ClockArm
     {
         get { return Config.State; }
 
-        set
-        {
-            Config.State = value;
-        }
+        set { Config.State = value; }
     }
-
 
     public ArmConfig Config { get; set; } = new ArmConfig();
 }
@@ -81,6 +81,8 @@ public class ArmConfig
     public Direction Direction { get; set; } = Direction.Clockwise;
     public string EasingFunction { get; set; } = "linear";
     public ElementReference ElementReference { get; internal set; }
+    public int Duration { get; set; }
+    public int Delay { get; set; }
 }
 
 public enum Direction

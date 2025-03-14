@@ -5,7 +5,7 @@ window.animationLoop = {
     hourRef.style.transform = "rotate(" + hourState + "deg)";
     minuteRef.style.transform = "rotate(" + minuteState + "deg)";
   },
-  animateClockArm: function (animationConfigs) {
+  animateClockArm: function (animationConfigs, chainAnimations) {
     if (previousAnimationConfigs.length == 0) {
       previousAnimationConfigs = Array.from(
         { length: animationConfigs.length },
@@ -14,31 +14,51 @@ window.animationLoop = {
         }
       );
     }
-
     animationConfigs.forEach(function (item, index) {
       const previousRotationDegrees = previousAnimationConfigs[index].state;
-      if (item.state != previousRotationDegrees) {
-        const keyframes = generateClockwiseKeyframes(
-          previousRotationDegrees,
-          item.state,
-          item.direction,
-          3
-        );
-
-        item.elementReference.animate(keyframes, {
-          // timing options
-          duration: 3000,
-          iterations: 1,
-          fill: "forwards",
-          easing: item.easing,
-        });
-      }
+      const keyframes = generateKeyframesWithClockDirection(
+        previousRotationDegrees,
+        item.state,
+        item.direction,
+        3
+      );
+      let animation = null;
+      animation = item.elementReference.animate(keyframes, {
+        // timing options
+        duration: item.duration,
+        iterations: 1,
+        fill: "forwards",
+        easing: item.easing,
+      });
+      animation.finished.then(() => {
+        if (chainAnimations == true) {
+          var lastKeyframeAngle = getAngleFromKeyframe(
+            keyframes[keyframes.length - 1]
+          );
+          // Second Animation: Continuous Rotation
+          let targetAngle = item.direction === "Clockwise" ? 360 : -360;
+          // Pause using setTimeout
+          setTimeout(() => {
+            item.elementReference.animate(
+              [
+                { transform: `rotate(${lastKeyframeAngle}deg)` },
+                { transform: `rotate(${lastKeyframeAngle + targetAngle}deg)` },
+              ],
+              {
+                duration: item.duration,
+                iterations: Infinity,
+                easing: "linear",
+              }
+            );
+          }, item.delay);
+        }
+      });
     });
     previousAnimationConfigs = animationConfigs;
   },
 };
 
-function generateClockwiseKeyframes(
+function generateKeyframesWithClockDirection(
   currentAngle,
   targetAngle,
   direction,
@@ -88,4 +108,19 @@ function generateClockwiseKeyframes(
   keyframes.push({ transform: `rotate(${calculatedTargetAngle}deg)` });
 
   return keyframes;
+}
+function getAngleFromKeyframe(keyframe) {
+  const transform = keyframe.transform;
+
+  if (
+    transform &&
+    transform.startsWith("rotate(") &&
+    transform.endsWith("deg)")
+  ) {
+    const angleString = transform.slice(7, -4); // Extract the angle string
+    const angle = parseFloat(angleString);
+    return angle;
+  }
+
+  return null; // Return null if the keyframe is invalid
 }

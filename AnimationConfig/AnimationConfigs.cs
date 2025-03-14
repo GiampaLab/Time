@@ -10,7 +10,7 @@ public class AnimationConfigs
         {
             clocks[i + 1].UpdateClockArmsConfig(firstArmConfig, secondArmConfig, hourReferences[i], minuteReferences[i]);
             clocks[i + 1].ResetClock();
-            clocks[i + 1].delayAnimation.DelayMillisec = progressiveDelay * (i + 1);
+            clocks[i + 1].DelayAnimation.DelayMillisec = progressiveDelay * (i + 1);
         }
     }
 
@@ -120,7 +120,7 @@ public class AnimationConfigs
         }
     }
 
-    public static void SetNextPatternAnimationStatus(Dictionary<int, Clock> clocks, double timeElapsedMillisec, bool stopAtFinalState = true)
+    public static void SetNextPatternAnimationStatus(Dictionary<int, Clock> clocks, bool stopAtFinalState = true)
     {
         for (var i = 0; i < 4; i++)
         {

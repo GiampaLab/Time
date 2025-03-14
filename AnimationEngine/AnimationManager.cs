@@ -25,19 +25,20 @@ public class AnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clock
             new ArmConfig
             {
                 Direction = Direction.Anticlockwise,
-                EasingFunction = "ease-in-out"
+                EasingFunction = "ease-in-out",
+                Duration = 3000
             },
             new ArmConfig
             {
                 Direction = Direction.Clockwise,
-                EasingFunction = "ease-in-out"
+                EasingFunction = "ease-in-out",
+                Duration = 3000
             }, 60, hourReferences, minuteReferences);
 
-        var timer = new Timer(SetAnimationStatus, new AutoResetEvent(false), 0,
-           500);
+        var timer = new Timer(SetAnimationStatus, new AutoResetEvent(false), 0, 500);
     }
 
-    private async void SetAnimationStatus(Object? stateInfo)
+    private async void SetAnimationStatus(object? stateInfo)
     {
         var time = DateTime.Now;
         var hoursFirstDigit = time.Hour / 10;
@@ -53,7 +54,16 @@ public class AnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clock
             currentMinuteSecondDigit = minuteSecondDigit;
 
             AnimationConfigs.SetNextNumbersAnimationStatus(clocks, currentHourFirstDigit, currentHourSecondDigit, currentMinuteFirstDigit, currentMinuteSecondDigit);
-            await jSRuntime.InvokeVoidAsync("animationLoop.animateClockArm", (object)armConfigs.Select(config => new { state = config.State, elementReference = config.ElementReference, easing = config.EasingFunction, direction = Enum.GetName(typeof(Direction), config.Direction) }).ToArray());
+            await jSRuntime.InvokeVoidAsync("animationLoop.animateClockArm",
+                (object)armConfigs.Select(config => new
+                {
+                    state = config.State,
+                    elementReference = config.ElementReference,
+                    easing = config.EasingFunction,
+                    direction = Enum.GetName(typeof(Direction), config.Direction),
+                    duration = config.Duration
+                }
+                    ).ToArray());
         }
     }
 }

@@ -4,21 +4,15 @@ public class AnimationUtils
 {
     public static int ArmStateToDegree(ArmState state)
     {
-        switch (state)
+        return state switch
         {
-            case ArmState.Zero:
-                return 0;
-            case ArmState.Three:
-                return 90;
-            case ArmState.Six:
-                return 180;
-            case ArmState.Nine:
-                return 270;
-            case ArmState.None:
-                return 225;
-            case ArmState.HPOne:
-                return 45;
-            default: return 0;
-        }
+            ArmState.Zero => 0,
+            ArmState.Three => 90,
+            ArmState.Six => 180,
+            ArmState.Nine => 270,
+            ArmState.None => 225,
+            ArmState.HPOne => 45,
+            _ => 0,
+        };
     }
 }

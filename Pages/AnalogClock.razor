@@ -49,6 +49,7 @@
     }
     public class Controller
     {
+        //private PatternAnimationManager animationManager;
         private AnimationManager animationManager;
         public Dictionary<int, Clock> Clocks { get; private set; }
         public Controller(IJSRuntime JSRuntime, List<ElementReference> hourReferences, List<ElementReference> minuteReferences)
@@ -58,6 +59,7 @@
             for (var i = 0; i < 24; i++)
                 Clocks.Add(i + 1, new Clock(i + 1));
 
+            //animationManager = new PatternAnimationManager(JSRuntime, Clocks, hourReferences, minuteReferences);
             animationManager = new AnimationManager(JSRuntime, Clocks, hourReferences, minuteReferences);
         }
 
