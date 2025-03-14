@@ -53,7 +53,6 @@ public class AnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clock
             currentMinuteSecondDigit = minuteSecondDigit;
 
             AnimationConfigs.SetNextNumbersAnimationStatus(clocks, currentHourFirstDigit, currentHourSecondDigit, currentMinuteFirstDigit, currentMinuteSecondDigit);
-
             await jSRuntime.InvokeVoidAsync("animationLoop.animateClockArm", (object)armConfigs.Select(config => new { state = config.State, elementReference = config.ElementReference, easing = config.EasingFunction, direction = Enum.GetName(typeof(Direction), config.Direction) }).ToArray());
         }
     }

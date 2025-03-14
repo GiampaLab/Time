@@ -24,13 +24,7 @@ window.animationLoop = {
           item.direction,
           3
         );
-        console.log(
-          "Target Rotation: ",
-          item.state,
-          "Current Rotation: ",
-          previousRotationDegrees
-        );
-        console.log(keyframes);
+
         item.elementReference.animate(keyframes, {
           // timing options
           duration: 3000,
@@ -54,22 +48,20 @@ function generateClockwiseKeyframes(
   let difference = 0;
   let calculatedCurrentAngle = 0;
   let calculatedTargetAngle = 0;
-  console.log("direction: ", direction);
   if (direction === "Clockwise") {
     calculatedCurrentAngle = currentAngle % 360;
-    let difference = targetAngle - calculatedCurrentAngle;
+    difference = targetAngle - calculatedCurrentAngle;
     if (difference < 0) {
       // force clockwise rotation through the 360 degrees mark
       calculatedTargetAngle = targetAngle + 360;
     } else {
       calculatedTargetAngle = targetAngle;
     }
-    difference = calculatedTargetAngle - calculatedCurrentAngle;
   } else {
     let anticlockwiseTargetAngle = (-360 + targetAngle) % 360;
     calculatedCurrentAngle =
       currentAngle <= 0 ? currentAngle % 360 : (-360 + currentAngle) % 360;
-    let difference =
+    difference =
       Math.abs(anticlockwiseTargetAngle) - Math.abs(calculatedCurrentAngle);
     // not crossing the 360 degrees mark so we can just add the target angle to the current angle -> rotation should always be anticlockwise
     if (difference >= 0) {
@@ -78,11 +70,15 @@ function generateClockwiseKeyframes(
     } else {
       calculatedTargetAngle = anticlockwiseTargetAngle - 360;
     }
-    difference = calculatedTargetAngle - calculatedCurrentAngle;
   }
 
-  const increment = difference / (numKeyframes + 1);
+  difference = calculatedTargetAngle - calculatedCurrentAngle;
+
+  let increment = difference / (numKeyframes + 1);
+
   let nextAngle = calculatedCurrentAngle;
+
+  keyframes.push({ transform: `rotate(${calculatedCurrentAngle}deg)` });
 
   for (let i = 0; i < numKeyframes; i++) {
     nextAngle += increment;
