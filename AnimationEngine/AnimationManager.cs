@@ -2,12 +2,12 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using Time.AnimationConfig;
 using Time.Components;
-using Time.Utils;
 
 namespace Time.AnimationEngine;
 
-public class AnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clocks, List<ElementReference> hourReferences, List<ElementReference> minuteReferences)
+public class AnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clocks, List<ElementReference> hourReferences, List<ElementReference> minuteReferences) : IAnimationManager
 {
+    private DotNetObjectReference<IAnimationManager> dotNetObjectReference;
     private readonly IJSRuntime jSRuntime = jSRuntime;
     private readonly Dictionary<int, Clock> clocks = clocks;
 
@@ -18,24 +18,39 @@ public class AnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clock
     private int currentHourSecondDigit = 0;
     private int currentMinuteFirstDigit = 0;
     private int currentMinuteSecondDigit = 0;
+    private Timer timer;
+    private bool animationFinished = true;
 
     public void Start()
     {
+        dotNetObjectReference ??= DotNetObjectReference.Create<IAnimationManager>(this);
         AnimationConfigs.SetClocksConfigs(clocks,
             new ArmConfig
             {
                 Direction = Direction.Anticlockwise,
-                EasingFunction = "ease-in-out",
+                EasingFunction = "ease-out",
                 Duration = 3000
             },
             new ArmConfig
             {
                 Direction = Direction.Clockwise,
-                EasingFunction = "ease-in-out",
+                EasingFunction = "ease-out",
                 Duration = 3000
             }, 60, hourReferences, minuteReferences);
 
-        var timer = new Timer(SetAnimationStatus, new AutoResetEvent(false), 0, 500);
+        timer = new Timer(SetAnimationStatus, new AutoResetEvent(false), 0, 500);
+    }
+
+
+    [JSInvokable]
+    public void AnimationFinished()
+    {
+        animationFinished = true;
+    }
+
+    public void Stop()
+    {
+        timer.Dispose();
     }
 
     private async void SetAnimationStatus(object? stateInfo)
@@ -46,15 +61,18 @@ public class AnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clock
         var minuteFirstDigit = time.Second / 10;
         var minuteSecondDigit = time.Minute % 10;
 
-        if (hoursFirstDigit != currentHourFirstDigit || hoursSecondDigit != currentHourSecondDigit || minuteFirstDigit != currentMinuteFirstDigit || minuteSecondDigit != currentMinuteSecondDigit)
+        if (animationFinished && (hoursFirstDigit != currentHourFirstDigit || hoursSecondDigit != currentHourSecondDigit || minuteFirstDigit != currentMinuteFirstDigit || minuteSecondDigit != currentMinuteSecondDigit))
         {
+            animationFinished = false;
+
             currentHourFirstDigit = hoursFirstDigit;
             currentHourSecondDigit = hoursSecondDigit;
             currentMinuteFirstDigit = minuteFirstDigit;
             currentMinuteSecondDigit = minuteSecondDigit;
 
             AnimationConfigs.SetNextNumbersAnimationStatus(clocks, currentHourFirstDigit, currentHourSecondDigit, currentMinuteFirstDigit, currentMinuteSecondDigit);
-            await jSRuntime.InvokeVoidAsync("animationLoop.animateClockArm",
+
+            await jSRuntime.InvokeVoidAsync("animationLoop.animateClockArm", dotNetObjectReference,
                 (object)armConfigs.Select(config => new
                 {
                     state = config.State,

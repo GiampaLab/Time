@@ -50,7 +50,7 @@
     public class Controller
     {
         //private PatternAnimationManager animationManager;
-        private AnimationManager animationManager;
+        private ChainedAnimationsManager chainedAnimationsManager;
         public Dictionary<int, Clock> Clocks { get; private set; }
         public Controller(IJSRuntime JSRuntime, List<ElementReference> hourReferences, List<ElementReference> minuteReferences)
         {
@@ -59,13 +59,15 @@
             for (var i = 0; i < 24; i++)
                 Clocks.Add(i + 1, new Clock(i + 1));
 
-            //animationManager = new PatternAnimationManager(JSRuntime, Clocks, hourReferences, minuteReferences);
-            animationManager = new AnimationManager(JSRuntime, Clocks, hourReferences, minuteReferences);
+            var patternAnimationManager = new PatternAnimationManager(JSRuntime, Clocks, hourReferences, minuteReferences);
+            var animationManager = new AnimationManager(JSRuntime, Clocks, hourReferences, minuteReferences);
+            chainedAnimationsManager = new ChainedAnimationsManager(new List<IAnimationManager> { patternAnimationManager,
+animationManager }, new List<int> { 20000, 20000 });
         }
 
         public void SetClock()
         {
-            animationManager.Start();
+            chainedAnimationsManager.Start();
         }
     }
 }
