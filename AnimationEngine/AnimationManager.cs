@@ -53,11 +53,6 @@ public class AnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clock
         timer.Dispose();
     }
 
-    public void Continue()
-    {
-
-    }
-
     private async void SetAnimationStatus(object? stateInfo)
     {
         var time = DateTime.Now;

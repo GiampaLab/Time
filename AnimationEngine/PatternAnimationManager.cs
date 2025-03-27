@@ -65,11 +65,5 @@ public class PatternAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock
 
     public async void Stop()
     {
-        await jSRuntime.InvokeVoidAsync("animationLoop.pauseClockArmAnimation");
-    }
-
-    public void Continue()
-    {
-        throw new NotImplementedException();
     }
 }

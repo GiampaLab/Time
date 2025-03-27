@@ -1,32 +1,22 @@
 // Keep track of the previous animation to know the start point of the next animation
 // If it's a chained continuous animation I need to calculate the end current angle and start from there
 var previousAnimationConfigs = [];
-var animations = [];
-var currentAnimationConfigs = [];
 
 window.animationLoop = {
-  updateState: function (hourRef, minuteRef, hourState, minuteState) {
-    hourRef.style.transform = "rotate(" + hourState + "deg)";
-    minuteRef.style.transform = "rotate(" + minuteState + "deg)";
-  },
   animateClockArm: function (dotNetObjectReference, animationConfigs, chainAnimations) {
-    if (previousAnimationConfigs.length == 0) {
-      if (animations.length > 0) {
-        animations.forEach((animation, index) => {
-          if (index < currentAnimationConfigs.length) {
-            var currentAngle = getCurrentRotationAngle(currentAnimationConfigs[index].elementReference);
-            previousAnimationConfigs.push({ state: currentAngle });
-          }
-        });
-        animations = [];
-      } else {
-        previousAnimationConfigs = Array.from({ length: animationConfigs.length }, () => {
-          return { state: 0 };
-        });
-      }
+    if (previousAnimationConfigs.length > 0) {
+      previousAnimationConfigs.forEach((animationConfig) => {
+        if (animationConfig.state == null) {
+          var currentAngle = getCurrentRotationAngle(animationConfig.elementReference);
+          animationConfig.state = currentAngle;
+        }
+      });
+    } else if (previousAnimationConfigs.length == 0) {
+      previousAnimationConfigs = Array.from({ length: animationConfigs.length }, () => {
+        return { state: 0, elementReference: null, direction: "Clockwise", duration: 0, delay: 0, easing: "linear" };
+      });
     }
-    currentAnimationConfigs = animationConfigs;
-    currentAnimationConfigs.forEach(function (item, index) {
+    animationConfigs.forEach(function (item, index) {
       const previousRotationDegrees = previousAnimationConfigs[index].state;
       const keyframes = generateKeyframesWithClockDirection(previousRotationDegrees, item.state, item.direction, 3);
       let animation = item.elementReference.animate(keyframes, {
@@ -37,40 +27,26 @@ window.animationLoop = {
         easing: item.easing,
       });
       animation.finished.then(() => {
+        previousAnimationConfigs[index] = item;
         dotNetObjectReference.invokeMethodAsync("AnimationFinished");
         if (chainAnimations == true) {
-          var lastKeyframeAngle = getAngleFromKeyframe(keyframes[keyframes.length - 1]);
           // Second Animation: Continuous Rotation
           let targetAngle = item.direction === "Clockwise" ? 360 : -360;
           // Pause using setTimeout
           setTimeout(() => {
-            animations.push(
-              item.elementReference.animate([{ transform: `rotate(${lastKeyframeAngle}deg)` }, { transform: `rotate(${lastKeyframeAngle + targetAngle}deg)` }], {
-                duration: item.duration,
-                iterations: Infinity,
-                fill: "both",
-                easing: item.easing,
-              })
-            );
+            item.elementReference.animate([{ transform: `rotate(${item.state}deg)` }, { transform: `rotate(${item.state + targetAngle}deg)` }], {
+              duration: item.duration,
+              iterations: Infinity,
+              fill: "both",
+              easing: item.easing,
+            });
+            item.state = null;
           }, item.delay);
         }
       });
     });
-    if (chainAnimations == false) {
-      previousAnimationConfigs = animationConfigs;
-    } else {
-      // I need to reset the previousAnimationConfigs to avoid the continuous rotation to be chained to the previous animation
-      // Previous animation will be calculated from the current state of the clock arms at the top of this function
-      previousAnimationConfigs = [];
-    }
   },
-  pauseClockArmAnimation: function () {
-    // animations.forEach((animation, index) => {
-    //   //animation.pause();
-    //   var currentAngle = getCurrentRotationAngle(currentAnimationConfigs[index].elementReference);
-    //   previousAnimationConfigs[index].state = currentAngle;
-    // });
-  },
+  pauseClockArmAnimation: function () {},
 };
 
 function generateKeyframesWithClockDirection(currentAngle, targetAngle, direction, numKeyframes) {
@@ -112,18 +88,6 @@ function generateKeyframesWithClockDirection(currentAngle, targetAngle, directio
 
   keyframes.push({ transform: `rotate(${calculatedTargetAngle}deg)` });
   return keyframes;
-}
-
-function getAngleFromKeyframe(keyframe) {
-  const transform = keyframe.transform;
-
-  if (transform && transform.startsWith("rotate(") && transform.endsWith("deg)")) {
-    const angleString = transform.slice(7, -4); // Extract the angle string
-    const angle = parseFloat(angleString);
-    return angle;
-  }
-
-  return null; // Return null if the keyframe is invalid
 }
 
 function getCurrentRotationAngle(element) {
