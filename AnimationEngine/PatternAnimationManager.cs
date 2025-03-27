@@ -25,14 +25,14 @@ public class PatternAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock
                 new ArmConfig
                 {
                     Direction = Direction.Anticlockwise,
-                    EasingFunction = "ease-in-out",
+                    EasingFunction = "linear",
                     Duration = 5000,
                     Delay = 1000
                 },
                 new ArmConfig
                 {
                     Direction = Direction.Clockwise,
-                    EasingFunction = "ease-in-out",
+                    EasingFunction = "linear",
                     Duration = 5000,
                     Delay = 1000
                 }, 60, hourReferences, minuteReferences);

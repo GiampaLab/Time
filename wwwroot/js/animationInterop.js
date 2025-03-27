@@ -1,9 +1,11 @@
 // Keep track of the previous animation to know the start point of the next animation
 // If it's a chained continuous animation I need to calculate the end current angle and start from there
 var previousAnimationConfigs = [];
+var animations = [];
 
 window.animationLoop = {
   animateClockArm: function (dotNetObjectReference, animationConfigs, chainAnimations) {
+    animations = [];
     if (previousAnimationConfigs.length > 0) {
       previousAnimationConfigs.forEach((animationConfig) => {
         if (animationConfig.state == null) {
@@ -26,9 +28,9 @@ window.animationLoop = {
         fill: "both",
         easing: item.easing,
       });
+      animations.push(animation);
       animation.finished.then(() => {
         previousAnimationConfigs[index] = item;
-        dotNetObjectReference.invokeMethodAsync("AnimationFinished");
         if (chainAnimations == true) {
           // Second Animation: Continuous Rotation
           let targetAngle = item.direction === "Clockwise" ? 360 : -360;
@@ -44,6 +46,9 @@ window.animationLoop = {
           }, item.delay);
         }
       });
+    });
+    Promise.all(animations).then(() => {
+      dotNetObjectReference.invokeMethodAsync("AnimationFinished");
     });
   },
   pauseClockArmAnimation: function () {},
