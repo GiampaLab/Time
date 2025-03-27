@@ -7,7 +7,7 @@ namespace Time.AnimationEngine;
 
 public class AnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clocks, List<ElementReference> hourReferences, List<ElementReference> minuteReferences) : IAnimationManager
 {
-    private DotNetObjectReference<IAnimationManager> dotNetObjectReference;
+    private DotNetObjectReference<IAnimationManager>? dotNetObjectReference;
     private readonly IJSRuntime jSRuntime = jSRuntime;
     private readonly Dictionary<int, Clock> clocks = clocks;
 
@@ -53,6 +53,11 @@ public class AnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clock
         timer.Dispose();
     }
 
+    public void Continue()
+    {
+
+    }
+
     private async void SetAnimationStatus(object? stateInfo)
     {
         var time = DateTime.Now;
@@ -73,7 +78,7 @@ public class AnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clock
             AnimationConfigs.SetNextNumbersAnimationStatus(clocks, currentHourFirstDigit, currentHourSecondDigit, currentMinuteFirstDigit, currentMinuteSecondDigit);
 
             await jSRuntime.InvokeVoidAsync("animationLoop.animateClockArm", dotNetObjectReference,
-                (object)armConfigs.Select(config => new
+                armConfigs.Select(config => new
                 {
                     state = config.State,
                     elementReference = config.ElementReference,
@@ -81,7 +86,7 @@ public class AnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clock
                     direction = Enum.GetName(typeof(Direction), config.Direction),
                     duration = config.Duration
                 }
-                    ).ToArray());
+                    ).ToArray(), false);
         }
     }
 }

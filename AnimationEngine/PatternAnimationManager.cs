@@ -17,27 +17,27 @@ public class PatternAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock
 
     public async void Start()
     {
-        dotNetObjectReference ??= DotNetObjectReference.Create<IAnimationManager>(this);
-        AnimationConfigs.SetClocksConfigs(clocks,
-            new ArmConfig
-            {
-                Direction = Direction.Anticlockwise,
-                EasingFunction = "ease-in-out",
-                Duration = 5000,
-                Delay = 1000
-            },
-            new ArmConfig
-            {
-                Direction = Direction.Clockwise,
-                EasingFunction = "ease-in-out",
-                Duration = 5000,
-                Delay = 1000
-            }, 60, hourReferences, minuteReferences);
-
-        AnimationConfigs.SetNextPatternAnimationStatus(clocks);
         if (animationFinished)
         {
             animationFinished = false;
+            dotNetObjectReference ??= DotNetObjectReference.Create<IAnimationManager>(this);
+            AnimationConfigs.SetClocksConfigs(clocks,
+                new ArmConfig
+                {
+                    Direction = Direction.Anticlockwise,
+                    EasingFunction = "ease-in-out",
+                    Duration = 5000,
+                    Delay = 1000
+                },
+                new ArmConfig
+                {
+                    Direction = Direction.Clockwise,
+                    EasingFunction = "ease-in-out",
+                    Duration = 5000,
+                    Delay = 1000
+                }, 60, hourReferences, minuteReferences);
+
+            AnimationConfigs.SetNextPatternAnimationStatus(clocks);
             await jSRuntime.InvokeVoidAsync("animationLoop.animateClockArm", dotNetObjectReference,
                 armConfigs.Select(config => new
                 {
@@ -66,5 +66,10 @@ public class PatternAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock
     public async void Stop()
     {
         await jSRuntime.InvokeVoidAsync("animationLoop.pauseClockArmAnimation");
+    }
+
+    public void Continue()
+    {
+        throw new NotImplementedException();
     }
 }

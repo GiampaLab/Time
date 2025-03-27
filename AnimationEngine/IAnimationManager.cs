@@ -5,4 +5,5 @@ public interface IAnimationManager
     void Start();
     void Stop();
     void AnimationFinished();
+    void Continue();
 }
