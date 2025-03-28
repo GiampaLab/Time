@@ -1,11 +1,10 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using Time.AnimationConfig;
+using Time.AnimationEngine;
 using Time.Components;
 
-namespace Time.AnimationEngine;
-
-public class PatternAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clocks, List<ElementReference> hourReferences, List<ElementReference> minuteReferences) : IAnimationManager
+public class WavePatternAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clocks, List<ElementReference> hourReferences, List<ElementReference> minuteReferences) : IAnimationManager
 {
     private readonly IJSRuntime jSRuntime = jSRuntime;
     private readonly Dictionary<int, Clock> clocks = clocks;
@@ -24,32 +23,27 @@ public class PatternAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock
             },
             new ArmConfig
             {
-                Direction = Direction.Clockwise,
+                Direction = Direction.Anticlockwise,
                 EasingFunction = "linear",
                 Duration = 5000,
                 Delay = 1000
             }, 60, hourReferences, minuteReferences);
 
-        AnimationConfigs.SetNextPatternAnimationStatus(clocks);
+        AnimationConfigs.SetNextWaveAnimationStatus(clocks);
         await jSRuntime.InvokeVoidAsync("animationLoop.animateClockArm", null,
-            armConfigs.Select(config => new
+            armConfigs.Select((config, index) => new
             {
                 state = config.State,
                 elementReference = config.ElementReference,
                 easing = config.EasingFunction,
                 direction = Enum.GetName(typeof(Direction), config.Direction),
                 duration = config.Duration,
-                delay = config.Delay
+                delay = config.Delay + (index % 2) == 1 ? (index - 1) * 50 : index * 50
             }
                 ).ToArray(), true);
     }
 
-    [JSInvokable]
     public void AnimationFinished()
-    {
-    }
-
-    public void Stop()
     {
     }
 
@@ -59,6 +53,10 @@ public class PatternAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock
     }
 
     public void SetDotNetObjectReference(DotNetObjectReference<IAnimationManager> dotNetObjectReference)
+    {
+    }
+
+    public void Stop()
     {
     }
 }

@@ -59,10 +59,11 @@
             for (var i = 0; i < 24; i++)
                 Clocks.Add(i + 1, new Clock(i + 1));
 
+            var wavePatternAnimationManager = new WavePatternAnimationManager(JSRuntime, Clocks, hourReferences, minuteReferences);
             var patternAnimationManager = new PatternAnimationManager(JSRuntime, Clocks, hourReferences, minuteReferences);
             var animationManager = new AnimationManager(JSRuntime, Clocks, hourReferences, minuteReferences);
             chainedAnimationsManager = new ChainedAnimationsManager(new List<IAnimationManager> { patternAnimationManager,
-animationManager }, new List<int> { 20000, 20000 });
+animationManager, wavePatternAnimationManager }, new List<int> { 20000, 20000, 20000 });
         }
 
         public void SetClock()

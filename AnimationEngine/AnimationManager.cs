@@ -10,10 +10,8 @@ public class AnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clock
     private DotNetObjectReference<IAnimationManager>? myDotNetObjectReference;
     private readonly IJSRuntime jSRuntime = jSRuntime;
     private readonly Dictionary<int, Clock> clocks = clocks;
-
-    private readonly IList<ArmConfig> armConfigs = clocks.Values.Select(x =>
-            x.FirstArm.Config).ToList().Union(clocks.Values.Select(x => x.SecondArm.Config).ToList()).ToList();
-
+    private readonly IList<ArmConfig> armConfigs = clocks.Values.SelectMany(x =>
+            new[] { x.FirstArm.Config, x.SecondArm.Config }).ToArray();
     private int currentHourFirstDigit = 0;
     private int currentHourSecondDigit = 0;
     private int currentMinuteFirstDigit = 0;

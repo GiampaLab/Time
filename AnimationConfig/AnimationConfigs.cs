@@ -134,7 +134,7 @@ public class AnimationConfigs
         }
     }
 
-    public static void SetNextWaveAnimationStatus(Dictionary<int, Clock> clocks, double timeElapsedMillisec, bool stopAtFinalState = true)
+    public static void SetNextWaveAnimationStatus(Dictionary<int, Clock> clocks, bool stopAtFinalState = true)
     {
         for (var i = 0; i < 24; i++)
         {
