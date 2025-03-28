@@ -49,7 +49,7 @@ public class PatternAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock
     {
     }
 
-    public async void Stop()
+    public void Stop()
     {
     }
 

@@ -22,24 +22,21 @@ public partial class ChainedAnimationsManager : IAnimationManager
 
     public async void Start()
     {
-        animationManager = animationManagers[0];
-        await InternalStart(animationManager);
+        await InternalStart(null);
     }
 
     [JSInvokable]
     public async void AnimationFinished()
     {
-        Console.WriteLine("Animation finished, Animation manager: " + animationManager.GetAnimationType());
+        Console.WriteLine("Animation finished, Animation manager: " + animationManager?.GetAnimationType());
         if (!animationManagerTimeIsUp)
         {
             // Delegate the call to the animation manager
-            animationManager.AnimationFinished();
+            animationManager?.AnimationFinished();
             return;
         }
         animationManagerTimeIsUp = false;
-        animationManager.Stop();
-        animationManager = GetNextAnimationManager(animationManager);
-
+        animationManager?.Stop();
         await InternalStart(animationManager);
     }
 
@@ -56,23 +53,26 @@ public partial class ChainedAnimationsManager : IAnimationManager
     {
     }
 
-    private IAnimationManager GetNextAnimationManager(IAnimationManager animationManager)
+    private IAnimationManager GetNextAnimationManager(IAnimationManager? animationManager)
     {
-        var index = animationManagers.IndexOf(animationManager);
-        if (index == -1)
-        {
-            throw new ArgumentException("Animation manager not found in the list");
-        }
-        index++;
-        if (index >= animationManagers.Count)
-        {
+        int index;
+        if (animationManager == null)
             index = 0;
+        else
+        {
+            index = animationManagers.IndexOf(animationManager);
+            if (index == -1)
+                throw new ArgumentException("Animation manager not found in the list");
+            index++;
+            if (index >= animationManagers.Count)
+                index = 0;
         }
         return animationManagers[index];
     }
 
-    private async Task InternalStart(IAnimationManager animationManager)
+    private async Task InternalStart(IAnimationManager? previousAnimationManager)
     {
+        animationManager = GetNextAnimationManager(previousAnimationManager);
         animationManager.Start();
         await Task.Delay(animationDurations[animationManagers.IndexOf(animationManager)]);
         animationManagerTimeIsUp = true;

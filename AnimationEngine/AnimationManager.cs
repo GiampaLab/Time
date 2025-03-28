@@ -18,7 +18,7 @@ public class AnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clock
     private int currentHourSecondDigit = 0;
     private int currentMinuteFirstDigit = 0;
     private int currentMinuteSecondDigit = 0;
-    private Timer timer;
+    private Timer? timer;
     public void Start()
     {
         AnimationConfigs.SetClocksConfigs(clocks,
