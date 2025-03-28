@@ -28,7 +28,7 @@ window.animationLoop = {
         fill: "both",
         easing: item.easing,
       });
-      animations.push(animation);
+      animations.push(animation.finished);
       animation.finished.then(() => {
         previousAnimationConfigs[index] = item;
         if (chainAnimations == true) {
@@ -48,7 +48,12 @@ window.animationLoop = {
       });
     });
     Promise.all(animations).then(() => {
-      dotNetObjectReference.invokeMethodAsync("AnimationFinished");
+      console.log("All animations finished");
+      if (dotNetObjectReference != null) {
+        dotNetObjectReference.forEach((element) => {
+          element.invokeMethodAsync("AnimationFinished");
+        });
+      }
     });
   },
   pauseClockArmAnimation: function () {},

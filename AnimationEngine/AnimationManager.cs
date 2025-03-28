@@ -7,7 +7,7 @@ namespace Time.AnimationEngine;
 
 public class AnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clocks, List<ElementReference> hourReferences, List<ElementReference> minuteReferences) : IAnimationManager
 {
-    private DotNetObjectReference<IAnimationManager>? dotNetObjectReference;
+    private DotNetObjectReference<IAnimationManager>? myDotNetObjectReference;
     private readonly IJSRuntime jSRuntime = jSRuntime;
     private readonly Dictionary<int, Clock> clocks = clocks;
 
@@ -19,11 +19,8 @@ public class AnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clock
     private int currentMinuteFirstDigit = 0;
     private int currentMinuteSecondDigit = 0;
     private Timer timer;
-    private bool animationFinished = true;
-
     public void Start()
     {
-        dotNetObjectReference ??= DotNetObjectReference.Create<IAnimationManager>(this);
         AnimationConfigs.SetClocksConfigs(clocks,
             new ArmConfig
             {
@@ -37,20 +34,20 @@ public class AnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clock
                 EasingFunction = "ease-out",
                 Duration = 3000
             }, 60, hourReferences, minuteReferences);
-
-        timer = new Timer(SetAnimationStatus, new AutoResetEvent(false), 0, 500);
+        SetAnimationStatus(null);
     }
 
 
     [JSInvokable]
     public void AnimationFinished()
     {
-        animationFinished = true;
+        timer?.Dispose();
+        timer = new Timer(SetAnimationStatus, new AutoResetEvent(false), 0, 4000);
     }
 
     public void Stop()
     {
-        timer.Dispose();
+        timer?.Dispose();
     }
 
     private async void SetAnimationStatus(object? stateInfo)
@@ -61,10 +58,8 @@ public class AnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clock
         var minuteFirstDigit = time.Second / 10;
         var minuteSecondDigit = time.Minute % 10;
 
-        if (animationFinished && (hoursFirstDigit != currentHourFirstDigit || hoursSecondDigit != currentHourSecondDigit || minuteFirstDigit != currentMinuteFirstDigit || minuteSecondDigit != currentMinuteSecondDigit))
+        if (hoursFirstDigit != currentHourFirstDigit || hoursSecondDigit != currentHourSecondDigit || minuteFirstDigit != currentMinuteFirstDigit || minuteSecondDigit != currentMinuteSecondDigit)
         {
-            animationFinished = false;
-
             currentHourFirstDigit = hoursFirstDigit;
             currentHourSecondDigit = hoursSecondDigit;
             currentMinuteFirstDigit = minuteFirstDigit;
@@ -72,7 +67,7 @@ public class AnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clock
 
             AnimationConfigs.SetNextNumbersAnimationStatus(clocks, currentHourFirstDigit, currentHourSecondDigit, currentMinuteFirstDigit, currentMinuteSecondDigit);
 
-            await jSRuntime.InvokeVoidAsync("animationLoop.animateClockArm", dotNetObjectReference,
+            await jSRuntime.InvokeVoidAsync("animationLoop.animateClockArm", new[] { myDotNetObjectReference },
                 armConfigs.Select(config => new
                 {
                     state = config.State,
@@ -83,5 +78,15 @@ public class AnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clock
                 }
                     ).ToArray(), false);
         }
+    }
+
+    public AnimationType GetAnimationType()
+    {
+        return AnimationType.Time;
+    }
+
+    public void SetDotNetObjectReference(DotNetObjectReference<IAnimationManager> dotNetObjectReference)
+    {
+        myDotNetObjectReference = dotNetObjectReference;
     }
 }
