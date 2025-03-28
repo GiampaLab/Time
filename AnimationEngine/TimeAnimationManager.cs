@@ -5,12 +5,12 @@ using Time.Components;
 
 namespace Time.AnimationEngine;
 
-public class AnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clocks, List<ElementReference> hourReferences, List<ElementReference> minuteReferences) : IAnimationManager
+public class TimeAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clocks, List<ElementReference> hourReferences, List<ElementReference> minuteReferences) : IAnimationManager
 {
     private DotNetObjectReference<IAnimationManager>? myDotNetObjectReference;
     private readonly IJSRuntime jSRuntime = jSRuntime;
     private readonly Dictionary<int, Clock> clocks = clocks;
-    private readonly IList<ArmConfig> armConfigs = clocks.Values.SelectMany(x =>
+    private readonly IList<Components.AnimationConfig> armConfigs = clocks.Values.SelectMany(x =>
             new[] { x.FirstArm.Config, x.SecondArm.Config }).ToArray();
     private int currentHourFirstDigit = 0;
     private int currentHourSecondDigit = 0;
@@ -20,13 +20,13 @@ public class AnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clock
     public void Start()
     {
         AnimationConfigs.SetClocksConfigs(clocks,
-            new ArmConfig
+            new Components.AnimationConfig
             {
                 Direction = Direction.Anticlockwise,
                 EasingFunction = "ease-out",
                 Duration = 3000
             },
-            new ArmConfig
+            new Components.AnimationConfig
             {
                 Direction = Direction.Clockwise,
                 EasingFunction = "ease-out",

@@ -5,11 +5,11 @@ using Microsoft.AspNetCore.Components;
 
 public class Clock
 {
-    private ArmConfig _defaultFirstArmConfig = new()
+    private AnimationConfig _defaultFirstArmConfig = new()
     {
         Direction = Direction.Clockwise,
     };
-    private ArmConfig _defaultSecondArmConfig = new()
+    private AnimationConfig _defaultSecondArmConfig = new()
     {
         Direction = Direction.Clockwise,
     };
@@ -17,7 +17,7 @@ public class Clock
     public ClockArm FirstArm { get; private set; } = new();
     public ClockArm SecondArm { get; private set; } = new();
     public DelayAnimation DelayAnimation { get; private set; } = new();
-    public Clock(int Id, ArmConfig? firstArmConfig = null, ArmConfig? secondArmConfig = null)
+    public Clock(int Id, AnimationConfig? firstArmConfig = null, AnimationConfig? secondArmConfig = null)
     {
         this.Id = Id;
         FirstArm.CurrentState = 0;
@@ -26,7 +26,7 @@ public class Clock
         SecondArm.Config = secondArmConfig ?? _defaultSecondArmConfig;
     }
 
-    public void UpdateClockArmsConfig(ArmConfig firstArmConfig, ArmConfig secondArmConfig, ElementReference hourReference, ElementReference minuteReference)
+    public void UpdateClockArmsConfig(AnimationConfig firstArmConfig, AnimationConfig secondArmConfig, ElementReference hourReference, ElementReference minuteReference)
     {
         FirstArm.Config.Direction = firstArmConfig.Direction;
         FirstArm.Config.EasingFunction = firstArmConfig.EasingFunction;
@@ -38,13 +38,6 @@ public class Clock
         SecondArm.Config.ElementReference = minuteReference;
         SecondArm.Config.Duration = secondArmConfig.Duration;
         SecondArm.Config.Delay = secondArmConfig.Delay;
-    }
-
-    public void ResetClock()
-    {
-        DelayAnimation.Started = false;
-        FirstArm.Config.EasingAnimation.ResetEasingAnimation();
-        SecondArm.Config.EasingAnimation.ResetEasingAnimation();
     }
 
     public void UpdateState(ArmState firstArmState, ArmState secondArmState, bool stopAtFinalState = true)
@@ -71,10 +64,10 @@ public class ClockArm
         set { Config.State = value; }
     }
 
-    public ArmConfig Config { get; set; } = new ArmConfig();
+    public AnimationConfig Config { get; set; } = new AnimationConfig();
 }
 
-public class ArmConfig
+public class AnimationConfig
 {
     public int State { get; internal set; }
     public EasingAnimation EasingAnimation { get; private set; } = new EasingAnimation(EasingFunctions.Linear);

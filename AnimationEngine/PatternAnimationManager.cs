@@ -9,20 +9,20 @@ public class PatternAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock
 {
     private readonly IJSRuntime jSRuntime = jSRuntime;
     private readonly Dictionary<int, Clock> clocks = clocks;
-    private readonly IList<ArmConfig> armConfigs = clocks.Values.SelectMany(x =>
+    private readonly IList<Components.AnimationConfig> armConfigs = clocks.Values.SelectMany(x =>
             new[] { x.FirstArm.Config, x.SecondArm.Config }).ToArray();
 
     public async void Start()
     {
         AnimationConfigs.SetClocksConfigs(clocks,
-            new ArmConfig
+            new Components.AnimationConfig
             {
                 Direction = Direction.Anticlockwise,
                 EasingFunction = "linear",
                 Duration = 5000,
                 Delay = 1000
             },
-            new ArmConfig
+            new Components.AnimationConfig
             {
                 Direction = Direction.Clockwise,
                 EasingFunction = "linear",

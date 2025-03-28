@@ -8,20 +8,20 @@ public class WavePatternAnimationManager(IJSRuntime jSRuntime, Dictionary<int, C
 {
     private readonly IJSRuntime jSRuntime = jSRuntime;
     private readonly Dictionary<int, Clock> clocks = clocks;
-    private readonly IList<ArmConfig> armConfigs = clocks.Values.SelectMany(x =>
+    private readonly IList<AnimationConfig> armConfigs = clocks.Values.SelectMany(x =>
             new[] { x.FirstArm.Config, x.SecondArm.Config }).ToArray();
 
     public async void Start()
     {
         AnimationConfigs.SetClocksConfigs(clocks,
-            new ArmConfig
+            new AnimationConfig
             {
                 Direction = Direction.Anticlockwise,
                 EasingFunction = "linear",
                 Duration = 5000,
                 Delay = 1000
             },
-            new ArmConfig
+            new AnimationConfig
             {
                 Direction = Direction.Anticlockwise,
                 EasingFunction = "linear",

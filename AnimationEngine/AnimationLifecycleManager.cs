@@ -15,9 +15,9 @@ public class AnimationLifecycleManager
     private Random rnd = new();
     private int chainedAnimationsIndex = 0;
     private readonly IJSRuntime jSRuntime;
-    private readonly IList<ArmConfig> armConfigs;
+    private readonly IList<AnimationConfig> armConfigs;
 
-    public AnimationLifecycleManager(IJSRuntime jSRuntime, IList<ArmConfig> armConfigs)
+    public AnimationLifecycleManager(IJSRuntime jSRuntime, IList<AnimationConfig> armConfigs)
     {
         this.jSRuntime = jSRuntime;
         this.armConfigs = armConfigs;
