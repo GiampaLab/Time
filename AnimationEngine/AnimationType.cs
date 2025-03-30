@@ -3,5 +3,6 @@ public enum AnimationType
 {
     Pattern,
     Time,
-    Chained
+    Chained,
+    Infinite
 }

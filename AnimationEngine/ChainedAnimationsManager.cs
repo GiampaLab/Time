@@ -7,7 +7,9 @@ public partial class ChainedAnimationsManager : IAnimationManager
     private readonly IList<IAnimationManager> animationManagers;
     private readonly IList<int> animationDurations;
     private IAnimationManager? animationManager;
-    private bool animationManagerTimeIsUp = true;
+    private bool animationManagerTimeIsUp = false;
+
+    private int animationManagerIndex;
 
     public ChainedAnimationsManager(IList<IAnimationManager> animationManagers, IList<int> animationDurations)
     {
@@ -53,30 +55,18 @@ public partial class ChainedAnimationsManager : IAnimationManager
     {
     }
 
-    private IAnimationManager GetNextAnimationManager(IAnimationManager? animationManager)
+    private IAnimationManager GetNextAnimationManager()
     {
-        int index;
-        if (animationManager == null)
-            index = 0;
-        else
-        {
-            index = animationManagers.IndexOf(animationManager);
-            if (index == -1)
-                throw new ArgumentException("Animation manager not found in the list");
-            index++;
-            if (index >= animationManagers.Count)
-                index = 0;
-        }
-        return animationManagers[index];
+        return animationManagers[animationManagerIndex++ % animationManagers.Count];
     }
 
     private async Task InternalStart(IAnimationManager? previousAnimationManager)
     {
-        animationManager = GetNextAnimationManager(previousAnimationManager);
+        animationManager = GetNextAnimationManager();
         animationManager.Start();
         await Task.Delay(animationDurations[animationManagers.IndexOf(animationManager)]);
         animationManagerTimeIsUp = true;
-        if (animationManager.GetAnimationType() == AnimationType.Pattern)
+        if (animationManager.GetAnimationType() == AnimationType.Infinite || animationManager.GetAnimationType() == AnimationType.Pattern)
         {
             //needs to be triggered manually as the animation is infinite
             AnimationFinished();

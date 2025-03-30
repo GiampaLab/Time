@@ -1,5 +1,4 @@
 namespace Time.Components;
-using Time.Utils;
 using Time.AnimationConfig;
 using Microsoft.AspNetCore.Components;
 
@@ -16,7 +15,6 @@ public class Clock
     public int Id { get; private set; }
     public ClockArm FirstArm { get; private set; } = new();
     public ClockArm SecondArm { get; private set; } = new();
-    public DelayAnimation DelayAnimation { get; private set; } = new();
     public Clock(int Id, AnimationConfig? firstArmConfig = null, AnimationConfig? secondArmConfig = null)
     {
         this.Id = Id;
@@ -40,7 +38,7 @@ public class Clock
         SecondArm.Config.Delay = secondArmConfig.Delay;
     }
 
-    public void UpdateState(ArmState firstArmState, ArmState secondArmState, bool stopAtFinalState = true)
+    public void UpdateState(ArmState firstArmState, ArmState secondArmState)
     {
         var firstArmFinalStateDegrees = AnimationUtils.ArmStateToDegree(firstArmState);
         var secondArmFinalStateDegrees = AnimationUtils.ArmStateToDegree(secondArmState);
@@ -70,7 +68,6 @@ public class ClockArm
 public class AnimationConfig
 {
     public int State { get; internal set; }
-    public EasingAnimation EasingAnimation { get; private set; } = new EasingAnimation(EasingFunctions.Linear);
     public Direction Direction { get; set; } = Direction.Clockwise;
     public string EasingFunction { get; set; } = "linear";
     public ElementReference ElementReference { get; internal set; }

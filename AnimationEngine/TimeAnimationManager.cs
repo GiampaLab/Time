@@ -5,7 +5,8 @@ using Time.Components;
 
 namespace Time.AnimationEngine;
 
-public class TimeAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clocks, List<ElementReference> hourReferences, List<ElementReference> minuteReferences) : IAnimationManager
+public class TimeAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clocks,
+    List<ElementReference> hourReferences, List<ElementReference> minuteReferences) : IAnimationManager
 {
     private DotNetObjectReference<IAnimationManager>? myDotNetObjectReference;
     private readonly IJSRuntime jSRuntime = jSRuntime;
@@ -24,13 +25,13 @@ public class TimeAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> c
             {
                 Direction = Direction.Anticlockwise,
                 EasingFunction = "ease-out",
-                Duration = 3000
+                Duration = 5000
             },
             new Components.AnimationConfig
             {
                 Direction = Direction.Clockwise,
                 EasingFunction = "ease-out",
-                Duration = 3000
+                Duration = 5000
             }, 60, hourReferences, minuteReferences);
         SetAnimationStatus(null);
     }
@@ -74,7 +75,7 @@ public class TimeAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> c
                     direction = Enum.GetName(typeof(Direction), config.Direction),
                     duration = config.Duration
                 }
-                    ).ToArray(), false);
+                    ).ToArray());
         }
     }
 

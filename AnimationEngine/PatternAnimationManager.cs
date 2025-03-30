@@ -11,6 +11,7 @@ public class PatternAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock
     private readonly Dictionary<int, Clock> clocks = clocks;
     private readonly IList<Components.AnimationConfig> armConfigs = clocks.Values.SelectMany(x =>
             new[] { x.FirstArm.Config, x.SecondArm.Config }).ToArray();
+    private DotNetObjectReference<IAnimationManager>? myDotNetObjectReference;
 
     public async void Start()
     {
@@ -20,18 +21,18 @@ public class PatternAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock
                 Direction = Direction.Anticlockwise,
                 EasingFunction = "linear",
                 Duration = 5000,
-                Delay = 1000
+                Delay = 0
             },
             new Components.AnimationConfig
             {
                 Direction = Direction.Clockwise,
                 EasingFunction = "linear",
                 Duration = 5000,
-                Delay = 1000
+                Delay = 0
             }, 60, hourReferences, minuteReferences);
 
         AnimationConfigs.SetNextPatternAnimationStatus(clocks);
-        await jSRuntime.InvokeVoidAsync("animationLoop.animateClockArm", null,
+        await jSRuntime.InvokeVoidAsync("animationLoop.animateClockArm", new[] { myDotNetObjectReference },
             armConfigs.Select(config => new
             {
                 state = config.State,
@@ -41,7 +42,7 @@ public class PatternAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock
                 duration = config.Duration,
                 delay = config.Delay
             }
-                ).ToArray(), true);
+                ).ToArray());
     }
 
     [JSInvokable]
@@ -60,5 +61,6 @@ public class PatternAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock
 
     public void SetDotNetObjectReference(DotNetObjectReference<IAnimationManager> dotNetObjectReference)
     {
+        myDotNetObjectReference = dotNetObjectReference;
     }
 }

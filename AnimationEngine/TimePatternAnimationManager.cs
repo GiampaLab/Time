@@ -4,7 +4,9 @@ using Time.AnimationConfig;
 using Time.AnimationEngine;
 using Time.Components;
 
-public class WavePatternAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clocks, List<ElementReference> hourReferences, List<ElementReference> minuteReferences) : IAnimationManager
+public class TimePatternAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clocks,
+    List<ElementReference> hourReferences, List<ElementReference> minuteReferences,
+    Direction firstArmDirection, Direction secondArmDirection) : IAnimationManager
 {
     private readonly IJSRuntime jSRuntime = jSRuntime;
     private readonly Dictionary<int, Clock> clocks = clocks;
@@ -17,20 +19,27 @@ public class WavePatternAnimationManager(IJSRuntime jSRuntime, Dictionary<int, C
         AnimationConfigs.SetClocksConfigs(clocks,
             new AnimationConfig
             {
-                Direction = Direction.Anticlockwise,
+                Direction = firstArmDirection,
                 EasingFunction = "linear",
                 Duration = 5000,
                 Delay = 0
             },
             new AnimationConfig
             {
-                Direction = Direction.Anticlockwise,
+                Direction = secondArmDirection,
                 EasingFunction = "linear",
                 Duration = 5000,
                 Delay = 0
             }, 60, hourReferences, minuteReferences);
 
-        AnimationConfigs.SetNextWaveAnimationStatus(clocks);
+        var time = DateTime.Now;
+        var hoursFirstDigit = time.Hour / 10;
+        var hoursSecondDigit = time.Hour % 10;
+        var minuteFirstDigit = time.Second / 10;
+        var minuteSecondDigit = time.Minute % 10;
+
+        AnimationConfigs.SetNextNumbersAnimationStatus(clocks, hoursFirstDigit, hoursSecondDigit, minuteFirstDigit, minuteSecondDigit);
+
         await jSRuntime.InvokeVoidAsync("animationLoop.animateClockArm", new[] { myDotNetObjectReference },
             armConfigs.Select((config, index) => new
             {

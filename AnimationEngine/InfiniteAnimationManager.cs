@@ -4,58 +4,59 @@ using Time.AnimationConfig;
 using Time.AnimationEngine;
 using Time.Components;
 
-public class WavePatternAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clocks, List<ElementReference> hourReferences, List<ElementReference> minuteReferences) : IAnimationManager
+public class InfiniteAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clocks,
+    List<ElementReference> hourReferences, List<ElementReference> minuteReferences,
+    Direction firstArmDirection, Direction secondArmDirection, bool staggeredDelay) : IAnimationManager
 {
     private readonly IJSRuntime jSRuntime = jSRuntime;
     private readonly Dictionary<int, Clock> clocks = clocks;
     private readonly IList<AnimationConfig> armConfigs = clocks.Values.SelectMany(x =>
             new[] { x.FirstArm.Config, x.SecondArm.Config }).ToArray();
-    private DotNetObjectReference<IAnimationManager>? myDotNetObjectReference;
 
     public async void Start()
     {
         AnimationConfigs.SetClocksConfigs(clocks,
             new AnimationConfig
             {
-                Direction = Direction.Anticlockwise,
+                Direction = firstArmDirection,
                 EasingFunction = "linear",
                 Duration = 5000,
                 Delay = 0
             },
             new AnimationConfig
             {
-                Direction = Direction.Anticlockwise,
+                Direction = secondArmDirection,
                 EasingFunction = "linear",
                 Duration = 5000,
                 Delay = 0
             }, 60, hourReferences, minuteReferences);
 
-        AnimationConfigs.SetNextWaveAnimationStatus(clocks);
-        await jSRuntime.InvokeVoidAsync("animationLoop.animateClockArm", new[] { myDotNetObjectReference },
-            armConfigs.Select((config, index) => new
-            {
-                state = config.State,
-                elementReference = config.ElementReference,
-                easing = config.EasingFunction,
-                direction = Enum.GetName(typeof(Direction), config.Direction),
-                duration = config.Duration,
-                delay = config.Delay
-            }
-                ).ToArray());
+        var args = armConfigs.Select((config, index) => new
+        {
+            state = config.State,
+            elementReference = config.ElementReference,
+            easing = config.EasingFunction,
+            direction = Enum.GetName(typeof(Direction), config.Direction),
+            duration = config.Duration,
+            delay = staggeredDelay ? config.Delay + (index % 2) == 1 ? (index - 1) * 50 : index * 50 : config.Delay
+        }).ToArray();
+
+        Console.WriteLine("armConfigs: " + args.Length);
+        await jSRuntime.InvokeVoidAsync("animationLoop.animateClockArmInfinite", null, args);
     }
 
+    [JSInvokable]
     public void AnimationFinished()
     {
     }
 
     public AnimationType GetAnimationType()
     {
-        return AnimationType.Pattern;
+        return AnimationType.Infinite;
     }
 
     public void SetDotNetObjectReference(DotNetObjectReference<IAnimationManager> dotNetObjectReference)
     {
-        myDotNetObjectReference = dotNetObjectReference;
     }
 
     public void Stop()

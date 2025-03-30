@@ -4,11 +4,12 @@ var previousAnimationConfigs = [];
 var animations = [];
 
 window.animationLoop = {
-  animateClockArm: function (dotNetObjectReference, animationConfigs, chainAnimations) {
+  animateClockArm: function (dotNetObjectReference, animationConfigs) {
     animations = [];
     if (previousAnimationConfigs.length > 0) {
       previousAnimationConfigs.forEach((animationConfig) => {
         if (animationConfig.state == null) {
+          // If the animation is continuous, we need to get the current rotation angle of the element
           var currentAngle = getCurrentRotationAngle(animationConfig.elementReference);
           animationConfig.state = currentAngle;
         }
@@ -31,20 +32,6 @@ window.animationLoop = {
       animations.push(animation.finished);
       animation.finished.then(() => {
         previousAnimationConfigs[index] = item;
-        if (chainAnimations == true) {
-          // Second Animation: Continuous Rotation
-          let targetAngle = item.direction === "Clockwise" ? 360 : -360;
-          // Pause using setTimeout
-          setTimeout(() => {
-            item.elementReference.animate([{ transform: `rotate(${item.state}deg)` }, { transform: `rotate(${item.state + targetAngle}deg)` }], {
-              duration: item.duration,
-              iterations: Infinity,
-              fill: "both",
-              easing: item.easing,
-            });
-            item.state = null;
-          }, item.delay);
-        }
       });
     });
     Promise.all(animations).then(() => {
@@ -56,7 +43,30 @@ window.animationLoop = {
       }
     });
   },
-  pauseClockArmAnimation: function () {},
+  animateClockArmInfinite: function (something, newAnimationConfigs) {
+    animations = [];
+    if (previousAnimationConfigs.length == 0) {
+      previousAnimationConfigs = Array.from({ length: newAnimationConfigs.length }, () => {
+        return { state: 0, elementReference: null, direction: "Clockwise", duration: 0, delay: 0, easing: "linear" };
+      });
+    }
+    newAnimationConfigs.forEach(function (item, index) {
+      const previousRotationDegrees = previousAnimationConfigs[index].state;
+      let targetAngle = item.direction === "Clockwise" ? 360 : -360;
+      // Pause using setTimeout
+      setTimeout(() => {
+        item.elementReference.animate([{ transform: `rotate(${item.state}deg)` }, { transform: `rotate(${item.state + targetAngle}deg)` }], {
+          duration: item.duration,
+          iterations: Infinity,
+          fill: "both",
+          easing: item.easing,
+        });
+        // We do not know the end state of the animation, so we set it to null
+        // and we will calculate it when the animation is finished
+        previousAnimationConfigs[index].state = null;
+      }, item.delay);
+    });
+  },
 };
 
 function generateKeyframesWithClockDirection(currentAngle, targetAngle, direction, numKeyframes) {

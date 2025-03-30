@@ -9,7 +9,6 @@ public class AnimationConfigs
         for (var i = 0; i < 24; i++)
         {
             clocks[i + 1].UpdateClockArmsConfig(firstArmConfig, secondArmConfig, hourReferences[i], minuteReferences[i]);
-            clocks[i + 1].DelayAnimation.DelayMillisec = progressiveDelay * (i + 1);
         }
     }
 
@@ -124,12 +123,12 @@ public class AnimationConfigs
         for (var i = 0; i < 4; i++)
         {
             var j = 6 * i;
-            clocks[j + 1].UpdateState(ArmState.Three, ArmState.Six, stopAtFinalState);
-            clocks[j + 2].UpdateState(ArmState.Three, ArmState.Three, stopAtFinalState);
-            clocks[j + 3].UpdateState(ArmState.Zero, ArmState.Three, stopAtFinalState);
-            clocks[j + 4].UpdateState(ArmState.Six, ArmState.Nine, stopAtFinalState);
-            clocks[j + 5].UpdateState(ArmState.Nine, ArmState.Nine, stopAtFinalState);
-            clocks[j + 6].UpdateState(ArmState.Nine, ArmState.Zero, stopAtFinalState);
+            clocks[j + 1].UpdateState(ArmState.Three, ArmState.Six);
+            clocks[j + 2].UpdateState(ArmState.Three, ArmState.Three);
+            clocks[j + 3].UpdateState(ArmState.Zero, ArmState.Three);
+            clocks[j + 4].UpdateState(ArmState.Six, ArmState.Nine);
+            clocks[j + 5].UpdateState(ArmState.Nine, ArmState.Nine);
+            clocks[j + 6].UpdateState(ArmState.Nine, ArmState.Zero);
         }
     }
 
@@ -137,7 +136,7 @@ public class AnimationConfigs
     {
         for (var i = 0; i < 24; i++)
         {
-            clocks[i + 1].UpdateState(ArmState.Zero, ArmState.Six, stopAtFinalState);
+            clocks[i + 1].UpdateState(ArmState.Zero, ArmState.Six);
         }
     }
 }

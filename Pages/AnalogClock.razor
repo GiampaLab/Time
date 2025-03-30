@@ -2,7 +2,6 @@
 @inject IJSRuntime JSRuntime
 @using Time.AnimationConfig;
 @using Time.AnimationEngine;
-@using Time.Utils;
 @using Time.Components;
 
 <div class="clocks-wrapper">
@@ -26,7 +25,7 @@
 </div>
 
 @code {
-    Controller controller;
+    Controller? controller;
     List<ElementReference> hourReferences = new List<ElementReference>();
     List<ElementReference> minuteReferences = new List<ElementReference>();
     ElementReference HourReference
@@ -61,9 +60,19 @@
 
             var wavePatternAnimationManager = new WavePatternAnimationManager(JSRuntime, Clocks, hourReferences, minuteReferences);
             var patternAnimationManager = new PatternAnimationManager(JSRuntime, Clocks, hourReferences, minuteReferences);
-            var animationManager = new TimeAnimationManager(JSRuntime, Clocks, hourReferences, minuteReferences);
-            chainedAnimationsManager = new ChainedAnimationsManager(new List<IAnimationManager> { patternAnimationManager,
-animationManager, wavePatternAnimationManager }, new List<int> { 20000, 20000, 20000 });
+            var timePatternAnimationManager = new TimePatternAnimationManager(JSRuntime, Clocks, hourReferences, minuteReferences,
+            Direction.Anticlockwise, Direction.Anticlockwise);
+            var timeAnimationManager = new TimeAnimationManager(JSRuntime, Clocks, hourReferences, minuteReferences);
+            var anticlockwiseInfiniteAnimationManager = new InfiniteAnimationManager(JSRuntime, Clocks, hourReferences,
+            minuteReferences,
+            Direction.Anticlockwise, Direction.Anticlockwise, true);
+            var oppositeDirectionsInfiniteAnimationManager = new InfiniteAnimationManager(JSRuntime, Clocks, hourReferences,
+            minuteReferences,
+            Direction.Anticlockwise, Direction.Clockwise, false);
+            chainedAnimationsManager = new ChainedAnimationsManager(new List<IAnimationManager> { timeAnimationManager,
+patternAnimationManager, oppositeDirectionsInfiniteAnimationManager, timeAnimationManager, wavePatternAnimationManager,
+anticlockwiseInfiniteAnimationManager, timePatternAnimationManager }, new List<int> { 20000, 6000, 20000, 20000, 6000,
+20000, 6000 });
         }
 
         public void SetClock()
