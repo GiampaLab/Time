@@ -5,7 +5,9 @@ using Time.Components;
 
 namespace Time.AnimationEngine;
 
-public class PatternAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clocks, List<ElementReference> hourReferences, List<ElementReference> minuteReferences) : IAnimationManager
+public class PatternAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clocks,
+    List<ElementReference> hourReferences, List<ElementReference> minuteReferences,
+    Action<Dictionary<int, Clock>> SetPatternAnimationStatus, Direction hourArmDirection, Direction minuteArmDirection) : IAnimationManager
 {
     private readonly IJSRuntime jSRuntime = jSRuntime;
     private readonly Dictionary<int, Clock> clocks = clocks;
@@ -18,20 +20,21 @@ public class PatternAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock
         AnimationConfigs.SetClocksConfigs(clocks,
             new Components.AnimationConfig
             {
-                Direction = Direction.Anticlockwise,
+                Direction = hourArmDirection,
                 EasingFunction = "linear",
                 Duration = 5000,
                 Delay = 0
             },
             new Components.AnimationConfig
             {
-                Direction = Direction.Clockwise,
+                Direction = minuteArmDirection,
                 EasingFunction = "linear",
                 Duration = 5000,
                 Delay = 0
             }, 60, hourReferences, minuteReferences);
 
-        AnimationConfigs.SetNextPatternAnimationStatus(clocks);
+        SetPatternAnimationStatus(clocks);
+
         await jSRuntime.InvokeVoidAsync("animationLoop.animateClockArm", new[] { myDotNetObjectReference },
             armConfigs.Select(config => new
             {

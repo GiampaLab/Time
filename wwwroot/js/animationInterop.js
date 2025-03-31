@@ -7,11 +7,13 @@ window.animationLoop = {
   animateClockArm: function (dotNetObjectReference, animationConfigs) {
     animations = [];
     if (previousAnimationConfigs.length > 0) {
-      previousAnimationConfigs.forEach((animationConfig) => {
-        if (animationConfig.state == null) {
+      previousAnimationConfigs.forEach((previousAnimationConfig, index) => {
+        if (previousAnimationConfig.state == null) {
           // If the animation is continuous, we need to get the current rotation angle of the element
-          var currentAngle = getCurrentRotationAngle(animationConfig.elementReference);
-          animationConfig.state = currentAngle;
+          var currentAngle = getCurrentRotationAngle(previousAnimationConfig.elementReference);
+          previousAnimationConfig.state = currentAngle;
+          // To chain the animation with the previous one we need to set the same direction
+          animationConfigs[index].direction = previousAnimationConfig.direction;
         }
       });
     } else if (previousAnimationConfigs.length == 0) {

@@ -25,13 +25,13 @@ public class TimeAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> c
             {
                 Direction = Direction.Anticlockwise,
                 EasingFunction = "ease-out",
-                Duration = 5000
+                Duration = 4500
             },
             new Components.AnimationConfig
             {
                 Direction = Direction.Clockwise,
                 EasingFunction = "ease-out",
-                Duration = 5000
+                Duration = 4500
             }, 60, hourReferences, minuteReferences);
         SetAnimationStatus(null);
     }
@@ -54,8 +54,8 @@ public class TimeAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> c
         var time = DateTime.Now;
         var hoursFirstDigit = time.Hour / 10;
         var hoursSecondDigit = time.Hour % 10;
-        var minuteFirstDigit = time.Second / 10;
-        var minuteSecondDigit = time.Minute % 10;
+        var minuteFirstDigit = time.Minute / 10;
+        var minuteSecondDigit = time.Second / 10;
 
         if (hoursFirstDigit != currentHourFirstDigit || hoursSecondDigit != currentHourSecondDigit || minuteFirstDigit != currentMinuteFirstDigit || minuteSecondDigit != currentMinuteSecondDigit)
         {
