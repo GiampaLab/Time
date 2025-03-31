@@ -42,9 +42,8 @@ public class PatternAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock
                 elementReference = config.ElementReference,
                 easing = config.EasingFunction,
                 direction = Enum.GetName(typeof(Direction), config.Direction),
-                duration = staggeredDelay ? config.Duration + ((index % 2) == 1 ? (index - 1) * 50 : index * 50) : config.Duration,
-                delay = config.Delay,
-                // delay = staggeredDelay ? config.Delay + (index % 2) == 1 ? (index - 1) * 50 : index * 50 : config.Delay
+                duration = config.Duration,
+                delay = staggeredDelay ? config.Delay + (index % 2) == 1 ? (index - 1) * 50 : index * 50 : config.Delay
             }
                 ).ToArray());
     }
