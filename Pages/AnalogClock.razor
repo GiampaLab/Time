@@ -78,9 +78,9 @@
             var oppositeDirectionsInfiniteAnimationManager = new InfiniteAnimationManager(JSRuntime, Clocks, hourReferences,
             minuteReferences, Direction.Anticlockwise, Direction.Clockwise, false);
 
-            chainedAnimationsManager = new ChainedAnimationsManager(new List<IAnimationManager> { timeAnimationManager,
-patternAnimationManager, oppositeDirectionsInfiniteAnimationManager, timeAnimationManager, wavePatternAnimationManager,
-anticlockwiseInfiniteAnimationManager }, new List<int> { 20000, 6000, 20000, 20000, 6000, 20000 });
+            chainedAnimationsManager = new ChainedAnimationsManager(new List<(IAnimationManager, int)> { (timeAnimationManager,
+20000),(patternAnimationManager, 6000), (oppositeDirectionsInfiniteAnimationManager, 20000), (timeAnimationManager,
+20000), (wavePatternAnimationManager, 6000), (anticlockwiseInfiniteAnimationManager, 20000) });
         }
 
         public void SetClock()
