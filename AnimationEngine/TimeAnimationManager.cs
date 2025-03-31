@@ -6,12 +6,12 @@ using Time.Components;
 namespace Time.AnimationEngine;
 
 public class TimeAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clocks,
-    List<ElementReference> hourReferences, List<ElementReference> minuteReferences) : IAnimationManager
+    List<ElementReference> hourReferences, List<ElementReference> minuteReferences, bool staggeredDelay) : IAnimationManager
 {
     private DotNetObjectReference<IAnimationManager>? myDotNetObjectReference;
     private readonly IJSRuntime jSRuntime = jSRuntime;
     private readonly Dictionary<int, Clock> clocks = clocks;
-    private readonly IList<Components.AnimationConfig> armConfigs = clocks.Values.SelectMany(x =>
+    private readonly IList<Components.AnimationConfig> animationConfigs = clocks.Values.SelectMany(x =>
             new[] { x.FirstArm.Config, x.SecondArm.Config }).ToArray();
     private int currentHourFirstDigit = 0;
     private int currentHourSecondDigit = 0;
@@ -25,15 +25,17 @@ public class TimeAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> c
             {
                 Direction = Direction.Anticlockwise,
                 EasingFunction = "ease-out",
-                Duration = 4500
+                Duration = 4500,
+                Delay = 0
             },
             new Components.AnimationConfig
             {
                 Direction = Direction.Clockwise,
                 EasingFunction = "ease-out",
-                Duration = 4500
+                Duration = 4500,
+                Delay = 0
             }, 60, hourReferences, minuteReferences);
-        SetAnimationStatus(null);
+        SetAnimationStatus(staggeredDelay);
     }
 
 
@@ -67,13 +69,15 @@ public class TimeAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> c
             AnimationConfigs.SetNextNumbersAnimationStatus(clocks, currentHourFirstDigit, currentHourSecondDigit, currentMinuteFirstDigit, currentMinuteSecondDigit);
 
             await jSRuntime.InvokeVoidAsync("animationLoop.animateClockArm", new[] { myDotNetObjectReference },
-                armConfigs.Select(config => new
+                animationConfigs.Select((config, index) => new
                 {
                     state = config.State,
                     elementReference = config.ElementReference,
                     easing = config.EasingFunction,
                     direction = Enum.GetName(typeof(Direction), config.Direction),
-                    duration = config.Duration
+                    duration = (stateInfo is bool && (bool)stateInfo) ? config.Duration + ((index % 2) == 1 ? (index - 1) * 50 : index * 50) : config.Duration,
+                    delay = config.Delay,
+                    //delay = (stateInfo is bool v && v) ? config.Delay + (index % 2) == 1 ? (index - 1) * 50 : index * 50 : config.Delay
                 }
                     ).ToArray());
         }

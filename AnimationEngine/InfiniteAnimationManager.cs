@@ -10,7 +10,7 @@ public class InfiniteAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Cloc
 {
     private readonly IJSRuntime jSRuntime = jSRuntime;
     private readonly Dictionary<int, Clock> clocks = clocks;
-    private readonly IList<AnimationConfig> armConfigs = clocks.Values.SelectMany(x =>
+    private readonly IList<AnimationConfig> animationConfigs = clocks.Values.SelectMany(x =>
             new[] { x.FirstArm.Config, x.SecondArm.Config }).ToArray();
 
     public async void Start()
@@ -31,7 +31,7 @@ public class InfiniteAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Cloc
                 Delay = 0
             }, 60, hourReferences, minuteReferences);
 
-        var args = armConfigs.Select((config, index) => new
+        var args = animationConfigs.Select((config, index) => new
         {
             state = config.State,
             elementReference = config.ElementReference,

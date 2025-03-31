@@ -31,10 +31,14 @@ window.animationLoop = {
         fill: "both",
         easing: item.easing,
       });
+      // animation.pause();
       animations.push(animation.finished);
       animation.finished.then(() => {
         previousAnimationConfigs[index] = item;
       });
+      // setTimeout(() => {
+      //   animation.play();
+      // }, item.delay);
     });
     Promise.all(animations).then(() => {
       console.log("All animations finished");
