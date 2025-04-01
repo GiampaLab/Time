@@ -11,8 +11,8 @@ public class PatternAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock
 {
     private readonly IJSRuntime jSRuntime = jSRuntime;
     private readonly Dictionary<int, Clock> clocks = clocks;
-    private readonly IList<Components.AnimationConfig> animationConfigs = clocks.Values.SelectMany(x =>
-            new[] { x.FirstArm.Config, x.SecondArm.Config }).ToArray();
+    private readonly IList<Components.AnimationConfig> animationInfo = clocks.Reverse().ToDictionary().Values.SelectMany(x =>
+            new[] { x.SecondArm.Config, x.FirstArm.Config }).ToArray();
     private DotNetObjectReference<IAnimationManager>? myDotNetObjectReference;
 
     public async void Start()
@@ -35,17 +35,18 @@ public class PatternAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock
 
         SetPatternAnimationStatus(clocks);
 
+        var animationConfigsArray = animationInfo.Select((config, index) => new
+        {
+            state = config.State,
+            elementReference = config.ElementReference,
+            easing = config.EasingFunction,
+            direction = Enum.GetName(typeof(Direction), config.Direction),
+            duration = config.Duration,
+            delay = staggeredDelay ? config.Delay + (index % 2) == 1 ? (index - 1) * 80 : index * 80 : config.Delay
+        });
+
         await jSRuntime.InvokeVoidAsync("animationLoop.animateClockArm", new[] { myDotNetObjectReference },
-            animationConfigs.Select((config, index) => new
-            {
-                state = config.State,
-                elementReference = config.ElementReference,
-                easing = config.EasingFunction,
-                direction = Enum.GetName(typeof(Direction), config.Direction),
-                duration = config.Duration,
-                delay = staggeredDelay ? config.Delay + (index % 2) == 1 ? (index - 1) * 50 : index * 50 : config.Delay
-            }
-                ).ToArray());
+            animationConfigsArray.Reverse().ToArray());
     }
 
     [JSInvokable]

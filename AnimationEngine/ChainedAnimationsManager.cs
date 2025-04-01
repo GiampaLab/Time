@@ -65,7 +65,7 @@ public partial class ChainedAnimationsManager : IAnimationManager
         animationManagerTimeIsUp = true;
         if (animationInfo.animationManager.GetAnimationType() == AnimationType.Infinite || animationInfo.animationManager.GetAnimationType() == AnimationType.Pattern)
         {
-            //needs to be triggered manually as the animation is infinite
+            //needs to be triggered manually as the animation is either infinite or id doesn't continue triggering another animation(Pattern)
             AnimationFinished();
         }
     }
