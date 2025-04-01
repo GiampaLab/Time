@@ -57,7 +57,6 @@ window.animationLoop = {
       });
     }
     newAnimationConfigs.forEach(function (item, index) {
-      const previousRotationDegrees = previousAnimationConfigs[index].state;
       let targetAngle = item.direction === "Clockwise" ? 360 : -360;
       // Pause using setTimeout
       setTimeout(() => {
@@ -70,6 +69,7 @@ window.animationLoop = {
         // We do not know the end state of the animation, so we set it to null
         // and we will calculate it when the animation is finished
         previousAnimationConfigs[index].state = null;
+        previousAnimationConfigs[index].direction = item.direction;
       }, item.delay);
     });
   },
