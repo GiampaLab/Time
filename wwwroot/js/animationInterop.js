@@ -18,7 +18,7 @@ window.animationLoop = {
       });
     } else if (previousAnimationConfigs.length == 0) {
       previousAnimationConfigs = Array.from({ length: animationConfigs.length }, () => {
-        return { state: 0, elementReference: null, direction: "Clockwise", duration: 0, delay: 0, easing: "linear" };
+        return createDefaultAnimationConfig();
       });
     }
     animationConfigs.forEach(function (item, index) {
@@ -49,14 +49,14 @@ window.animationLoop = {
       }
     });
   },
-  animateClockArmInfinite: function (something, newAnimationConfigs) {
+  animateClockArmInfinite: function (something, animationConfigs) {
     animations = [];
     if (previousAnimationConfigs.length == 0) {
-      previousAnimationConfigs = Array.from({ length: newAnimationConfigs.length }, () => {
-        return { state: 0, elementReference: null, direction: "Clockwise", duration: 0, delay: 0, easing: "linear" };
+      previousAnimationConfigs = Array.from({ length: animationConfigs.length }, () => {
+        return createDefaultAnimationConfig();
       });
     }
-    newAnimationConfigs.forEach(function (item, index) {
+    animationConfigs.forEach(function (item, index) {
       let targetAngle = item.direction === "Clockwise" ? 360 : -360;
       // Pause using setTimeout
       setTimeout(() => {
@@ -74,6 +74,11 @@ window.animationLoop = {
     });
   },
 };
+
+// Reusable function to create a default animation configuration
+function createDefaultAnimationConfig() {
+  return { state: 0, elementReference: null, direction: "Clockwise", duration: 0, delay: 0, easing: "linear" };
+}
 
 function generateKeyframesWithClockDirection(currentAngle, targetAngle, direction, numKeyframes) {
   const keyframes = [];
