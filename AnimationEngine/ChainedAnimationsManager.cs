@@ -5,17 +5,17 @@ namespace Time.AnimationEngine;
 public partial class ChainedAnimationsManager : IAnimationManager
 {
     private readonly IList<(IAnimationManager, int)> animationManagers;
-    private (IAnimationManager, int) animationManager;
+    private (IAnimationManager animationManager, int duration) animationInfo;
     private bool animationManagerTimeIsUp = false;
     private int animationManagerIndex;
 
-    public ChainedAnimationsManager(IList<(IAnimationManager, int)> animationManagers)
+    public ChainedAnimationsManager(IList<(IAnimationManager animationManager, int duration)> animationManagers)
     {
         this.animationManagers = animationManagers;
         var myDotNetObjectReference = DotNetObjectReference.Create<IAnimationManager>(this);
         foreach (var animationManager in animationManagers)
         {
-            animationManager.Item1.SetDotNetObjectReference(myDotNetObjectReference);
+            animationManager.animationManager.SetDotNetObjectReference(myDotNetObjectReference);
         }
     }
 
@@ -27,16 +27,16 @@ public partial class ChainedAnimationsManager : IAnimationManager
     [JSInvokable]
     public async void AnimationFinished()
     {
-        Console.WriteLine("Animation finished, Animation manager: " + animationManager.Item1.GetAnimationType());
+        Console.WriteLine("Animation finished, Animation manager: " + animationInfo.animationManager.GetAnimationType());
         if (!animationManagerTimeIsUp)
         {
             // Delegate the call to the animation manager
-            animationManager.Item1.AnimationFinished();
+            animationInfo.animationManager.AnimationFinished();
             return;
         }
         animationManagerTimeIsUp = false;
-        animationManager.Item1.Stop();
-        await InternalStart(animationManager);
+        animationInfo.animationManager.Stop();
+        await InternalStart(animationInfo);
     }
 
     public void Stop()
@@ -59,11 +59,11 @@ public partial class ChainedAnimationsManager : IAnimationManager
 
     private async Task InternalStart((IAnimationManager, int)? previousAnimationManager)
     {
-        animationManager = GetNextAnimationManager();
-        animationManager.Item1.Start();
-        await Task.Delay(animationManager.Item2);
+        animationInfo = GetNextAnimationManager();
+        animationInfo.animationManager.Start();
+        await Task.Delay(animationInfo.duration);
         animationManagerTimeIsUp = true;
-        if (animationManager.Item1.GetAnimationType() == AnimationType.Infinite || animationManager.Item1.GetAnimationType() == AnimationType.Pattern)
+        if (animationInfo.animationManager.GetAnimationType() == AnimationType.Infinite || animationInfo.animationManager.GetAnimationType() == AnimationType.Pattern)
         {
             //needs to be triggered manually as the animation is infinite
             AnimationFinished();
