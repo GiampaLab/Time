@@ -6,11 +6,14 @@ using Time.Components;
 namespace Time.AnimationEngine;
 
 public class TimeAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clocks,
-    List<ElementReference> hourReferences, List<ElementReference> minuteReferences, bool staggeredDelay) : IAnimationManager
+    List<ElementReference> hourReferences, List<ElementReference> minuteReferences,
+    bool staggeredDelay, bool staggeredDuration) : IAnimationManager
 {
     private DotNetObjectReference<IAnimationManager>? myDotNetObjectReference;
     private readonly IJSRuntime jSRuntime = jSRuntime;
     private readonly Dictionary<int, Clock> clocks = clocks;
+    private readonly bool staggeredDelay = staggeredDelay;
+    private readonly bool staggeredDuration = staggeredDuration;
     private readonly IList<Components.AnimationConfig> animationConfigs = clocks.Values.SelectMany(x =>
             new[] { x.FirstArm.Config, x.SecondArm.Config }).ToArray();
     private int currentHourFirstDigit = 0;
@@ -35,7 +38,7 @@ public class TimeAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> c
                 Duration = 4500,
                 Delay = 0
             }, 60, hourReferences, minuteReferences);
-        SetAnimationStatus(staggeredDelay);
+        SetAnimationStatus(null);
     }
 
 
@@ -43,7 +46,7 @@ public class TimeAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> c
     public void AnimationFinished()
     {
         timer?.Dispose();
-        timer = new Timer(SetAnimationStatus, new AutoResetEvent(false), 0, 4000);
+        timer = new Timer(SetAnimationStatus, new AutoResetEvent(false), 0, 500);
     }
 
     public void Stop()
@@ -75,9 +78,8 @@ public class TimeAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> c
                     elementReference = config.ElementReference,
                     easing = config.EasingFunction,
                     direction = Enum.GetName(typeof(Direction), config.Direction),
-                    duration = (stateInfo is bool && (bool)stateInfo) ? config.Duration + ((index % 2) == 1 ? (index - 1) * 50 : index * 50) : config.Duration,
-                    delay = config.Delay,
-                    //delay = (stateInfo is bool v && v) ? config.Delay + (index % 2) == 1 ? (index - 1) * 50 : index * 50 : config.Delay
+                    duration = staggeredDuration ? config.Duration + ((index % 2) == 1 ? (index - 1) * 80 : index * 80) : config.Duration,
+                    delay = staggeredDelay ? config.Delay + (index % 2) == 1 ? (index - 1) * 80 : index * 80 : config.Delay
                 }
                     ).ToArray());
         }

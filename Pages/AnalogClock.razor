@@ -62,15 +62,15 @@
             (Dictionary<int, Clock> clocks) =>
             {
                 AnimationConfigs.SetNextWaveAnimationStatus(clocks);
-            }, Direction.Anticlockwise, Direction.Anticlockwise, true);
+            }, Direction.Anticlockwise, Direction.Anticlockwise, false, true);
 
             var patternAnimationManager = new PatternAnimationManager(JSRuntime, Clocks, hourReferences, minuteReferences,
             (Dictionary<int, Clock> clocks) =>
             {
                 AnimationConfigs.SetNextPatternAnimationStatus(clocks);
-            }, Direction.Anticlockwise, Direction.Clockwise, true);
+            }, Direction.Anticlockwise, Direction.Clockwise, true, false);
 
-            var timeAnimationManager = new TimeAnimationManager(JSRuntime, Clocks, hourReferences, minuteReferences, true);
+            var timeAnimationManager = new TimeAnimationManager(JSRuntime, Clocks, hourReferences, minuteReferences, false, true);
 
             var anticlockwiseInfiniteAnimationManager = new InfiniteAnimationManager(JSRuntime, Clocks, hourReferences,
             minuteReferences, Direction.Anticlockwise, Direction.Anticlockwise, true);

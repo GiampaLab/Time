@@ -7,7 +7,8 @@ namespace Time.AnimationEngine;
 
 public class PatternAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clocks,
     List<ElementReference> hourReferences, List<ElementReference> minuteReferences,
-    Action<Dictionary<int, Clock>> SetPatternAnimationStatus, Direction hourArmDirection, Direction minuteArmDirection, bool staggeredDelay) : IAnimationManager
+    Action<Dictionary<int, Clock>> SetPatternAnimationStatus, Direction hourArmDirection, Direction minuteArmDirection,
+    bool staggeredDelay, bool staggeredDuration) : IAnimationManager
 {
     private readonly IJSRuntime jSRuntime = jSRuntime;
     private readonly Dictionary<int, Clock> clocks = clocks;
@@ -41,7 +42,7 @@ public class PatternAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock
             elementReference = config.ElementReference,
             easing = config.EasingFunction,
             direction = Enum.GetName(typeof(Direction), config.Direction),
-            duration = config.Duration,
+            duration = staggeredDuration ? config.Duration + ((index % 2) == 1 ? (index - 1) * 80 : index * 80) : config.Duration,
             delay = staggeredDelay ? config.Delay + (index % 2) == 1 ? (index - 1) * 80 : index * 80 : config.Delay
         });
 

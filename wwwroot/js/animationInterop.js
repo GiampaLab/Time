@@ -6,47 +6,48 @@ var animations = [];
 window.animationLoop = {
   animateClockArm: function (dotNetObjectReference, animationConfigs) {
     animations = [];
-    if (previousAnimationConfigs.length > 0) {
-      previousAnimationConfigs.forEach((previousAnimationConfig, index) => {
-        if (previousAnimationConfig.state == null) {
-          // If the animation is continuous, we need to get the current rotation angle of the element
-          var currentAngle = getCurrentRotationAngle(previousAnimationConfig.elementReference);
-          previousAnimationConfig.state = currentAngle;
-          // To chain the animation with the previous one we need to set the same direction
-          animationConfigs[index].direction = previousAnimationConfig.direction;
-        }
-      });
-    } else if (previousAnimationConfigs.length == 0) {
+    if (previousAnimationConfigs.length == 0) {
       previousAnimationConfigs = Array.from({ length: animationConfigs.length }, () => {
         return createDefaultAnimationConfig();
       });
     }
     animationConfigs.forEach(function (item, index) {
-      const previousRotationDegrees = previousAnimationConfigs[index].state;
-      const keyframes = generateKeyframesWithClockDirection(previousRotationDegrees, item.state, item.direction, 3);
-      let animation = item.elementReference.animate(keyframes, {
-        // timing options
-        duration: item.duration,
-        iterations: 1,
-        fill: "both",
-        easing: item.easing,
-      });
-      animation.pause();
-      animations.push(animation.finished);
-      animation.finished.then(() => {
-        previousAnimationConfigs[index] = item;
-      });
       setTimeout(() => {
-        animation.play();
-      }, item.delay);
-    });
-    Promise.all(animations).then(() => {
-      console.log("All animations finished");
-      if (dotNetObjectReference != null) {
-        dotNetObjectReference.forEach((element) => {
-          element.invokeMethodAsync("AnimationFinished");
+        if (previousAnimationConfigs.length > 0) {
+          //previousAnimationConfigs.forEach((previousAnimationConfig, index) => {
+          if (previousAnimationConfigs[index].state == null) {
+            // If the animation is continuous, we need to get the current rotation angle of the element
+            var currentAngle = getCurrentRotationAngle(previousAnimationConfigs[index].elementReference);
+            previousAnimationConfigs[index].state = currentAngle;
+            // To chain the animation with the previous one we need to set the same direction
+            animationConfigs[index].direction = previousAnimationConfigs[index].direction;
+          }
+          //});
+        }
+        const previousRotationDegrees = previousAnimationConfigs[index].state;
+        const keyframes = generateKeyframesWithClockDirection(previousRotationDegrees, item.state, item.direction, 3);
+        let animation = item.elementReference.animate(keyframes, {
+          // timing options
+          duration: item.duration,
+          iterations: 1,
+          fill: "both",
+          easing: item.easing,
         });
-      }
+        animations.push(animation.finished);
+        animation.finished.then(() => {
+          previousAnimationConfigs[index] = item;
+        });
+        if (index == animationConfigs.length - 1) {
+          Promise.all(animations).then(() => {
+            console.log("All animations finished");
+            if (dotNetObjectReference != null) {
+              dotNetObjectReference.forEach((element) => {
+                element.invokeMethodAsync("AnimationFinished");
+              });
+            }
+          });
+        }
+      }, item.delay);
     });
   },
   animateClockArmInfinite: function (something, animationConfigs) {
