@@ -4,11 +4,19 @@ using Microsoft.AspNetCore.Components;
 using Time.Components;
 public class AnimationConfigs
 {
-    public static void SetClocksConfigs(Dictionary<int, Clock> clocks, AnimationConfig firstArmConfig, AnimationConfig secondArmConfig, int progressiveDelay, List<ElementReference> hourReferences, List<ElementReference> minuteReferences)
+    public static void SetClocksConfigs(Dictionary<int, Clock> clocks, AnimationConfig firstArmConfig, AnimationConfig secondArmConfig, List<ElementReference> hourReferences, List<ElementReference> minuteReferences)
     {
         for (var i = 0; i < 24; i++)
         {
             clocks[i + 1].UpdateClockArmsConfig(firstArmConfig, secondArmConfig, hourReferences[i], minuteReferences[i]);
+        }
+    }
+
+    public static void SetClocksConfigsReverse(Dictionary<int, Clock> clocks, AnimationConfig firstArmConfig, AnimationConfig secondArmConfig, List<ElementReference> hourReferences, List<ElementReference> minuteReferences)
+    {
+        for (var i = 24; i >= 1; i--)
+        {
+            clocks[i].UpdateClockArmsConfig(firstArmConfig, secondArmConfig, hourReferences[i], minuteReferences[i]);
         }
     }
 

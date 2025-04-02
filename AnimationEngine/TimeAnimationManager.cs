@@ -28,16 +28,16 @@ public class TimeAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> c
             {
                 Direction = Direction.Anticlockwise,
                 EasingFunction = "ease-out",
-                Duration = 4500,
+                Duration = 4000,
                 Delay = 0
             },
             new Components.AnimationConfig
             {
                 Direction = Direction.Clockwise,
                 EasingFunction = "ease-out",
-                Duration = 4500,
+                Duration = 4000,
                 Delay = 0
-            }, 60, hourReferences, minuteReferences);
+            }, hourReferences, minuteReferences);
         SetAnimationStatus(null);
     }
 

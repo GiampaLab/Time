@@ -12,13 +12,13 @@ public class PatternAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock
 {
     private readonly IJSRuntime jSRuntime = jSRuntime;
     private readonly Dictionary<int, Clock> clocks = clocks;
-    private readonly IList<Components.AnimationConfig> animationInfo = clocks.Reverse().ToDictionary().Values.SelectMany(x =>
+    private readonly IList<Components.AnimationConfig> animationInfo = clocks.Values.SelectMany(x =>
             new[] { x.SecondArm.Config, x.FirstArm.Config }).ToArray();
     private DotNetObjectReference<IAnimationManager>? myDotNetObjectReference;
 
     public async void Start()
     {
-        AnimationConfigs.SetClocksConfigs(clocks,
+        AnimationConfigs.SetClocksConfigsReverse(clocks,
             new Components.AnimationConfig
             {
                 Direction = hourArmDirection,
@@ -32,7 +32,7 @@ public class PatternAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock
                 EasingFunction = "linear",
                 Duration = 4500,
                 Delay = 0
-            }, 60, hourReferences, minuteReferences);
+            }, hourReferences, minuteReferences);
 
         SetPatternAnimationStatus(clocks);
 
@@ -47,7 +47,7 @@ public class PatternAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock
         });
 
         await jSRuntime.InvokeVoidAsync("animationLoop.animateClockArm", new[] { myDotNetObjectReference },
-            animationConfigsArray.Reverse().ToArray());
+            animationConfigsArray.ToArray());
     }
 
     [JSInvokable]

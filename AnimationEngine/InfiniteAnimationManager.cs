@@ -29,7 +29,7 @@ public class InfiniteAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Cloc
                 EasingFunction = "linear",
                 Duration = 5000,
                 Delay = 0
-            }, 60, hourReferences, minuteReferences);
+            }, hourReferences, minuteReferences);
 
         var args = animationConfigs.Select((config, index) => new
         {
