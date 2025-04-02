@@ -62,4 +62,8 @@ public class InfiniteAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Cloc
     public void Stop()
     {
     }
+
+    public void Dispose()
+    {
+    }
 }

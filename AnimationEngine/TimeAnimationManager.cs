@@ -46,7 +46,7 @@ public class TimeAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> c
     public void AnimationFinished()
     {
         timer?.Dispose();
-        timer = new Timer(SetAnimationStatus, new AutoResetEvent(false), 0, 500);
+        timer = new Timer(SetAnimationStatus, new AutoResetEvent(false), 0, 200);
     }
 
     public void Stop()
@@ -64,6 +64,7 @@ public class TimeAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> c
 
         if (hoursFirstDigit != currentHourFirstDigit || hoursSecondDigit != currentHourSecondDigit || minuteFirstDigit != currentMinuteFirstDigit || minuteSecondDigit != currentMinuteSecondDigit)
         {
+            timer?.Dispose();
             currentHourFirstDigit = hoursFirstDigit;
             currentHourSecondDigit = hoursSecondDigit;
             currentMinuteFirstDigit = minuteFirstDigit;
@@ -93,5 +94,10 @@ public class TimeAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> c
     public void SetDotNetObjectReference(DotNetObjectReference<IAnimationManager> dotNetObjectReference)
     {
         myDotNetObjectReference = dotNetObjectReference;
+    }
+
+    public void Dispose()
+    {
+        timer?.Dispose();
     }
 }

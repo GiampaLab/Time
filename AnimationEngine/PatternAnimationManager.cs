@@ -68,4 +68,8 @@ public class PatternAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock
     {
         myDotNetObjectReference = dotNetObjectReference;
     }
+
+    public void Dispose()
+    {
+    }
 }

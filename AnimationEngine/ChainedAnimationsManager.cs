@@ -2,9 +2,10 @@ using Microsoft.JSInterop;
 
 namespace Time.AnimationEngine;
 
-public partial class ChainedAnimationsManager : IAnimationManager
+public partial class ChainedAnimationsManager : IAnimationManager, IDisposable
 {
     private readonly IList<(IAnimationManager, int)> animationManagers;
+    private readonly DotNetObjectReference<IAnimationManager> myDotNetObjectReference;
     private (IAnimationManager animationManager, int duration) animationInfo;
     private bool animationManagerTimeIsUp = false;
     private int animationManagerIndex;
@@ -12,7 +13,7 @@ public partial class ChainedAnimationsManager : IAnimationManager
     public ChainedAnimationsManager(IList<(IAnimationManager animationManager, int duration)> animationManagers)
     {
         this.animationManagers = animationManagers;
-        var myDotNetObjectReference = DotNetObjectReference.Create<IAnimationManager>(this);
+        myDotNetObjectReference = DotNetObjectReference.Create<IAnimationManager>(this);
         foreach (var animationManager in animationManagers)
         {
             animationManager.animationManager.SetDotNetObjectReference(myDotNetObjectReference);
@@ -67,6 +68,15 @@ public partial class ChainedAnimationsManager : IAnimationManager
         {
             //needs to be triggered manually as the animation is either infinite or id doesn't continue triggering another animation(Pattern)
             AnimationFinished();
+        }
+    }
+
+    public void Dispose()
+    {
+        myDotNetObjectReference?.Dispose();
+        foreach (var animationManager in animationManagers)
+        {
+            animationManager.Item1.Dispose();
         }
     }
 }

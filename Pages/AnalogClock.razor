@@ -1,5 +1,6 @@
 @page "/"
-@inject IJSRuntime JSRuntime
+@inject IJSRuntime JSRuntime;
+@implements IDisposable;
 @using Time.AnimationConfig;
 @using Time.AnimationEngine;
 @using Time.Components;
@@ -46,7 +47,11 @@
             controller.SetClock();
         }
     }
-    public class Controller
+    public void Dispose()
+    {
+        controller?.Dispose();
+    }
+    public class Controller : IDisposable
     {
         //private PatternAnimationManager animationManager;
         private ChainedAnimationsManager chainedAnimationsManager;
@@ -62,7 +67,7 @@
             (Dictionary<int, Clock> clocks) =>
             {
                 AnimationConfigs.SetNextWaveAnimationStatus(clocks);
-            }, Direction.Anticlockwise, Direction.Anticlockwise, false, true);
+            }, Direction.Anticlockwise, Direction.Anticlockwise, true, false);
 
             var patternAnimationManager = new PatternAnimationManager(JSRuntime, Clocks, hourReferences, minuteReferences,
             (Dictionary<int, Clock> clocks) =>
@@ -90,6 +95,11 @@
         public void SetClock()
         {
             chainedAnimationsManager.Start();
+        }
+
+        public void Dispose()
+        {
+            chainedAnimationsManager?.Dispose();
         }
     }
 }
