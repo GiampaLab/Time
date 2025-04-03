@@ -61,31 +61,30 @@
             Clocks = new Dictionary<int, Clock>();
 
             for (var i = 0; i < 24; i++)
-                Clocks.Add(i + 1, new Clock(i + 1));
+                Clocks.Add(i + 1, new Clock(i + 1, hourReferences[i], minuteReferences[i]));
 
-            var wavePatternAnimationManager = new PatternAnimationManager(JSRuntime, Clocks, hourReferences, minuteReferences,
+            var wavePatternAnimationManager = new PatternAnimationManager(JSRuntime, Clocks,
             (Dictionary<int, Clock> clocks) =>
             {
                 AnimationConfigs.SetNextWaveAnimationStatus(clocks);
             }, Direction.Anticlockwise, Direction.Anticlockwise, true, false);
 
-            var patternAnimationManager = new PatternAnimationManager(JSRuntime, Clocks, hourReferences, minuteReferences,
+            var patternAnimationManager = new PatternAnimationManager(JSRuntime, Clocks,
             (Dictionary<int, Clock> clocks) =>
             {
                 AnimationConfigs.SetNextPatternAnimationStatus(clocks);
             }, Direction.Anticlockwise, Direction.Clockwise, true, false);
 
-            var timeAnimationManager = new TimeAnimationManager(JSRuntime, Clocks, hourReferences, minuteReferences, false, true);
+            var timeAnimationManager = new TimeAnimationManager(JSRuntime, Clocks, false, true);
 
-            var anticlockwiseInfiniteAnimationManager = new InfiniteAnimationManager(JSRuntime, Clocks, hourReferences,
-            minuteReferences, Direction.Anticlockwise, Direction.Anticlockwise, true);
+            var anticlockwiseInfiniteAnimationManager = new InfiniteAnimationManager(JSRuntime, Clocks, Direction.Anticlockwise,
+            Direction.Anticlockwise, true);
 
-            var oppositeDirectionsInfiniteAnimationManager = new InfiniteAnimationManager(JSRuntime, Clocks, hourReferences,
-            minuteReferences, Direction.Anticlockwise, Direction.Clockwise, false);
+            var oppositeDirectionsInfiniteAnimationManager = new InfiniteAnimationManager(JSRuntime, Clocks,
+            Direction.Anticlockwise, Direction.Clockwise, false);
 
             var oppositeDirectionsStaggeredDelayInfiniteAnimationManager = new InfiniteAnimationManager(JSRuntime, Clocks,
-            hourReferences,
-            minuteReferences, Direction.Anticlockwise, Direction.Clockwise, true);
+            Direction.Anticlockwise, Direction.Clockwise, true);
 
             chainedAnimationsManager = new ChainedAnimationsManager(new List<(IAnimationManager, int)> { (timeAnimationManager,
 20000),(wavePatternAnimationManager, 9000), (anticlockwiseInfiniteAnimationManager, 20000), (timeAnimationManager,

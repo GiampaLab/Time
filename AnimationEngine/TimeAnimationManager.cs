@@ -6,7 +6,6 @@ using Time.Components;
 namespace Time.AnimationEngine;
 
 public class TimeAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clocks,
-    List<ElementReference> hourReferences, List<ElementReference> minuteReferences,
     bool staggeredDelay, bool staggeredDuration) : IAnimationManager
 {
     private DotNetObjectReference<IAnimationManager>? myDotNetObjectReference;
@@ -28,16 +27,16 @@ public class TimeAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> c
             {
                 Direction = Direction.Anticlockwise,
                 EasingFunction = "ease-out",
-                Duration = 4500,
+                Duration = 3500,
                 Delay = 0
             },
             new Components.AnimationConfig
             {
                 Direction = Direction.Clockwise,
                 EasingFunction = "ease-out",
-                Duration = 4500,
+                Duration = 3500,
                 Delay = 0
-            }, 60, hourReferences, minuteReferences);
+            });
         SetAnimationStatus(null);
     }
 

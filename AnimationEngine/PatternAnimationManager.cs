@@ -6,7 +6,6 @@ using Time.Components;
 namespace Time.AnimationEngine;
 
 public class PatternAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clocks,
-    List<ElementReference> hourReferences, List<ElementReference> minuteReferences,
     Action<Dictionary<int, Clock>> SetPatternAnimationStatus, Direction hourArmDirection, Direction minuteArmDirection,
     bool staggeredDelay, bool staggeredDuration) : IAnimationManager
 {
@@ -32,7 +31,7 @@ public class PatternAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock
                 EasingFunction = "linear",
                 Duration = 4500,
                 Delay = 0
-            }, 60, hourReferences, minuteReferences);
+            });
 
         SetPatternAnimationStatus(clocks);
 

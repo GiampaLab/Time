@@ -5,7 +5,6 @@ using Time.AnimationEngine;
 using Time.Components;
 
 public class InfiniteAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clocks,
-    List<ElementReference> hourReferences, List<ElementReference> minuteReferences,
     Direction firstArmDirection, Direction secondArmDirection, bool staggeredDelay) : IAnimationManager
 {
     private readonly IJSRuntime jSRuntime = jSRuntime;
@@ -29,7 +28,7 @@ public class InfiniteAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Cloc
                 EasingFunction = "linear",
                 Duration = 5000,
                 Delay = 0
-            }, 60, hourReferences, minuteReferences);
+            });
 
         var args = animationConfigs.Select((config, index) => new
         {

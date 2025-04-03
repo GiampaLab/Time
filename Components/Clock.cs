@@ -15,25 +15,25 @@ public class Clock
     public int Id { get; private set; }
     public ClockArm FirstArm { get; private set; } = new();
     public ClockArm SecondArm { get; private set; } = new();
-    public Clock(int Id, AnimationConfig? firstArmConfig = null, AnimationConfig? secondArmConfig = null)
+    public Clock(int Id, ElementReference hourReference, ElementReference minuteReference, AnimationConfig? firstArmConfig = null, AnimationConfig? secondArmConfig = null)
     {
         this.Id = Id;
         FirstArm.CurrentState = 0;
         FirstArm.Config = firstArmConfig ?? _defaultFirstArmConfig;
+        FirstArm.Config.ElementReference = hourReference;
         SecondArm.CurrentState = 0;
         SecondArm.Config = secondArmConfig ?? _defaultSecondArmConfig;
+        SecondArm.Config.ElementReference = minuteReference;
     }
 
-    public void UpdateClockArmsConfig(AnimationConfig firstArmConfig, AnimationConfig secondArmConfig, ElementReference hourReference, ElementReference minuteReference)
+    public void UpdateClockArmsConfig(AnimationConfig firstArmConfig, AnimationConfig secondArmConfig)
     {
         FirstArm.Config.Direction = firstArmConfig.Direction;
         FirstArm.Config.EasingFunction = firstArmConfig.EasingFunction;
-        FirstArm.Config.ElementReference = hourReference;
         FirstArm.Config.Duration = firstArmConfig.Duration;
         FirstArm.Config.Delay = firstArmConfig.Delay;
         SecondArm.Config.Direction = secondArmConfig.Direction;
         SecondArm.Config.EasingFunction = secondArmConfig.EasingFunction;
-        SecondArm.Config.ElementReference = minuteReference;
         SecondArm.Config.Duration = secondArmConfig.Duration;
         SecondArm.Config.Delay = secondArmConfig.Delay;
     }
