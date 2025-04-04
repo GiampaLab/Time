@@ -3,6 +3,11 @@ using Time.Components;
 namespace Time.AnimationConfig;
 public class AnimationConfigs
 {
+    public static int StaggeredAnimation(bool staggered, int index, int milliseconds, int staggeredMilliseconds)
+    {
+        return staggered ? milliseconds + ((index % 2) == 1 ? (index - 1) * staggeredMilliseconds : index * staggeredMilliseconds) : milliseconds;
+    }
+
     public static void SetClocksAnimationConfigs(Dictionary<int, Clock> clocks, Func<Clock, int, Components.AnimationConfig> selectFirstArmConfig, Func<Clock, int, Components.AnimationConfig> selectSecondArmConfig)
     {
         for (var i = 0; i < 24; i++)

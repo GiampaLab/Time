@@ -34,15 +34,7 @@ public class InfiniteAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Cloc
         AnimationConfigs.SetClocksAnimationConfigs(clocks,
             SetHourArmAnimationConfig, SetMinuteArmAnimationConfig);
 
-        var args = animationConfigs.Select((config, index) => new
-        {
-            state = config.State,
-            elementReference = config.ElementReference,
-            easing = config.EasingFunction,
-            direction = Enum.GetName(typeof(Direction), config.Direction),
-            duration = config.Duration,
-            delay = config.Delay
-        }).ToArray();
+        var args = animationConfigs.Select(AnimationUtils.MapAnimationConfig);
 
         await jSRuntime.InvokeVoidAsync("animationLoop.animateClockArmInfinite", null, args);
     }

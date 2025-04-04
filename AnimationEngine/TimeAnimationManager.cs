@@ -22,8 +22,8 @@ public class TimeAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> c
         {
             Direction = Direction.Anticlockwise,
             EasingFunction = "linear",
-            Duration = staggeredDuration ? duration + ((index % 2) == 1 ? (index - 1) * 80 : index * 80) : duration,
-            Delay = staggeredDelay ? delay + (index % 2) == 1 ? (index - 1) * 80 : index * 80 : delay
+            Duration = AnimationConfigs.StaggeredAnimation(staggeredDuration, index, duration, 80),
+            Delay = AnimationConfigs.StaggeredAnimation(staggeredDelay, index, delay, 80)
         };
 
     readonly Func<Clock, int, Components.AnimationConfig> SetMinuteArmAnimationConfig = (clock, index) =>
@@ -31,8 +31,8 @@ public class TimeAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> c
         {
             Direction = Direction.Clockwise,
             EasingFunction = "linear",
-            Duration = staggeredDuration ? duration + ((index % 2) == 1 ? (index - 1) * 80 : index * 80) : duration,
-            Delay = staggeredDelay ? delay + (index % 2) == 1 ? (index - 1) * 80 : index * 80 : delay
+            Duration = AnimationConfigs.StaggeredAnimation(staggeredDuration, index, duration, 80),
+            Delay = AnimationConfigs.StaggeredAnimation(staggeredDelay, index, delay, 80)
         };
     public void Start()
     {
@@ -72,18 +72,11 @@ public class TimeAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> c
             AnimationConfigs.SetNextNumbersAnimationStatus(clocks, currentHourFirstDigit, currentHourSecondDigit, currentMinuteFirstDigit, currentMinuteSecondDigit);
 
             await jSRuntime.InvokeVoidAsync("animationLoop.animateClockArm", new[] { myDotNetObjectReference },
-                animationConfigs.Select((config, index) => new
-                {
-                    state = config.State,
-                    elementReference = config.ElementReference,
-                    easing = config.EasingFunction,
-                    direction = Enum.GetName(typeof(Direction), config.Direction),
-                    duration = config.Duration,
-                    delay = config.Delay
-                }
-                    ).ToArray());
+                animationConfigs.Select(AnimationUtils.MapAnimationConfig));
         }
     }
+
+
 
     public AnimationType GetAnimationType()
     {

@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using Time.AnimationConfig;
 using Time.Components;
@@ -21,8 +20,8 @@ public class PatternAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock
         {
             Direction = hourArmDirection,
             EasingFunction = "linear",
-            Duration = staggeredDuration ? duration + ((index % 2) == 1 ? (index - 1) * 80 : index * 80) : duration,
-            Delay = staggeredDelay ? delay + (index % 2) == 1 ? (index - 1) * 80 : index * 80 : delay
+            Duration = AnimationConfigs.StaggeredAnimation(staggeredDuration, index, duration, 80),
+            Delay = AnimationConfigs.StaggeredAnimation(staggeredDelay, index, delay, 80)
         };
 
     readonly Func<Clock, int, Components.AnimationConfig> SetMinuteArmAnimationConfig = (clock, index) =>
@@ -30,8 +29,8 @@ public class PatternAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock
         {
             Direction = minuteArmDirection,
             EasingFunction = "linear",
-            Duration = staggeredDuration ? duration + ((index % 2) == 1 ? (index - 1) * 80 : index * 80) : duration,
-            Delay = staggeredDelay ? delay + (index % 2) == 1 ? (index - 1) * 80 : index * 80 : delay
+            Duration = AnimationConfigs.StaggeredAnimation(staggeredDuration, index, duration, 80),
+            Delay = AnimationConfigs.StaggeredAnimation(staggeredDelay, index, delay, 80)
         };
     public async void Start()
     {
@@ -39,15 +38,7 @@ public class PatternAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock
 
         SetPatternAnimationStatus(clocks);
 
-        var animationConfigsArray = animationInfo.Select((config, index) => new
-        {
-            state = config.State,
-            elementReference = config.ElementReference,
-            easing = config.EasingFunction,
-            direction = Enum.GetName(typeof(Direction), config.Direction),
-            duration = config.Duration,
-            delay = config.Delay
-        });
+        var animationConfigsArray = animationInfo.Select(AnimationUtils.MapAnimationConfig);
 
         await jSRuntime.InvokeVoidAsync("animationLoop.animateClockArm", new[] { myDotNetObjectReference },
             animationConfigsArray.ToArray());
