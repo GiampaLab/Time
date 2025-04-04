@@ -85,8 +85,8 @@
             {
                 Direction = Direction.Anticlockwise,
                 EasingFunction = "ease-out",
-                Duration = AnimationConfigs.StaggeredAnimation(true, index, 4000, 80),
-                Delay = AnimationConfigs.StaggeredAnimation(false, index, 0, 120)
+                Duration = AnimationConfigs.StaggeredAnimation(false, index, 4000, 80),
+                Delay = AnimationConfigs.StaggeredAnimation(true, index, 0, 120)
             };
 
                 Func<Clock, int, Components.AnimationConfig> SetMinuteArmAnimationConfig = (clock, index) =>
@@ -94,10 +94,10 @@
             {
                 Direction = Direction.Clockwise,
                 EasingFunction = "ease-out",
-                Duration = AnimationConfigs.StaggeredAnimation(true, index, 4000, 80),
-                Delay = AnimationConfigs.StaggeredAnimation(false, index, 0, 120)
+                Duration = AnimationConfigs.StaggeredAnimation(false, index, 4000, 80),
+                Delay = AnimationConfigs.StaggeredAnimation(true, index, 0, 120)
             };
-                AnimationConfigs.SetClocksAnimationConfigs(clocks, SetHourArmAnimationConfig, SetMinuteArmAnimationConfig);
+                AnimationConfigs.SetReverseClocksConfigs(clocks, SetHourArmAnimationConfig, SetMinuteArmAnimationConfig);
             }, (Dictionary<int, Clock> clocks) =>
             {
                 AnimationConfigs.SetStaticClocksAnimationConfigs(clocks, new Components.AnimationConfig

@@ -37,7 +37,7 @@ window.animationLoop = {
         animation.finished.then(() => {
           previousAnimationConfigs[index] = item;
         });
-        if (index == animationConfigs.length - 1) {
+        if (animations.length == animationConfigs.length) {
           Promise.all(animations).then(() => {
             if (dotNetObjectReference != null) {
               dotNetObjectReference.forEach((element) => {
