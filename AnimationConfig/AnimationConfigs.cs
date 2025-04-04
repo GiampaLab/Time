@@ -8,6 +8,15 @@ public class AnimationConfigs
         return staggered ? milliseconds + ((index % 2) == 1 ? (index - 1) * staggeredMilliseconds : index * staggeredMilliseconds) : milliseconds;
     }
 
+    public static void SetStaticClocksAnimationConfigs(Dictionary<int, Clock> clocks, Components.AnimationConfig firstArmConfig, Components.AnimationConfig secondArmConfig)
+    {
+        for (var i = 0; i < 24; i++)
+        {
+            //config is the same for all clocks
+            clocks[i + 1].UpdateClockArmsConfig(firstArmConfig, secondArmConfig);
+        }
+    }
+
     public static void SetClocksAnimationConfigs(Dictionary<int, Clock> clocks, Func<Clock, int, Components.AnimationConfig> selectFirstArmConfig, Func<Clock, int, Components.AnimationConfig> selectSecondArmConfig)
     {
         for (var i = 0; i < 24; i++)
@@ -23,6 +32,21 @@ public class AnimationConfigs
         {
             clocks[i + 1].UpdateClockArmsConfig(selectFirstArmConfig(clocks[i + 1], j), selectSecondArmConfig(clocks[i + 1], j));
             j++;
+        }
+    }
+
+    public static void SetClocksConfigsByRow(Dictionary<int, Clock> clocks, Func<Clock, int, Components.AnimationConfig> selectFirstArmConfig, Func<Clock, int, Components.AnimationConfig> selectSecondArmConfig)
+    {
+        for (var i = 0; i < 3; i++)
+        {
+            clocks[i + 1].UpdateClockArmsConfig(selectFirstArmConfig(clocks[i + 1], 0 + i * 8), selectSecondArmConfig(clocks[i + 1], 0 + i * 8));
+            clocks[i + 4].UpdateClockArmsConfig(selectFirstArmConfig(clocks[i + 4], 1 + i * 8), selectSecondArmConfig(clocks[i + 4], 1 + i * 8));
+            clocks[i + 7].UpdateClockArmsConfig(selectFirstArmConfig(clocks[i + 7], 2 + i * 8), selectSecondArmConfig(clocks[i + 7], 2 + i * 8));
+            clocks[i + 10].UpdateClockArmsConfig(selectFirstArmConfig(clocks[i + 10], 3 + i * 8), selectSecondArmConfig(clocks[i + 10], 3 + i * 8));
+            clocks[i + 13].UpdateClockArmsConfig(selectFirstArmConfig(clocks[i + 13], 4 + i * 8), selectSecondArmConfig(clocks[i + 13], 4 + i * 8));
+            clocks[i + 16].UpdateClockArmsConfig(selectFirstArmConfig(clocks[i + 16], 5 + i * 8), selectSecondArmConfig(clocks[i + 16], 5 + i * 8));
+            clocks[i + 19].UpdateClockArmsConfig(selectFirstArmConfig(clocks[i + 19], 6 + i * 8), selectSecondArmConfig(clocks[i + 19], 6 + i * 8));
+            clocks[i + 22].UpdateClockArmsConfig(selectFirstArmConfig(clocks[i + 22], 7 + i * 8), selectSecondArmConfig(clocks[i + 22], 7 + i * 8));
         }
     }
 

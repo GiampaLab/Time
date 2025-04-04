@@ -4,7 +4,7 @@ using Time.Components;
 
 namespace Time.AnimationEngine;
 
-public class TimeAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clocks, Action<Dictionary<int, Clock>> SetTimeAnimationConfig) : IAnimationManager
+public class TimeAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clocks, Action<Dictionary<int, Clock>> SetTimeAnimationConfig, Action<Dictionary<int, Clock>> SetStaticTimeAnimationConfig) : IAnimationManager
 {
     private DotNetObjectReference<IAnimationManager>? myDotNetObjectReference;
     private readonly IJSRuntime jSRuntime = jSRuntime;
@@ -20,6 +20,7 @@ public class TimeAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> c
     {
         SetTimeAnimationConfig(clocks);
         SetAnimationStatus(null);
+        SetStaticTimeAnimationConfig(clocks);
     }
 
     [JSInvokable]
