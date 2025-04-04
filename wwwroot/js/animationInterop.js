@@ -39,7 +39,6 @@ window.animationLoop = {
         });
         if (index == animationConfigs.length - 1) {
           Promise.all(animations).then(() => {
-            console.log("All animations finished");
             if (dotNetObjectReference != null) {
               dotNetObjectReference.forEach((element) => {
                 element.invokeMethodAsync("AnimationFinished");

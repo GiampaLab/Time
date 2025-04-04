@@ -4,8 +4,7 @@ using Time.Components;
 
 namespace Time.AnimationEngine;
 
-public class TimeAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clocks, int delay, int duration,
-    bool staggeredDelay, bool staggeredDuration) : IAnimationManager
+public class TimeAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clocks, Action<Dictionary<int, Clock>> SetTimeAnimationConfig) : IAnimationManager
 {
     private DotNetObjectReference<IAnimationManager>? myDotNetObjectReference;
     private readonly IJSRuntime jSRuntime = jSRuntime;
@@ -17,29 +16,11 @@ public class TimeAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> c
     private int currentMinuteFirstDigit = 0;
     private int currentMinuteSecondDigit = 0;
     private Timer? timer;
-    readonly Func<Clock, int, Components.AnimationConfig> SetHourArmAnimationConfig = (clock, index) =>
-        new Components.AnimationConfig
-        {
-            Direction = Direction.Anticlockwise,
-            EasingFunction = "linear",
-            Duration = AnimationConfigs.StaggeredAnimation(staggeredDuration, index, duration, 80),
-            Delay = AnimationConfigs.StaggeredAnimation(staggeredDelay, index, delay, 80)
-        };
-
-    readonly Func<Clock, int, Components.AnimationConfig> SetMinuteArmAnimationConfig = (clock, index) =>
-        new Components.AnimationConfig
-        {
-            Direction = Direction.Clockwise,
-            EasingFunction = "linear",
-            Duration = AnimationConfigs.StaggeredAnimation(staggeredDuration, index, duration, 80),
-            Delay = AnimationConfigs.StaggeredAnimation(staggeredDelay, index, delay, 80)
-        };
     public void Start()
     {
-        AnimationConfigs.SetClocksAnimationConfigs(clocks, SetHourArmAnimationConfig, SetMinuteArmAnimationConfig);
+        SetTimeAnimationConfig(clocks);
         SetAnimationStatus(null);
     }
-
 
     [JSInvokable]
     public void AnimationFinished()
@@ -75,8 +56,6 @@ public class TimeAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> c
                 animationConfigs.Select(AnimationUtils.MapAnimationConfig));
         }
     }
-
-
 
     public AnimationType GetAnimationType()
     {
