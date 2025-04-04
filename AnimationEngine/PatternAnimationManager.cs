@@ -6,32 +6,36 @@ using Time.Components;
 namespace Time.AnimationEngine;
 
 public class PatternAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clocks,
-    Action<Dictionary<int, Clock>> SetPatternAnimationStatus, Direction hourArmDirection, Direction minuteArmDirection,
+    Action<Dictionary<int, Clock>> SetPatternAnimationStatus, Direction hourArmDirection,
+    Direction minuteArmDirection, int duration, int delay,
     bool staggeredDelay, bool staggeredDuration) : IAnimationManager
 {
     private readonly IJSRuntime jSRuntime = jSRuntime;
     private readonly Dictionary<int, Clock> clocks = clocks;
-    private readonly IList<Components.AnimationConfig> animationInfo = clocks.Reverse().ToDictionary().Values.SelectMany(x =>
-            new[] { x.SecondArm.Config, x.FirstArm.Config }).ToArray();
+    private readonly IList<Components.AnimationConfig> animationInfo = clocks.Values.SelectMany(x =>
+            new[] { x.FirstArm.Config, x.SecondArm.Config }).ToArray();
     private DotNetObjectReference<IAnimationManager>? myDotNetObjectReference;
 
+    readonly Func<Clock, int, Components.AnimationConfig> SetHourArmAnimationConfig = (clock, index) =>
+        new Components.AnimationConfig
+        {
+            Direction = hourArmDirection,
+            EasingFunction = "linear",
+            Duration = staggeredDuration ? duration + ((index % 2) == 1 ? (index - 1) * 80 : index * 80) : duration,
+            Delay = staggeredDelay ? delay + (index % 2) == 1 ? (index - 1) * 80 : index * 80 : delay
+        };
+
+    readonly Func<Clock, int, Components.AnimationConfig> SetMinuteArmAnimationConfig = (clock, index) =>
+        new Components.AnimationConfig
+        {
+            Direction = minuteArmDirection,
+            EasingFunction = "linear",
+            Duration = staggeredDuration ? duration + ((index % 2) == 1 ? (index - 1) * 80 : index * 80) : duration,
+            Delay = staggeredDelay ? delay + (index % 2) == 1 ? (index - 1) * 80 : index * 80 : delay
+        };
     public async void Start()
     {
-        AnimationConfigs.SetClocksConfigs(clocks,
-            new Components.AnimationConfig
-            {
-                Direction = hourArmDirection,
-                EasingFunction = "linear",
-                Duration = 4500,
-                Delay = 0
-            },
-            new Components.AnimationConfig
-            {
-                Direction = minuteArmDirection,
-                EasingFunction = "linear",
-                Duration = 4500,
-                Delay = 0
-            });
+        AnimationConfigs.SetReverseClocksConfigs(clocks, SetHourArmAnimationConfig, SetMinuteArmAnimationConfig);
 
         SetPatternAnimationStatus(clocks);
 
@@ -41,12 +45,12 @@ public class PatternAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock
             elementReference = config.ElementReference,
             easing = config.EasingFunction,
             direction = Enum.GetName(typeof(Direction), config.Direction),
-            duration = staggeredDuration ? config.Duration + ((index % 2) == 1 ? (index - 1) * 80 : index * 80) : config.Duration,
-            delay = staggeredDelay ? config.Delay + (index % 2) == 1 ? (index - 1) * 80 : index * 80 : config.Delay
+            duration = config.Duration,
+            delay = config.Delay
         });
 
         await jSRuntime.InvokeVoidAsync("animationLoop.animateClockArm", new[] { myDotNetObjectReference },
-            animationConfigsArray.Reverse().ToArray());
+            animationConfigsArray.ToArray());
     }
 
     [JSInvokable]

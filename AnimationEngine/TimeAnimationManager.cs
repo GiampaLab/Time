@@ -1,18 +1,15 @@
-using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using Time.AnimationConfig;
 using Time.Components;
 
 namespace Time.AnimationEngine;
 
-public class TimeAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clocks,
+public class TimeAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clocks, int delay, int duration,
     bool staggeredDelay, bool staggeredDuration) : IAnimationManager
 {
     private DotNetObjectReference<IAnimationManager>? myDotNetObjectReference;
     private readonly IJSRuntime jSRuntime = jSRuntime;
     private readonly Dictionary<int, Clock> clocks = clocks;
-    private readonly bool staggeredDelay = staggeredDelay;
-    private readonly bool staggeredDuration = staggeredDuration;
     private readonly IList<Components.AnimationConfig> animationConfigs = clocks.Values.SelectMany(x =>
             new[] { x.FirstArm.Config, x.SecondArm.Config }).ToArray();
     private int currentHourFirstDigit = 0;
@@ -20,23 +17,26 @@ public class TimeAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> c
     private int currentMinuteFirstDigit = 0;
     private int currentMinuteSecondDigit = 0;
     private Timer? timer;
+    readonly Func<Clock, int, Components.AnimationConfig> SetHourArmAnimationConfig = (clock, index) =>
+        new Components.AnimationConfig
+        {
+            Direction = Direction.Anticlockwise,
+            EasingFunction = "linear",
+            Duration = staggeredDuration ? duration + ((index % 2) == 1 ? (index - 1) * 80 : index * 80) : duration,
+            Delay = staggeredDelay ? delay + (index % 2) == 1 ? (index - 1) * 80 : index * 80 : delay
+        };
+
+    readonly Func<Clock, int, Components.AnimationConfig> SetMinuteArmAnimationConfig = (clock, index) =>
+        new Components.AnimationConfig
+        {
+            Direction = Direction.Clockwise,
+            EasingFunction = "linear",
+            Duration = staggeredDuration ? duration + ((index % 2) == 1 ? (index - 1) * 80 : index * 80) : duration,
+            Delay = staggeredDelay ? delay + (index % 2) == 1 ? (index - 1) * 80 : index * 80 : delay
+        };
     public void Start()
     {
-        AnimationConfigs.SetClocksConfigs(clocks,
-            new Components.AnimationConfig
-            {
-                Direction = Direction.Anticlockwise,
-                EasingFunction = "ease-out",
-                Duration = 3500,
-                Delay = 0
-            },
-            new Components.AnimationConfig
-            {
-                Direction = Direction.Clockwise,
-                EasingFunction = "ease-out",
-                Duration = 3500,
-                Delay = 0
-            });
+        AnimationConfigs.SetClocksAnimationConfigs(clocks, SetHourArmAnimationConfig, SetMinuteArmAnimationConfig);
         SetAnimationStatus(null);
     }
 
@@ -78,8 +78,8 @@ public class TimeAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> c
                     elementReference = config.ElementReference,
                     easing = config.EasingFunction,
                     direction = Enum.GetName(typeof(Direction), config.Direction),
-                    duration = staggeredDuration ? config.Duration + ((index % 2) == 1 ? (index - 1) * 80 : index * 80) : config.Duration,
-                    delay = staggeredDelay ? config.Delay + (index % 2) == 1 ? (index - 1) * 80 : index * 80 : config.Delay
+                    duration = config.Duration,
+                    delay = config.Delay
                 }
                     ).ToArray());
         }

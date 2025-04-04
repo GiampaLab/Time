@@ -2,7 +2,7 @@ using Microsoft.JSInterop;
 
 namespace Time.AnimationEngine;
 
-public partial class ChainedAnimationsManager : IAnimationManager, IDisposable
+public partial class ChainedAnimationsManager : IAnimationManager
 {
     private readonly IList<(IAnimationManager, int)> animationManagers;
     private readonly DotNetObjectReference<IAnimationManager> myDotNetObjectReference;

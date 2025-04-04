@@ -1,14 +1,23 @@
-namespace Time.AnimationConfig;
-
-using Microsoft.AspNetCore.Components;
 using Time.Components;
+
+namespace Time.AnimationConfig;
 public class AnimationConfigs
 {
-    public static void SetClocksConfigs(Dictionary<int, Clock> clocks, AnimationConfig firstArmConfig, AnimationConfig secondArmConfig)
+    public static void SetClocksAnimationConfigs(Dictionary<int, Clock> clocks, Func<Clock, int, Components.AnimationConfig> selectFirstArmConfig, Func<Clock, int, Components.AnimationConfig> selectSecondArmConfig)
     {
         for (var i = 0; i < 24; i++)
         {
-            clocks[i + 1].UpdateClockArmsConfig(firstArmConfig, secondArmConfig);
+            clocks[i + 1].UpdateClockArmsConfig(selectFirstArmConfig(clocks[i + 1], i), selectSecondArmConfig(clocks[i + 1], i));
+        }
+    }
+
+    public static void SetReverseClocksConfigs(Dictionary<int, Clock> clocks, Func<Clock, int, Components.AnimationConfig> selectFirstArmConfig, Func<Clock, int, Components.AnimationConfig> selectSecondArmConfig)
+    {
+        var j = 0;
+        for (var i = 23; i >= 0; i--)
+        {
+            clocks[i + 1].UpdateClockArmsConfig(selectFirstArmConfig(clocks[i + 1], j), selectSecondArmConfig(clocks[i + 1], j));
+            j++;
         }
     }
 
