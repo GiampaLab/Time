@@ -65,7 +65,7 @@
             var wavePatternAnimationManager = new PatternAnimationManager(JSRuntime, Clocks,
             (Dictionary<int, Clock> clocks) =>
             {
-                Func<Clock, int, Components.AnimationConfig> SetHourArmAnimationConfig = (clock, index) =>
+                Func<int, Components.AnimationConfig> SetHourArmAnimationConfig = (index) =>
     new Components.AnimationConfig
             {
                 Direction = Direction.Anticlockwise,
@@ -80,7 +80,7 @@
 
             var timeAnimationManager = new TimeAnimationManager(JSRuntime, Clocks, (Dictionary<int, Clock> clocks) =>
             {
-                Func<Clock, int, Components.AnimationConfig> SetHourArmAnimationConfig = (clock, index) =>
+                Func<int, Components.AnimationConfig> SetHourArmAnimationConfig = (index) =>
     new Components.AnimationConfig
             {
                 Direction = Direction.Anticlockwise,
@@ -89,7 +89,7 @@
                 Delay = AnimationConfigs.StaggeredAnimation(true, index, 0, 120)
             };
 
-                Func<Clock, int, Components.AnimationConfig> SetMinuteArmAnimationConfig = (clock, index) =>
+                Func<int, Components.AnimationConfig> SetMinuteArmAnimationConfig = (index) =>
     new Components.AnimationConfig
             {
                 Direction = Direction.Clockwise,
@@ -118,7 +118,7 @@
             var anticlockwiseInfiniteAnimationManager = new InfiniteAnimationManager(JSRuntime, Clocks, (Dictionary<int, Clock>
             clocks) =>
             {
-                Func<Clock, int, Components.AnimationConfig> SetHourArmAnimationConfig = (clock, index) =>
+                Func<int, Components.AnimationConfig> SetHourArmAnimationConfig = (index) =>
     new Components.AnimationConfig
             {
                 Direction = Direction.Anticlockwise,
@@ -134,7 +134,7 @@
             (Dictionary<int, Clock>
             clocks) =>
             {
-                Func<Clock, int, Components.AnimationConfig> SetHourArmAnimationConfig = (clock, index) =>
+                Func<int, Components.AnimationConfig> SetHourArmAnimationConfig = (index) =>
     new Components.AnimationConfig
             {
                 Direction = Direction.Anticlockwise,
@@ -143,7 +143,7 @@
                 Delay = AnimationConfigs.StaggeredAnimation(true, index, 0, 80)
             };
 
-                Func<Clock, int, Components.AnimationConfig> SetMinuteArmAnimationConfig = (clock, index) =>
+                Func<int, Components.AnimationConfig> SetMinuteArmAnimationConfig = (index) =>
     new Components.AnimationConfig
             {
                 Direction = Direction.Clockwise,
