@@ -17,8 +17,8 @@ public class InfiniteAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Cloc
         {
             Direction = firstArmDirection,
             EasingFunction = "linear",
-            Duration = staggeredDuration ? duration + ((index % 2) == 1 ? (index - 1) * 80 : index * 80) : duration,
-            Delay = staggeredDelay ? delay + (index % 2) == 1 ? (index - 1) * 80 : index * 80 : delay
+            Duration = AnimationConfigs.StaggeredAnimation(staggeredDuration, index, duration, 80),
+            Delay = AnimationConfigs.StaggeredAnimation(staggeredDelay, index, delay, 80)
         };
 
     readonly Func<Clock, int, Components.AnimationConfig> SetMinuteArmAnimationConfig = (clock, index) =>
@@ -26,8 +26,8 @@ public class InfiniteAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Cloc
         {
             Direction = secondArmDirection,
             EasingFunction = "linear",
-            Duration = staggeredDuration ? duration + ((index % 2) == 1 ? (index - 1) * 80 : index * 80) : duration,
-            Delay = staggeredDelay ? delay + (index % 2) == 1 ? (index - 1) * 80 : index * 80 : delay
+            Duration = AnimationConfigs.StaggeredAnimation(staggeredDuration, index, duration, 80),
+            Delay = AnimationConfigs.StaggeredAnimation(staggeredDelay, index, delay, 80)
         };
     public async void Start()
     {
