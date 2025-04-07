@@ -18,10 +18,8 @@ public class Clock
     public Clock(int Id, ElementReference hourReference, ElementReference minuteReference, AnimationConfig? firstArmConfig = null, AnimationConfig? secondArmConfig = null)
     {
         this.Id = Id;
-        FirstArm.CurrentState = 0;
         FirstArm.Config = firstArmConfig ?? _defaultFirstArmConfig;
         FirstArm.Config.ElementReference = hourReference;
-        SecondArm.CurrentState = 0;
         SecondArm.Config = secondArmConfig ?? _defaultSecondArmConfig;
         SecondArm.Config.ElementReference = minuteReference;
     }
@@ -38,23 +36,15 @@ public class Clock
         SecondArm.Config.Delay = secondArmConfig.Delay;
     }
 
-    public void UpdateState(ArmState firstArmState, ArmState secondArmState)
+    public void UpdateState(ArmState firstArmState, ArmState secondArmState, int firstArmStateDeltaDegrees = 0, int secondArmStateDeltaDegrees = 0)
     {
-        var firstArmFinalStateDegrees = AnimationUtils.ArmStateToDegree(firstArmState);
-        var secondArmFinalStateDegrees = AnimationUtils.ArmStateToDegree(secondArmState);
-        FirstArm.FinalState = firstArmFinalStateDegrees;
-        SecondArm.FinalState = secondArmFinalStateDegrees;
+        FirstArm.FinalState = firstArmStateDeltaDegrees + AnimationUtils.ArmStateToDegree(firstArmState);
+        SecondArm.FinalState = secondArmStateDeltaDegrees + AnimationUtils.ArmStateToDegree(secondArmState);
     }
 }
 
 public class ClockArm
 {
-    private int _currentState;
-    public int CurrentState
-    {
-        get { return _currentState; }
-        set { _currentState = value > 0 ? value % 360 : (value + 360) % 360; }
-    }
     public int FinalState
     {
         get { return Config.State; }

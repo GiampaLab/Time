@@ -184,7 +184,7 @@ public class AnimationConfigs
         }
     }
 
-    public static void SetNextPatternAnimationStatus(Dictionary<int, Clock> clocks, bool stopAtFinalState = true)
+    public static void SetNextPatternAnimationStatus(Dictionary<int, Clock> clocks)
     {
         for (var i = 0; i < 4; i++)
         {
@@ -198,11 +198,44 @@ public class AnimationConfigs
         }
     }
 
-    public static void SetNextWaveAnimationStatus(Dictionary<int, Clock> clocks, bool stopAtFinalState = true)
+    public static void SetNextWaveAnimationStatus(Dictionary<int, Clock> clocks)
     {
         for (var i = 0; i < 24; i++)
         {
             clocks[i + 1].UpdateState(ArmState.Zero, ArmState.Six);
         }
+    }
+
+    public static void SetFlowAnimationStatus(Dictionary<int, Clock> clocks)
+    {
+        clocks[1].UpdateState(ArmState.Three, ArmState.Three, 10, 10);
+        clocks[4].UpdateState(ArmState.Three, ArmState.Three, 20, 20);
+        clocks[7].UpdateState(ArmState.Three, ArmState.Three, 30, 30);
+        clocks[10].UpdateState(ArmState.Three, ArmState.Three, 40, 40);
+
+        clocks[13].UpdateState(ArmState.Nine, ArmState.Nine, -40, -40);
+        clocks[16].UpdateState(ArmState.Nine, ArmState.Nine, -30, -30);
+        clocks[19].UpdateState(ArmState.Nine, ArmState.Nine, -20, -20);
+        clocks[22].UpdateState(ArmState.Nine, ArmState.Nine, -10, -10);
+
+        clocks[2].UpdateState(ArmState.Three, ArmState.Three);
+        clocks[5].UpdateState(ArmState.Three, ArmState.Three);
+        clocks[8].UpdateState(ArmState.Three, ArmState.Three);
+        clocks[11].UpdateState(ArmState.Three, ArmState.Three);
+
+        clocks[14].UpdateState(ArmState.Nine, ArmState.Nine);
+        clocks[17].UpdateState(ArmState.Nine, ArmState.Nine);
+        clocks[20].UpdateState(ArmState.Nine, ArmState.Nine);
+        clocks[23].UpdateState(ArmState.Nine, ArmState.Nine);
+
+        clocks[3].UpdateState(ArmState.Three, ArmState.Three, -10, -10);
+        clocks[6].UpdateState(ArmState.Three, ArmState.Three, -20, -20);
+        clocks[9].UpdateState(ArmState.Three, ArmState.Three, -30, -30);
+        clocks[12].UpdateState(ArmState.Three, ArmState.Three, -40, -40);
+
+        clocks[15].UpdateState(ArmState.Nine, ArmState.Nine, 40, 40);
+        clocks[18].UpdateState(ArmState.Nine, ArmState.Nine, 30, 30);
+        clocks[21].UpdateState(ArmState.Nine, ArmState.Nine, 20, 20);
+        clocks[24].UpdateState(ArmState.Nine, ArmState.Nine, 10, 10);
     }
 }

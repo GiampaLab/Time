@@ -70,12 +70,28 @@
             {
                 Direction = Direction.Anticlockwise,
                 EasingFunction = "ease-in-out",
-                Duration = AnimationConfigs.StaggeredAnimation(false, index, 4500, 0),
+                Duration = AnimationConfigs.StaggeredAnimation(false, index, 3000, 0),
                 Delay = AnimationConfigs.StaggeredAnimation(true, index, 0, 120)
             };
 
                 AnimationConfigs.SetClocksConfigsByRow(clocks, SetHourArmAnimationConfig, SetHourArmAnimationConfig);
                 AnimationConfigs.SetNextWaveAnimationStatus(clocks);
+            });
+
+            var flowPatternAnimationManager = new PatternAnimationManager(JSRuntime, Clocks,
+            (Dictionary<int, Clock> clocks) =>
+            {
+                Func<int, Components.AnimationConfig> SetHourArmAnimationConfig = (index) =>
+    new Components.AnimationConfig
+            {
+                Direction = Direction.Anticlockwise,
+                EasingFunction = "ease-in-out",
+                Duration = AnimationConfigs.StaggeredAnimation(false, index, 4000, 0),
+                Delay = AnimationConfigs.StaggeredAnimation(true, index, 0, 120)
+            };
+
+                AnimationConfigs.SetClocksConfigsByRow(clocks, SetHourArmAnimationConfig, SetHourArmAnimationConfig);
+                AnimationConfigs.SetFlowAnimationStatus(clocks);
             });
 
             var timeAnimationManager = new TimeAnimationManager(JSRuntime, Clocks, (Dictionary<int, Clock> clocks) =>
@@ -85,7 +101,7 @@
             {
                 Direction = Direction.Anticlockwise,
                 EasingFunction = "ease-out",
-                Duration = AnimationConfigs.StaggeredAnimation(false, index, 4000, 80),
+                Duration = AnimationConfigs.StaggeredAnimation(false, index, 5000, 80),
                 Delay = AnimationConfigs.StaggeredAnimation(true, index, 0, 120)
             };
 
@@ -94,7 +110,7 @@
             {
                 Direction = Direction.Clockwise,
                 EasingFunction = "ease-out",
-                Duration = AnimationConfigs.StaggeredAnimation(false, index, 4000, 80),
+                Duration = AnimationConfigs.StaggeredAnimation(false, index, 5000, 80),
                 Delay = AnimationConfigs.StaggeredAnimation(true, index, 0, 120)
             };
                 AnimationConfigs.SetReverseClocksConfigs(clocks, SetHourArmAnimationConfig, SetMinuteArmAnimationConfig);
@@ -104,13 +120,13 @@
                 {
                     Direction = Direction.Anticlockwise,
                     EasingFunction = "ease-in-out",
-                    Duration = 4000,
+                    Duration = 5000,
                     Delay = 0
                 }, new Components.AnimationConfig
                 {
                     Direction = Direction.Clockwise,
                     EasingFunction = "ease-in-out",
-                    Duration = 4000,
+                    Duration = 5000,
                     Delay = 0
                 });
             });
@@ -124,10 +140,10 @@
                 Direction = Direction.Anticlockwise,
                 EasingFunction = "linear",
                 Duration = AnimationConfigs.StaggeredAnimation(false, index, 5000, 0),
-                Delay = AnimationConfigs.StaggeredAnimation(true, index, 0, 80)
+                Delay = AnimationConfigs.StaggeredAnimation(true, index, 0, 40)
             };
 
-                AnimationConfigs.SetClocksAnimationConfigs(clocks, SetHourArmAnimationConfig, SetHourArmAnimationConfig);
+                AnimationConfigs.SetClocksConfigsSpiral(clocks, SetHourArmAnimationConfig, SetHourArmAnimationConfig);
             });
 
             var oppositeDirectionsStaggeredDelayInfiniteAnimationManager = new InfiniteAnimationManager(JSRuntime, Clocks,
@@ -155,7 +171,7 @@
             });
 
             chainedAnimationsManager = new ChainedAnimationsManager(new List<(IAnimationManager, int)> { (timeAnimationManager,
-20000),(wavePatternAnimationManager, 10000), (anticlockwiseInfiniteAnimationManager, 20000), (timeAnimationManager,
+20000),(flowPatternAnimationManager, 10000), (anticlockwiseInfiniteAnimationManager, 20000), (timeAnimationManager,
 20000), (wavePatternAnimationManager, 10000), (oppositeDirectionsStaggeredDelayInfiniteAnimationManager, 20000) });
         }
 
