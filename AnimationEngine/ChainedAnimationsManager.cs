@@ -4,8 +4,9 @@ namespace Time.AnimationEngine;
 
 public partial class ChainedAnimationsManager : IAnimationManager
 {
-    private readonly IList<(IAnimationManager, int)> animationManagers;
-    private readonly DotNetObjectReference<IAnimationManager> myDotNetObjectReference;
+    private readonly IList<(IAnimationManager, int)>? animationManagers;
+    private readonly DotNetObjectReference<IAnimationManager> dotNetObjectReference;
+    private readonly Func<IAnimationManager?, (IAnimationManager animationManager, int duration)>? nextAnimationManager;
     private (IAnimationManager animationManager, int duration) animationInfo;
     private bool animationManagerTimeIsUp = false;
     private int animationManagerIndex;
@@ -13,13 +14,21 @@ public partial class ChainedAnimationsManager : IAnimationManager
     public ChainedAnimationsManager(IList<(IAnimationManager animationManager, int duration)> animationManagers)
     {
         this.animationManagers = animationManagers;
-        myDotNetObjectReference = DotNetObjectReference.Create<IAnimationManager>(this);
+        dotNetObjectReference = CreateDotNetObjectReference();
         foreach (var animationManager in animationManagers)
         {
-            animationManager.animationManager.SetDotNetObjectReference(myDotNetObjectReference);
+            animationManager.animationManager.SetDotNetObjectReference(dotNetObjectReference);
         }
     }
-
+    public ChainedAnimationsManager(Func<IAnimationManager?, (IAnimationManager animationManager, int duration)> NextAnimationManager)
+    {
+        nextAnimationManager = NextAnimationManager;
+        dotNetObjectReference = CreateDotNetObjectReference();
+    }
+    private DotNetObjectReference<IAnimationManager> CreateDotNetObjectReference()
+    {
+        return DotNetObjectReference.Create<IAnimationManager>(this);
+    }
     public async void Start()
     {
         await InternalStart(null);
@@ -53,14 +62,20 @@ public partial class ChainedAnimationsManager : IAnimationManager
     {
     }
 
-    private (IAnimationManager, int) GetNextAnimationManager()
+    private (IAnimationManager, int) GetNextAnimationManager((IAnimationManager animationManager, int duration)? previousAnimationManager)
     {
+        if (animationManagers == null)
+        {
+            var currentAnimationManager = nextAnimationManager(previousAnimationManager?.animationManager);
+            currentAnimationManager.animationManager.SetDotNetObjectReference(dotNetObjectReference);
+            return currentAnimationManager;
+        }
         return animationManagers[animationManagerIndex++ % animationManagers.Count];
     }
 
     private async Task InternalStart((IAnimationManager, int)? previousAnimationManager)
     {
-        animationInfo = GetNextAnimationManager();
+        animationInfo = GetNextAnimationManager(previousAnimationManager);
         animationInfo.animationManager.Start();
         await Task.Delay(animationInfo.duration);
         animationManagerTimeIsUp = true;
@@ -73,10 +88,10 @@ public partial class ChainedAnimationsManager : IAnimationManager
 
     public void Dispose()
     {
-        myDotNetObjectReference?.Dispose();
-        foreach (var animationManager in animationManagers)
-        {
-            animationManager.Item1.Dispose();
-        }
+        dotNetObjectReference?.Dispose();
+        // foreach (var animationManager in animationManagers)
+        // {
+        //     animationManager.Item1.Dispose();
+        // }
     }
 }

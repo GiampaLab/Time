@@ -4,7 +4,7 @@ using Time.Components;
 
 namespace Time.AnimationEngine;
 
-public class TimeAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clocks, Action<Dictionary<int, Clock>> SetTimeAnimationConfig, Action<Dictionary<int, Clock>> SetStaticTimeAnimationConfig) : IAnimationManager
+public class TimeAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clocks, Action SetTimeAnimationConfig, Action SetStaticTimeAnimationConfig) : IAnimationManager
 {
     private DotNetObjectReference<IAnimationManager>? myDotNetObjectReference;
     private readonly IJSRuntime jSRuntime = jSRuntime;
@@ -18,9 +18,9 @@ public class TimeAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> c
     private Timer? timer;
     public void Start()
     {
-        SetTimeAnimationConfig(clocks);
+        SetTimeAnimationConfig();
         SetAnimationStatus(null);
-        SetStaticTimeAnimationConfig(clocks);
+        SetStaticTimeAnimationConfig();
     }
 
     [JSInvokable]
@@ -51,7 +51,7 @@ public class TimeAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> c
             currentMinuteFirstDigit = minuteFirstDigit;
             currentMinuteSecondDigit = minuteSecondDigit;
 
-            AnimationConfigs.SetNextNumbersAnimationStatus(clocks, currentHourFirstDigit, currentHourSecondDigit, currentMinuteFirstDigit, currentMinuteSecondDigit);
+            AnimationPatterns.SetNumbersPattern(clocks, currentHourFirstDigit, currentHourSecondDigit, currentMinuteFirstDigit, currentMinuteSecondDigit);
 
             await jSRuntime.InvokeVoidAsync("animationLoop.animateClockArm", new[] { myDotNetObjectReference },
                 animationConfigs.Select(AnimationUtils.MapAnimationConfig));

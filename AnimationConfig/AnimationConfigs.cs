@@ -8,7 +8,7 @@ public class AnimationConfigs
         return staggered ? milliseconds + ((index % 2) == 1 ? (index - 1) * staggeredMilliseconds : index * staggeredMilliseconds) : milliseconds;
     }
 
-    public static void SetStaticClocksAnimationConfigs(Dictionary<int, Clock> clocks, Components.AnimationConfig firstArmConfig, Components.AnimationConfig secondArmConfig)
+    public static void SetStaticConfig(Dictionary<int, Clock> clocks, Components.AnimationConfig firstArmConfig, Components.AnimationConfig secondArmConfig)
     {
         for (var i = 0; i < 24; i++)
         {
@@ -17,7 +17,7 @@ public class AnimationConfigs
         }
     }
 
-    public static void SetClocksAnimationConfigs(Dictionary<int, Clock> clocks, Func<int, Components.AnimationConfig> selectFirstArmConfig, Func<int, Components.AnimationConfig> selectSecondArmConfig)
+    public static void SetDefaultConfig(Dictionary<int, Clock> clocks, Func<int, Components.AnimationConfig> selectFirstArmConfig, Func<int, Components.AnimationConfig> selectSecondArmConfig)
     {
         for (var i = 0; i < 24; i++)
         {
@@ -25,7 +25,7 @@ public class AnimationConfigs
         }
     }
 
-    public static void SetReverseClocksConfigs(Dictionary<int, Clock> clocks, Func<int, Components.AnimationConfig> selectFirstArmConfig, Func<int, Components.AnimationConfig> selectSecondArmConfig)
+    public static void SetReverseConfig(Dictionary<int, Clock> clocks, Func<int, Components.AnimationConfig> selectFirstArmConfig, Func<int, Components.AnimationConfig> selectSecondArmConfig)
     {
         var j = 0;
         for (var i = 23; i >= 0; i--)
@@ -35,7 +35,7 @@ public class AnimationConfigs
         }
     }
 
-    public static void SetClocksConfigsByRow(Dictionary<int, Clock> clocks, Func<int, Components.AnimationConfig> selectFirstArmConfig, Func<int, Components.AnimationConfig> selectSecondArmConfig)
+    public static void SetByRowConfig(Dictionary<int, Clock> clocks, Func<int, Components.AnimationConfig> selectFirstArmConfig, Func<int, Components.AnimationConfig> selectSecondArmConfig)
     {
         for (var i = 0; i < 3; i++)
         {
@@ -50,38 +50,28 @@ public class AnimationConfigs
         }
     }
 
-    public static void SetClocksCenterOutConfig(Dictionary<int, Clock> clocks, Func<Clock, int, Components.AnimationConfig> selectFirstArmConfig, Func<Clock, int, Components.AnimationConfig> selectSecondArmConfig)
+    public static void SetCenterOutConfig(Dictionary<int, Clock> clocks, Func<Clock, int, Components.AnimationConfig> selectFirstArmConfig, Func<Clock, int, Components.AnimationConfig> selectSecondArmConfig)
     {
-        clocks[11].UpdateClockArmsConfig(selectFirstArmConfig(clocks[11], 0), selectSecondArmConfig(clocks[11], 0));
-        clocks[14].UpdateClockArmsConfig(selectFirstArmConfig(clocks[14], 0), selectSecondArmConfig(clocks[14], 0));
+        var groups = new[]
+        {
+            [11, 14],
+            [7, 8, 9, 16, 17, 18, 10, 13, 12, 15],
+            [4, 5, 6, 19, 20, 21],
+            new[] { 1, 2, 3, 22, 23, 24 }
+        };
 
-        clocks[7].UpdateClockArmsConfig(selectFirstArmConfig(clocks[7], 1), selectSecondArmConfig(clocks[7], 1));
-        clocks[8].UpdateClockArmsConfig(selectFirstArmConfig(clocks[8], 1), selectSecondArmConfig(clocks[8], 1));
-        clocks[9].UpdateClockArmsConfig(selectFirstArmConfig(clocks[9], 1), selectSecondArmConfig(clocks[9], 1));
-        clocks[16].UpdateClockArmsConfig(selectFirstArmConfig(clocks[16], 1), selectSecondArmConfig(clocks[16], 1));
-        clocks[17].UpdateClockArmsConfig(selectFirstArmConfig(clocks[17], 1), selectSecondArmConfig(clocks[17], 1));
-        clocks[18].UpdateClockArmsConfig(selectFirstArmConfig(clocks[18], 1), selectSecondArmConfig(clocks[18], 1));
-        clocks[10].UpdateClockArmsConfig(selectFirstArmConfig(clocks[10], 1), selectSecondArmConfig(clocks[10], 1));
-        clocks[13].UpdateClockArmsConfig(selectFirstArmConfig(clocks[13], 1), selectSecondArmConfig(clocks[13], 1));
-        clocks[12].UpdateClockArmsConfig(selectFirstArmConfig(clocks[12], 1), selectSecondArmConfig(clocks[12], 1));
-        clocks[15].UpdateClockArmsConfig(selectFirstArmConfig(clocks[15], 1), selectSecondArmConfig(clocks[15], 1));
-
-        clocks[4].UpdateClockArmsConfig(selectFirstArmConfig(clocks[4], 2), selectSecondArmConfig(clocks[4], 2));
-        clocks[5].UpdateClockArmsConfig(selectFirstArmConfig(clocks[5], 2), selectSecondArmConfig(clocks[5], 2));
-        clocks[6].UpdateClockArmsConfig(selectFirstArmConfig(clocks[6], 2), selectSecondArmConfig(clocks[6], 2));
-        clocks[19].UpdateClockArmsConfig(selectFirstArmConfig(clocks[19], 2), selectSecondArmConfig(clocks[19], 2));
-        clocks[20].UpdateClockArmsConfig(selectFirstArmConfig(clocks[20], 2), selectSecondArmConfig(clocks[20], 2));
-        clocks[21].UpdateClockArmsConfig(selectFirstArmConfig(clocks[21], 2), selectSecondArmConfig(clocks[21], 2));
-
-        clocks[1].UpdateClockArmsConfig(selectFirstArmConfig(clocks[1], 3), selectSecondArmConfig(clocks[1], 3));
-        clocks[2].UpdateClockArmsConfig(selectFirstArmConfig(clocks[2], 3), selectSecondArmConfig(clocks[2], 3));
-        clocks[3].UpdateClockArmsConfig(selectFirstArmConfig(clocks[3], 3), selectSecondArmConfig(clocks[3], 3));
-        clocks[22].UpdateClockArmsConfig(selectFirstArmConfig(clocks[22], 3), selectSecondArmConfig(clocks[22], 3));
-        clocks[23].UpdateClockArmsConfig(selectFirstArmConfig(clocks[23], 3), selectSecondArmConfig(clocks[23], 3));
-        clocks[24].UpdateClockArmsConfig(selectFirstArmConfig(clocks[24], 3), selectSecondArmConfig(clocks[24], 3));
+        for (var groupIndex = 0; groupIndex < groups.Length; groupIndex++)
+        {
+            foreach (var clockIndex in groups[groupIndex])
+            {
+                clocks[clockIndex].UpdateClockArmsConfig(
+                    selectFirstArmConfig(clocks[clockIndex], groupIndex),
+                    selectSecondArmConfig(clocks[clockIndex], groupIndex));
+            }
+        }
     }
 
-    public static void SetClocksConfigsSpiral(Dictionary<int, Clock> clocks, Func<int, Components.AnimationConfig> selectFirstArmConfig, Func<int, Components.AnimationConfig> selectSecondArmConfig)
+    public static void SetSpiralConfig(Dictionary<int, Clock> clocks, Func<int, Components.AnimationConfig> selectFirstArmConfig, Func<int, Components.AnimationConfig> selectSecondArmConfig)
     {
         clocks[14].UpdateClockArmsConfig(selectFirstArmConfig(0), selectSecondArmConfig(0));
         clocks[15].UpdateClockArmsConfig(selectFirstArmConfig(1), selectSecondArmConfig(1));
@@ -108,198 +98,13 @@ public class AnimationConfigs
         clocks[2].UpdateClockArmsConfig(selectFirstArmConfig(22), selectSecondArmConfig(22));
         clocks[1].UpdateClockArmsConfig(selectFirstArmConfig(23), selectSecondArmConfig(23));
     }
+}
 
-    public static void SetNextNumbersAnimationStatus(Dictionary<int, Clock> clocks, int hoursFirstDigit, int hoursSecondDigit, int minuteFirstDigit, int minuteSecondDigit)
-    {
-        SetNumber(hoursFirstDigit, new List<int> { 1, 2, 3, 4, 5, 6 }, clocks);
-        SetNumber(hoursSecondDigit, new List<int> { 7, 8, 9, 10, 11, 12 }, clocks);
-        SetNumber(minuteFirstDigit, new List<int> { 13, 14, 15, 16, 17, 18 }, clocks);
-        SetNumber(minuteSecondDigit, new List<int> { 19, 20, 21, 22, 23, 24 }, clocks);
-    }
-
-    private static void SetNumber(int number, List<int> clockIndexes, Dictionary<int, Clock> clocks)
-    {
-        switch (number)
-        {
-            case 0:
-                clocks[clockIndexes[0]].UpdateState(ArmState.Three, ArmState.Six);
-                clocks[clockIndexes[1]].UpdateState(ArmState.Zero, ArmState.Six);
-                clocks[clockIndexes[2]].UpdateState(ArmState.Zero, ArmState.Three);
-                clocks[clockIndexes[3]].UpdateState(ArmState.Nine, ArmState.Six);
-                clocks[clockIndexes[4]].UpdateState(ArmState.Zero, ArmState.Six);
-                clocks[clockIndexes[5]].UpdateState(ArmState.Zero, ArmState.Nine);
-                break;
-
-            case 1:
-                clocks[clockIndexes[0]].UpdateState(ArmState.None, ArmState.None);
-                clocks[clockIndexes[1]].UpdateState(ArmState.None, ArmState.None);
-                clocks[clockIndexes[2]].UpdateState(ArmState.None, ArmState.None);
-                clocks[clockIndexes[3]].UpdateState(ArmState.Six, ArmState.Six);
-                clocks[clockIndexes[4]].UpdateState(ArmState.Zero, ArmState.Six);
-                clocks[clockIndexes[5]].UpdateState(ArmState.Zero, ArmState.Zero);
-                break;
-
-            case 2:
-                clocks[clockIndexes[0]].UpdateState(ArmState.Three, ArmState.Three);
-                clocks[clockIndexes[1]].UpdateState(ArmState.Three, ArmState.Six);
-                clocks[clockIndexes[2]].UpdateState(ArmState.Zero, ArmState.Three);
-                clocks[clockIndexes[3]].UpdateState(ArmState.Nine, ArmState.Six);
-                clocks[clockIndexes[4]].UpdateState(ArmState.Zero, ArmState.Nine);
-                clocks[clockIndexes[5]].UpdateState(ArmState.Nine, ArmState.Nine);
-                break;
-
-            case 3:
-                clocks[clockIndexes[0]].UpdateState(ArmState.Three, ArmState.Three);
-                clocks[clockIndexes[1]].UpdateState(ArmState.Three, ArmState.Three);
-                clocks[clockIndexes[2]].UpdateState(ArmState.Three, ArmState.Three);
-                clocks[clockIndexes[3]].UpdateState(ArmState.Nine, ArmState.Six);
-                clocks[clockIndexes[4]].UpdateState(ArmState.Zero, ArmState.Six);
-                clocks[clockIndexes[5]].UpdateState(ArmState.Zero, ArmState.Nine);
-                break;
-
-            case 4:
-                clocks[clockIndexes[0]].UpdateState(ArmState.Six, ArmState.Six);
-                clocks[clockIndexes[1]].UpdateState(ArmState.Zero, ArmState.Three);
-                clocks[clockIndexes[2]].UpdateState(ArmState.None, ArmState.None);
-                clocks[clockIndexes[3]].UpdateState(ArmState.Six, ArmState.Six);
-                clocks[clockIndexes[4]].UpdateState(ArmState.Nine, ArmState.Zero);
-                clocks[clockIndexes[5]].UpdateState(ArmState.Zero, ArmState.Zero);
-                break;
-
-            case 5:
-                clocks[clockIndexes[0]].UpdateState(ArmState.Three, ArmState.Six);
-                clocks[clockIndexes[1]].UpdateState(ArmState.Zero, ArmState.Three);
-                clocks[clockIndexes[2]].UpdateState(ArmState.Three, ArmState.Three);
-                clocks[clockIndexes[3]].UpdateState(ArmState.Nine, ArmState.Nine);
-                clocks[clockIndexes[4]].UpdateState(ArmState.Nine, ArmState.Six);
-                clocks[clockIndexes[5]].UpdateState(ArmState.Zero, ArmState.Nine);
-                break;
-
-            case 6:
-                clocks[clockIndexes[0]].UpdateState(ArmState.Three, ArmState.Six);
-                clocks[clockIndexes[1]].UpdateState(ArmState.Zero, ArmState.Six);
-                clocks[clockIndexes[2]].UpdateState(ArmState.Zero, ArmState.Three);
-                clocks[clockIndexes[3]].UpdateState(ArmState.Nine, ArmState.Nine);
-                clocks[clockIndexes[4]].UpdateState(ArmState.Nine, ArmState.Six);
-                clocks[clockIndexes[5]].UpdateState(ArmState.Zero, ArmState.Nine);
-                break;
-
-            case 7:
-                clocks[clockIndexes[0]].UpdateState(ArmState.Three, ArmState.Three);
-                clocks[clockIndexes[1]].UpdateState(ArmState.None, ArmState.None);
-                clocks[clockIndexes[2]].UpdateState(ArmState.None, ArmState.None);
-                clocks[clockIndexes[3]].UpdateState(ArmState.Nine, ArmState.Six);
-                clocks[clockIndexes[4]].UpdateState(ArmState.Zero, ArmState.Six);
-                clocks[clockIndexes[5]].UpdateState(ArmState.Zero, ArmState.Zero);
-                break;
-
-            case 8:
-                clocks[clockIndexes[0]].UpdateState(ArmState.Three, ArmState.Six);
-                clocks[clockIndexes[1]].UpdateState(ArmState.Zero, ArmState.Three);
-                clocks[clockIndexes[2]].UpdateState(ArmState.Zero, ArmState.Three);
-                clocks[clockIndexes[3]].UpdateState(ArmState.Nine, ArmState.Six);
-                clocks[clockIndexes[4]].UpdateState(ArmState.Zero, ArmState.Nine);
-                clocks[clockIndexes[5]].UpdateState(ArmState.Zero, ArmState.Nine);
-                break;
-
-            case 9:
-                clocks[clockIndexes[0]].UpdateState(ArmState.Three, ArmState.Six);
-                clocks[clockIndexes[1]].UpdateState(ArmState.Zero, ArmState.Three);
-                clocks[clockIndexes[2]].UpdateState(ArmState.Three, ArmState.Three);
-                clocks[clockIndexes[3]].UpdateState(ArmState.Nine, ArmState.Six);
-                clocks[clockIndexes[4]].UpdateState(ArmState.Zero, ArmState.Six);
-                clocks[clockIndexes[5]].UpdateState(ArmState.Zero, ArmState.Nine);
-                break;
-            default:
-                break;
-        }
-    }
-
-    public static void SetNextPatternAnimationStatus(Dictionary<int, Clock> clocks)
-    {
-        for (var i = 0; i < 4; i++)
-        {
-            var j = 6 * i;
-            clocks[j + 1].UpdateState(ArmState.Three, ArmState.Six);
-            clocks[j + 2].UpdateState(ArmState.Three, ArmState.Three);
-            clocks[j + 3].UpdateState(ArmState.Zero, ArmState.Three);
-            clocks[j + 4].UpdateState(ArmState.Six, ArmState.Nine);
-            clocks[j + 5].UpdateState(ArmState.Nine, ArmState.Nine);
-            clocks[j + 6].UpdateState(ArmState.Nine, ArmState.Zero);
-        }
-    }
-
-    public static void SetNextWaveAnimationStatus(Dictionary<int, Clock> clocks)
-    {
-        for (var i = 0; i < 24; i++)
-        {
-            clocks[i + 1].UpdateState(ArmState.Zero, ArmState.Six);
-        }
-    }
-
-    public static void SetFlowAnimationStatus(Dictionary<int, Clock> clocks)
-    {
-        clocks[1].UpdateState(ArmState.Three, ArmState.Three, 10, 10);
-        clocks[4].UpdateState(ArmState.Three, ArmState.Three, 20, 20);
-        clocks[7].UpdateState(ArmState.Three, ArmState.Three, 30, 30);
-        clocks[10].UpdateState(ArmState.Three, ArmState.Three, 40, 40);
-
-        clocks[13].UpdateState(ArmState.Nine, ArmState.Nine, -40, -40);
-        clocks[16].UpdateState(ArmState.Nine, ArmState.Nine, -30, -30);
-        clocks[19].UpdateState(ArmState.Nine, ArmState.Nine, -20, -20);
-        clocks[22].UpdateState(ArmState.Nine, ArmState.Nine, -10, -10);
-
-        clocks[2].UpdateState(ArmState.Three, ArmState.Three);
-        clocks[5].UpdateState(ArmState.Three, ArmState.Three);
-        clocks[8].UpdateState(ArmState.Three, ArmState.Three);
-        clocks[11].UpdateState(ArmState.Three, ArmState.Three);
-
-        clocks[14].UpdateState(ArmState.Nine, ArmState.Nine);
-        clocks[17].UpdateState(ArmState.Nine, ArmState.Nine);
-        clocks[20].UpdateState(ArmState.Nine, ArmState.Nine);
-        clocks[23].UpdateState(ArmState.Nine, ArmState.Nine);
-
-        clocks[3].UpdateState(ArmState.Three, ArmState.Three, -10, -10);
-        clocks[6].UpdateState(ArmState.Three, ArmState.Three, -20, -20);
-        clocks[9].UpdateState(ArmState.Three, ArmState.Three, -30, -30);
-        clocks[12].UpdateState(ArmState.Three, ArmState.Three, -40, -40);
-
-        clocks[15].UpdateState(ArmState.Nine, ArmState.Nine, 40, 40);
-        clocks[18].UpdateState(ArmState.Nine, ArmState.Nine, 30, 30);
-        clocks[21].UpdateState(ArmState.Nine, ArmState.Nine, 20, 20);
-        clocks[24].UpdateState(ArmState.Nine, ArmState.Nine, 10, 10);
-    }
-
-    public static void SetFlowerPattern(Dictionary<int, Clock> clocks)
-    {
-        clocks[1].UpdateState(ArmState.Zero, ArmState.Six, 10, 10);
-        clocks[4].UpdateState(ArmState.Zero, ArmState.Six, 20, 15);
-        clocks[7].UpdateState(ArmState.Zero, ArmState.Six, 30, 20);
-        clocks[10].UpdateState(ArmState.Zero, ArmState.Six, 70, 60);
-
-        clocks[13].UpdateState(ArmState.Zero, ArmState.Six, -70, -60);
-        clocks[16].UpdateState(ArmState.Zero, ArmState.Six, -30, -20);
-        clocks[19].UpdateState(ArmState.Zero, ArmState.Six, -20, -15);
-        clocks[22].UpdateState(ArmState.Zero, ArmState.Six, -10, -10);
-
-        clocks[2].UpdateState(ArmState.Zero, ArmState.Six, 5, -5);
-        clocks[5].UpdateState(ArmState.Zero, ArmState.Six, 8, -8);
-        clocks[8].UpdateState(ArmState.Zero, ArmState.Six, 10, -10);
-        clocks[11].UpdateState(ArmState.Zero, ArmState.Six, 30, -30);
-
-        clocks[14].UpdateState(ArmState.Zero, ArmState.Six, -30, 30);
-        clocks[17].UpdateState(ArmState.Zero, ArmState.Six, -10, 10);
-        clocks[20].UpdateState(ArmState.Zero, ArmState.Six, -8, 8);
-        clocks[23].UpdateState(ArmState.Zero, ArmState.Six, -5, 5);
-
-        clocks[3].UpdateState(ArmState.Zero, ArmState.Six, -10, -10);
-        clocks[6].UpdateState(ArmState.Zero, ArmState.Six, -15, -20);
-        clocks[9].UpdateState(ArmState.Zero, ArmState.Six, -20, -30);
-        clocks[12].UpdateState(ArmState.Zero, ArmState.Six, -60, -70);
-
-        clocks[15].UpdateState(ArmState.Zero, ArmState.Six, 60, 70);
-        clocks[18].UpdateState(ArmState.Zero, ArmState.Six, 20, 30);
-        clocks[21].UpdateState(ArmState.Zero, ArmState.Six, 15, 20);
-        clocks[24].UpdateState(ArmState.Zero, ArmState.Six, 10, 10);
-    }
+public enum AnimationConfigType
+{
+    Default,
+    Reverse,
+    ByRow,
+    CenterOut,
+    Spiral
 }
