@@ -10,6 +10,7 @@ public partial class ChainedAnimationsManager : IAnimationManager
     private (IAnimationManager animationManager, int duration) animationInfo;
     private bool animationManagerTimeIsUp = false;
     private int animationManagerIndex;
+    public bool IsFinished { get; private set; }
 
     public ChainedAnimationsManager(IList<(IAnimationManager animationManager, int duration)> animationManagers)
     {
@@ -31,6 +32,7 @@ public partial class ChainedAnimationsManager : IAnimationManager
     }
     public async void Start()
     {
+        IsFinished = false;
         await InternalStart(null);
     }
 
@@ -44,6 +46,7 @@ public partial class ChainedAnimationsManager : IAnimationManager
             animationInfo.animationManager.AnimationFinished();
             return;
         }
+        IsFinished = true;
         animationManagerTimeIsUp = false;
         animationInfo.animationManager.Stop();
         await InternalStart(animationInfo);
@@ -79,9 +82,11 @@ public partial class ChainedAnimationsManager : IAnimationManager
         animationInfo.animationManager.Start();
         await Task.Delay(animationInfo.duration);
         animationManagerTimeIsUp = true;
-        if (animationInfo.animationManager.GetAnimationType() == AnimationType.Infinite || animationInfo.animationManager.GetAnimationType() == AnimationType.Pattern)
+        if (animationInfo.animationManager.GetAnimationType() == AnimationType.Infinite || animationInfo.animationManager.IsFinished)
         {
             //needs to be triggered manually as the animation is either infinite or id doesn't continue triggering another animation(Pattern)
+            // The Time and infinite animations never finish
+            // The time animation will stop the next time the time changes
             AnimationFinished();
         }
     }

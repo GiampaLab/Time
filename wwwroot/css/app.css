@@ -111,7 +111,7 @@ code {
   flex-flow: row nowrap;
   justify-content: center;
   align-items: center;
-  background-color: midnightblue;
+  background-color: white;
   height: 100vh;
 }
 
@@ -133,7 +133,7 @@ code {
   height: 20vmin;
   width: 20vmin;
   border-radius: 50%;
-  box-shadow: 0 -12px 12px rgba(255, 255, 255, 0.1), inset 0 -12px 12px rgba(255, 255, 255, 0.1), 0 12px 12px rgba(0, 0, 0, 0.1), inset 0 12px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: inset 3px 3px 6px rgba(0, 0, 0, 0.3);
 }
 .clock div {
   position: absolute;
@@ -154,38 +154,7 @@ code {
   font-weight: bold;
   color: lime;
 }
-.clock .h12 {
-  left: 50%;
-  top: 3%;
-  transform: translateX(-50%);
-}
-.clock .h12::before {
-  content: "12";
-}
-.clock .h3 {
-  left: 97%;
-  top: 50%;
-  transform: translate(-100%, -50%);
-}
-.clock .h3::before {
-  content: "3";
-}
-.clock .h6 {
-  left: 50%;
-  top: 97%;
-  transform: translate(-50%, -100%);
-}
-.clock .h6::before {
-  content: "6";
-}
-.clock .h9 {
-  left: 3%;
-  top: 50%;
-  transform: translateY(-50%);
-}
-.clock .h9::before {
-  content: "9";
-}
+
 .clock .ctr {
   width: 2.5vh;
   height: 2.55vh;
@@ -193,7 +162,7 @@ code {
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  background-color: white;
+  background-color: black;
 }
 
 /* .clock .hour {
@@ -208,21 +177,16 @@ code {
   top: 10%;
   height: 40%;
   width: 2.6vh;
-  background-color: white;
+  background-color: black;
   margin-left: -1.3vh;
+  box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.2);
 }
 
 .clock .minute div {
   top: 10%;
   height: 40%;
   width: 2.6vh;
-  background-color: white;
+  background-color: black;
   margin-left: -1.3vh;
-}
-
-.clock .second div {
-  top: 5%;
-  height: 65%;
-  border: 1px solid red;
-  margin-left: -1px;
+  box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.2);
 }

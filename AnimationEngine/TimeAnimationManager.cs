@@ -16,6 +16,7 @@ public class TimeAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> c
     private int currentMinuteFirstDigit = 0;
     private int currentMinuteSecondDigit = 0;
     private Timer? timer;
+    public bool IsFinished { get; private set; } = false;
     public void Start()
     {
         SetTimeAnimationConfig();

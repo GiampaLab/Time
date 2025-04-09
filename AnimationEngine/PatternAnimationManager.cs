@@ -5,16 +5,21 @@ using Time.Components;
 namespace Time.AnimationEngine;
 
 public class PatternAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clocks,
-    Action<Dictionary<int, Clock>> SetPatternAnimationStatus) : IAnimationManager
+    Func<Dictionary<int, Clock>, AnimationPatternType> SetPatternAnimationStatus) : IAnimationManager
 {
     private readonly IJSRuntime jSRuntime = jSRuntime;
     private readonly Dictionary<int, Clock> clocks = clocks;
     private readonly IList<Components.AnimationConfig> animationInfo = clocks.Values.SelectMany(x =>
             new[] { x.FirstArm.Config, x.SecondArm.Config }).ToArray();
     private DotNetObjectReference<IAnimationManager>? myDotNetObjectReference;
+    public AnimationPatternType AnimationPatternType { get; private set; }
+    public bool IsFinished { get; private set; }
+
     public async void Start()
     {
-        SetPatternAnimationStatus(clocks);
+        IsFinished = false;
+
+        AnimationPatternType = SetPatternAnimationStatus(clocks);
 
         var animationConfigsArray = animationInfo.Select(AnimationUtils.MapAnimationConfig);
 
@@ -25,6 +30,7 @@ public class PatternAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock
     [JSInvokable]
     public void AnimationFinished()
     {
+        IsFinished = true;
     }
 
     public void Stop()

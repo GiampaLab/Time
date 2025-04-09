@@ -10,6 +10,8 @@ public class InfiniteAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Cloc
     private readonly IList<Components.AnimationConfig> animationConfigs = clocks.Values.SelectMany(x =>
             new[] { x.FirstArm.Config, x.SecondArm.Config }).ToArray();
 
+    public bool IsFinished { get; private set; } = false;
+
     public async void Start()
     {
         SetInfiniteAnimationConfig(clocks);

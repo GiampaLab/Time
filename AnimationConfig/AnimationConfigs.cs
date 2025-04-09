@@ -73,30 +73,15 @@ public class AnimationConfigs
 
     public static void SetSpiralConfig(Dictionary<int, Clock> clocks, Func<int, Components.AnimationConfig> selectFirstArmConfig, Func<int, Components.AnimationConfig> selectSecondArmConfig)
     {
-        clocks[14].UpdateClockArmsConfig(selectFirstArmConfig(0), selectSecondArmConfig(0));
-        clocks[15].UpdateClockArmsConfig(selectFirstArmConfig(1), selectSecondArmConfig(1));
-        clocks[12].UpdateClockArmsConfig(selectFirstArmConfig(2), selectSecondArmConfig(2));
-        clocks[11].UpdateClockArmsConfig(selectFirstArmConfig(3), selectSecondArmConfig(3));
-        clocks[10].UpdateClockArmsConfig(selectFirstArmConfig(4), selectSecondArmConfig(4));
-        clocks[13].UpdateClockArmsConfig(selectFirstArmConfig(5), selectSecondArmConfig(5));
-        clocks[16].UpdateClockArmsConfig(selectFirstArmConfig(6), selectSecondArmConfig(6));
-        clocks[17].UpdateClockArmsConfig(selectFirstArmConfig(7), selectSecondArmConfig(7));
-        clocks[18].UpdateClockArmsConfig(selectFirstArmConfig(8), selectSecondArmConfig(8));
-        clocks[9].UpdateClockArmsConfig(selectFirstArmConfig(9), selectSecondArmConfig(9));
-        clocks[8].UpdateClockArmsConfig(selectFirstArmConfig(10), selectSecondArmConfig(10));
-        clocks[7].UpdateClockArmsConfig(selectFirstArmConfig(11), selectSecondArmConfig(11));
-        clocks[19].UpdateClockArmsConfig(selectFirstArmConfig(12), selectSecondArmConfig(12));
-        clocks[20].UpdateClockArmsConfig(selectFirstArmConfig(13), selectSecondArmConfig(13));
-        clocks[21].UpdateClockArmsConfig(selectFirstArmConfig(14), selectSecondArmConfig(14));
-        clocks[6].UpdateClockArmsConfig(selectFirstArmConfig(15), selectSecondArmConfig(15));
-        clocks[5].UpdateClockArmsConfig(selectFirstArmConfig(16), selectSecondArmConfig(16));
-        clocks[4].UpdateClockArmsConfig(selectFirstArmConfig(17), selectSecondArmConfig(17));
-        clocks[22].UpdateClockArmsConfig(selectFirstArmConfig(18), selectSecondArmConfig(18));
-        clocks[23].UpdateClockArmsConfig(selectFirstArmConfig(19), selectSecondArmConfig(19));
-        clocks[24].UpdateClockArmsConfig(selectFirstArmConfig(20), selectSecondArmConfig(20));
-        clocks[3].UpdateClockArmsConfig(selectFirstArmConfig(21), selectSecondArmConfig(21));
-        clocks[2].UpdateClockArmsConfig(selectFirstArmConfig(22), selectSecondArmConfig(22));
-        clocks[1].UpdateClockArmsConfig(selectFirstArmConfig(23), selectSecondArmConfig(23));
+        var spiralOrder = new[]
+        {
+            14, 15, 12, 11, 10, 13, 16, 17, 18, 9, 8, 7, 19, 20, 21, 6, 5, 4, 22, 23, 24, 3, 2, 1
+        };
+
+        for (var i = 0; i < spiralOrder.Length; i++)
+        {
+            clocks[spiralOrder[i]].UpdateClockArmsConfig(selectFirstArmConfig(i), selectSecondArmConfig(i));
+        }
     }
 }
 

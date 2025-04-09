@@ -65,49 +65,49 @@
             var wavePatternAnimationManager = new PatternAnimationManager(JSRuntime, Clocks,
             (Dictionary<int, Clock> clocks) =>
             {
-                Func<int, Components.AnimationConfig> SetHourArmAnimationConfig = (index) =>
-    new Components.AnimationConfig
-            {
-                Direction = Direction.Anticlockwise,
-                EasingFunction = "ease-in-out",
-                Duration = AnimationConfigs.StaggeredAnimation(false, index, 3000, 0),
-                Delay = AnimationConfigs.StaggeredAnimation(true, index, 0, 120)
-            };
+                Func<int, Components.AnimationConfig> SetHourArmAnimationConfig = (index) => new Components.AnimationConfig
+                {
+                    Direction = Direction.Anticlockwise,
+                    EasingFunction = "ease-in-out",
+                    Duration = AnimationConfigs.StaggeredAnimation(false, index, 3000, 0),
+                    Delay = AnimationConfigs.StaggeredAnimation(true, index, 0, 120)
+                };
 
                 AnimationConfigs.SetByRowConfig(clocks, SetHourArmAnimationConfig, SetHourArmAnimationConfig);
                 AnimationPatterns.SetLinePattern(clocks);
+                return AnimationPatternType.Line;
             });
 
             var flowPatternAnimationManager = new PatternAnimationManager(JSRuntime, Clocks,
             (Dictionary<int, Clock> clocks) =>
             {
-                Func<int, Components.AnimationConfig> SetHourArmAnimationConfig = (index) =>
-    new Components.AnimationConfig
-            {
-                Direction = Direction.Anticlockwise,
-                EasingFunction = "ease-in-out",
-                Duration = AnimationConfigs.StaggeredAnimation(false, index, 4000, 0),
-                Delay = AnimationConfigs.StaggeredAnimation(true, index, 0, 120)
-            };
+                Func<int, Components.AnimationConfig> SetHourArmAnimationConfig = (index) => new Components.AnimationConfig
+                {
+                    Direction = Direction.Anticlockwise,
+                    EasingFunction = "ease-in-out",
+                    Duration = AnimationConfigs.StaggeredAnimation(false, index, 4000, 0),
+                    Delay = AnimationConfigs.StaggeredAnimation(true, index, 0, 120)
+                };
 
                 AnimationConfigs.SetByRowConfig(clocks, SetHourArmAnimationConfig, SetHourArmAnimationConfig);
                 AnimationPatterns.SetFlowPattern(clocks);
+                return AnimationPatternType.Flow;
             });
 
             var flowerPatternAnimationManager = new PatternAnimationManager(JSRuntime, Clocks,
             (Dictionary<int, Clock> clocks) =>
             {
-                Func<int, Components.AnimationConfig> SetHourArmAnimationConfig = (index) =>
-    new Components.AnimationConfig
-            {
-                Direction = Direction.Anticlockwise,
-                EasingFunction = "ease-in-out",
-                Duration = AnimationConfigs.StaggeredAnimation(false, index, 4000, 0),
-                Delay = AnimationConfigs.StaggeredAnimation(true, index, 0, 120)
-            };
+                Func<int, Components.AnimationConfig> SetHourArmAnimationConfig = (index) => new Components.AnimationConfig
+                {
+                    Direction = Direction.Anticlockwise,
+                    EasingFunction = "ease-in-out",
+                    Duration = AnimationConfigs.StaggeredAnimation(false, index, 4000, 0),
+                    Delay = AnimationConfigs.StaggeredAnimation(true, index, 0, 120)
+                };
 
                 AnimationConfigs.SetSpiralConfig(clocks, SetHourArmAnimationConfig, SetHourArmAnimationConfig);
                 AnimationPatterns.SetFlowerPattern(clocks);
+                return AnimationPatternType.Flower;
             });
 
             var flowerAnimationConfig = new InfiniteAnimationManager(JSRuntime, Clocks,
@@ -139,51 +139,49 @@
 
 
                 Func<Clock, int, Components.AnimationConfig> SetMinuteArmAnimationConfig = (clock, index) =>
-    {
-                if (clock.Id <= 12)
                 {
-                    return new Components.AnimationConfig
+                    if (clock.Id <= 12)
                     {
-                        Direction = Direction.Clockwise,
-                        EasingFunction = "linear",
-                        Duration = AnimationConfigs.StaggeredAnimation(false, index, 7000, 0),
-                        Delay = AnimationConfigs.StaggeredAnimation(true, index, 0, 500)
-                    };
-                }
-                else
-                {
-                    return new Components.AnimationConfig
+                        return new Components.AnimationConfig
+                        {
+                            Direction = Direction.Clockwise,
+                            EasingFunction = "linear",
+                            Duration = AnimationConfigs.StaggeredAnimation(false, index, 7000, 0),
+                            Delay = AnimationConfigs.StaggeredAnimation(true, index, 0, 500)
+                        };
+                    }
+                    else
                     {
-                        Direction = Direction.Anticlockwise,
-                        EasingFunction = "linear",
-                        Duration = AnimationConfigs.StaggeredAnimation(false, index, 7000, 0),
-                        Delay = AnimationConfigs.StaggeredAnimation(true, index, 0, 500)
-                    };
-                }
-            };
+                        return new Components.AnimationConfig
+                        {
+                            Direction = Direction.Anticlockwise,
+                            EasingFunction = "linear",
+                            Duration = AnimationConfigs.StaggeredAnimation(false, index, 7000, 0),
+                            Delay = AnimationConfigs.StaggeredAnimation(true, index, 0, 500)
+                        };
+                    }
+                };
 
                 AnimationConfigs.SetCenterOutConfig(clocks, SetHourArmAnimationConfig, SetMinuteArmAnimationConfig);
             });
 
             var timeAnimationManager = new TimeAnimationManager(JSRuntime, Clocks, () =>
             {
-                Func<int, Components.AnimationConfig> SetHourArmAnimationConfig = (index) =>
-    new Components.AnimationConfig
-            {
-                Direction = Direction.Anticlockwise,
-                EasingFunction = "ease-out",
-                Duration = AnimationConfigs.StaggeredAnimation(false, index, 8000, 80),
-                Delay = AnimationConfigs.StaggeredAnimation(true, index, 0, 400)
-            };
+                Func<int, Components.AnimationConfig> SetHourArmAnimationConfig = (index) => new Components.AnimationConfig
+                {
+                    Direction = Direction.Anticlockwise,
+                    EasingFunction = "ease-out",
+                    Duration = AnimationConfigs.StaggeredAnimation(false, index, 8000, 80),
+                    Delay = AnimationConfigs.StaggeredAnimation(true, index, 0, 400)
+                };
 
-                Func<int, Components.AnimationConfig> SetMinuteArmAnimationConfig = (index) =>
-    new Components.AnimationConfig
-            {
-                Direction = Direction.Clockwise,
-                EasingFunction = "ease-out",
-                Duration = AnimationConfigs.StaggeredAnimation(false, index, 8000, 80),
-                Delay = AnimationConfigs.StaggeredAnimation(true, index, 0, 400)
-            };
+                Func<int, Components.AnimationConfig> SetMinuteArmAnimationConfig = (index) => new Components.AnimationConfig
+                {
+                    Direction = Direction.Clockwise,
+                    EasingFunction = "ease-out",
+                    Duration = AnimationConfigs.StaggeredAnimation(false, index, 8000, 80),
+                    Delay = AnimationConfigs.StaggeredAnimation(true, index, 0, 400)
+                };
                 AnimationConfigs.SetReverseConfig(Clocks, SetHourArmAnimationConfig, SetMinuteArmAnimationConfig);
             }, () =>
             {
@@ -205,14 +203,13 @@
             var anticlockwiseInfiniteAnimationManager = new InfiniteAnimationManager(JSRuntime, Clocks, (Dictionary<int, Clock>
             clocks) =>
             {
-                Func<int, Components.AnimationConfig> SetHourArmAnimationConfig = (index) =>
-    new Components.AnimationConfig
-            {
-                Direction = Direction.Anticlockwise,
-                EasingFunction = "linear",
-                Duration = AnimationConfigs.StaggeredAnimation(false, index, 5000, 0),
-                Delay = AnimationConfigs.StaggeredAnimation(true, index, 0, 40)
-            };
+                Func<int, Components.AnimationConfig> SetHourArmAnimationConfig = (index) => new Components.AnimationConfig
+                {
+                    Direction = Direction.Anticlockwise,
+                    EasingFunction = "linear",
+                    Duration = AnimationConfigs.StaggeredAnimation(false, index, 5000, 0),
+                    Delay = AnimationConfigs.StaggeredAnimation(true, index, 0, 40)
+                };
 
                 AnimationConfigs.SetSpiralConfig(clocks, SetHourArmAnimationConfig, SetHourArmAnimationConfig);
             });
@@ -221,23 +218,21 @@
             (Dictionary<int, Clock>
             clocks) =>
             {
-                Func<int, Components.AnimationConfig> SetHourArmAnimationConfig = (index) =>
-    new Components.AnimationConfig
-            {
-                Direction = Direction.Anticlockwise,
-                EasingFunction = "linear",
-                Duration = AnimationConfigs.StaggeredAnimation(false, index, 5000, 0),
-                Delay = AnimationConfigs.StaggeredAnimation(true, index, 0, 80)
-            };
+                Func<int, Components.AnimationConfig> SetHourArmAnimationConfig = (index) => new Components.AnimationConfig
+                {
+                    Direction = Direction.Anticlockwise,
+                    EasingFunction = "linear",
+                    Duration = AnimationConfigs.StaggeredAnimation(false, index, 5000, 0),
+                    Delay = AnimationConfigs.StaggeredAnimation(true, index, 0, 80)
+                };
 
-                Func<int, Components.AnimationConfig> SetMinuteArmAnimationConfig = (index) =>
-    new Components.AnimationConfig
-            {
-                Direction = Direction.Clockwise,
-                EasingFunction = "linear",
-                Duration = AnimationConfigs.StaggeredAnimation(false, index, 5000, 0),
-                Delay = AnimationConfigs.StaggeredAnimation(true, index, 0, 80)
-            };
+                Func<int, Components.AnimationConfig> SetMinuteArmAnimationConfig = (index) => new Components.AnimationConfig
+                {
+                    Direction = Direction.Clockwise,
+                    EasingFunction = "linear",
+                    Duration = AnimationConfigs.StaggeredAnimation(false, index, 5000, 0),
+                    Delay = AnimationConfigs.StaggeredAnimation(true, index, 0, 80)
+                };
                 AnimationConfigs.SetDefaultConfig(clocks, SetHourArmAnimationConfig, SetMinuteArmAnimationConfig);
             });
 

@@ -11,4 +11,5 @@ public interface IAnimationManager
     AnimationType GetAnimationType();
     void SetDotNetObjectReference(DotNetObjectReference<IAnimationManager> dotNetObjectReference);
     void Dispose();
+    bool IsFinished { get; }
 }

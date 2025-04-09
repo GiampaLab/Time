@@ -200,10 +200,8 @@ public class AnimationPatterns
 
 public enum AnimationPatternType
 {
-    Numbers,
     Squares,
     Line,
     Flow,
-    Flower,
-    Spiral,
+    Flower
 }
