@@ -41,42 +41,40 @@ public class AnimationOrchestrator(IJSRuntime jSRuntime, Dictionary<int, Clock> 
     {
         return animationManager.AnimationPatternType switch
         {
-            AnimationPatternType.Flower => new InfiniteAnimationManager(JSRuntime, Clocks,
-                        clocks =>
-                        {
-                            static Components.AnimationConfig CreateArmAnimationConfig(Clock clock, int index, Direction direction) =>
-                                new()
-                                {
-                                    Direction = direction,
-                                    EasingFunction = "linear",
-                                    Duration = 7000,
-                                    Delay = AnimationConfigs.StaggeredAnimation(true, index, 0, 500)
-                                };
-
-                            static Components.AnimationConfig SetHourArmAnimationConfig(Clock clock, int index) =>
-                                CreateArmAnimationConfig(clock, index, clock.Id <= 12 ? Direction.Clockwise : Direction.Anticlockwise);
-
-                            static Components.AnimationConfig SetMinuteArmAnimationConfig(Clock clock, int index) =>
-                                CreateArmAnimationConfig(clock, index, clock.Id <= 12 ? Direction.Anticlockwise : Direction.Clockwise);
-                            Console.WriteLine("SetFlowerPattern");
-                            AnimationConfigs.SetCenterOutConfig(clocks, SetHourArmAnimationConfig, SetMinuteArmAnimationConfig);
-                        }),
-
-            AnimationPatternType.Line => new InfiniteAnimationManager(JSRuntime, Clocks, (Dictionary<int, Clock>
-            clocks) =>
-            {
-                Components.AnimationConfig SetHourArmAnimationConfig(int index) => new Components.AnimationConfig
+            AnimationPatternType.Flower => new InfiniteAnimationManager(JSRuntime, Clocks, () =>
                 {
-                    Direction = Direction.Anticlockwise,
-                    EasingFunction = "linear",
-                    Duration = 5000,
-                    Delay = AnimationConfigs.StaggeredAnimation(true, index, 0, 40)
-                };
-                Console.WriteLine("SetLinePattern");
-                AnimationConfigs.SetDefaultConfig(clocks, SetHourArmAnimationConfig, SetHourArmAnimationConfig);
-            }),
+                    static Components.AnimationConfig CreateArmAnimationConfig(Clock clock, int index, Direction direction) =>
+                        new()
+                        {
+                            Direction = direction,
+                            EasingFunction = "linear",
+                            Duration = 7000,
+                            Delay = AnimationConfigs.StaggeredAnimation(index, 0, 400)
+                        };
 
-            AnimationPatternType.Squares => new InfiniteAnimationManager(JSRuntime, Clocks, clocks =>
+                    static Components.AnimationConfig SetHourArmAnimationConfig(Clock clock, int index) =>
+                        CreateArmAnimationConfig(clock, index, clock.Id <= 12 ? Direction.Clockwise : Direction.Anticlockwise);
+
+                    static Components.AnimationConfig SetMinuteArmAnimationConfig(Clock clock, int index) =>
+                        CreateArmAnimationConfig(clock, index, clock.Id <= 12 ? Direction.Anticlockwise : Direction.Clockwise);
+                    Console.WriteLine("SetFlowerPattern");
+                    AnimationConfigs.SetCenterOutConfig(Clocks, SetHourArmAnimationConfig, SetMinuteArmAnimationConfig);
+                }),
+
+            AnimationPatternType.Line => new InfiniteAnimationManager(JSRuntime, Clocks, () =>
+                {
+                    Components.AnimationConfig SetHourArmAnimationConfig(int index) => new()
+                    {
+                        Direction = Direction.Anticlockwise,
+                        EasingFunction = "linear",
+                        Duration = 5000,
+                        Delay = AnimationConfigs.StaggeredAnimation(index, 0, 80)
+                    };
+                    Console.WriteLine("SetLinePattern");
+                    AnimationConfigs.SetDefaultConfig(Clocks, SetHourArmAnimationConfig, SetHourArmAnimationConfig);
+                }),
+
+            AnimationPatternType.Squares => new InfiniteAnimationManager(JSRuntime, Clocks, () =>
                 {
                     Func<int, Components.AnimationConfig> CreateConfig(Direction direction) => index => new()
                     {
@@ -86,20 +84,20 @@ public class AnimationOrchestrator(IJSRuntime jSRuntime, Dictionary<int, Clock> 
                         Delay = 80
                     };
                     Console.WriteLine("SetSquaresPattern");
-                    AnimationConfigs.SetDefaultConfig(clocks, CreateConfig(Direction.Anticlockwise), CreateConfig(Direction.Clockwise));
+                    AnimationConfigs.SetDefaultConfig(Clocks, CreateConfig(Direction.Anticlockwise), CreateConfig(Direction.Clockwise));
                 }),
 
-            AnimationPatternType.Flow => new InfiniteAnimationManager(JSRuntime, Clocks, clocks =>
+            AnimationPatternType.Flow => new InfiniteAnimationManager(JSRuntime, Clocks, () =>
                 {
-                    Func<int, Components.AnimationConfig> SetHourArmAnimationConfig = (index) => new Components.AnimationConfig
+                    Components.AnimationConfig SetHourArmAnimationConfig(int index) => new Components.AnimationConfig
                     {
                         Direction = Direction.Anticlockwise,
                         EasingFunction = "linear",
                         Duration = 5000,
-                        Delay = AnimationConfigs.StaggeredAnimation(true, index, 0, 40)
+                        Delay = AnimationConfigs.StaggeredAnimation(index, 0, 40)
                     };
                     Console.WriteLine("SetFlowPattern");
-                    AnimationConfigs.SetSpiralConfig(clocks, SetHourArmAnimationConfig, SetHourArmAnimationConfig);
+                    AnimationConfigs.SetSpiralConfig(Clocks, SetHourArmAnimationConfig, SetHourArmAnimationConfig);
                 }),
 
             _ => throw new ArgumentOutOfRangeException(nameof(animationManager.AnimationPatternType), animationManager.AnimationPatternType, null),
@@ -109,20 +107,20 @@ public class AnimationOrchestrator(IJSRuntime jSRuntime, Dictionary<int, Clock> 
     private IAnimationManager GetPatternAnimationManager()
     {
         return new PatternAnimationManager(JSRuntime, Clocks,
-            clocks =>
+            () =>
             {
-                Array values = Enum.GetValues(typeof(Direction));
                 static Components.AnimationConfig SetHourArmAnimationConfig(int index, Direction direction) =>
                     new()
                     {
                         Direction = direction,
                         EasingFunction = "ease-in-out",
                         Duration = 5000,
-                        Delay = AnimationConfigs.StaggeredAnimation(true, index, 0, 300)
+                        Delay = AnimationConfigs.StaggeredAnimation(index, 0, 300)
                     };
 
-                SetRandomClockConfigs(clocks, index => SetHourArmAnimationConfig(index, (Direction)values.GetValue(random.Next(values.Length))), index => SetHourArmAnimationConfig(index, (Direction)values.GetValue(random.Next(values.Length))));
-                return SetRandomPattern(clocks);
+                Array values = Enum.GetValues(typeof(Direction));
+                SetRandomClockConfigs(Clocks, index => SetHourArmAnimationConfig(index, (Direction)(values.GetValue(random.Next(values.Length)) ?? Direction.Clockwise)), index => SetHourArmAnimationConfig(index, (Direction)values.GetValue(random.Next(values.Length))));
+                return SetRandomPattern(Clocks);
             });
     }
 
@@ -136,12 +134,13 @@ public class AnimationOrchestrator(IJSRuntime jSRuntime, Dictionary<int, Clock> 
                  Direction = direction,
                  EasingFunction = "ease-out",
                  Duration = 8000,
-                 Delay = AnimationConfigs.StaggeredAnimation(true, index, 0, 400)
+                 Delay = AnimationConfigs.StaggeredAnimation(index, 0, 400)
              };
 
+            Array values = Enum.GetValues(typeof(Direction));
             SetRandomClockConfigs(Clocks,
-            index => CreateArmAnimationConfig(index, Direction.Anticlockwise),
-            index => CreateArmAnimationConfig(index, Direction.Clockwise));
+            index => CreateArmAnimationConfig(index, (Direction)(values.GetValue(random.Next(values.Length)) ?? Direction.Clockwise)),
+            index => CreateArmAnimationConfig(index, (Direction)(values.GetValue(random.Next(values.Length)) ?? Direction.Anticlockwise)));
         },
         () =>
         {
@@ -161,7 +160,8 @@ public class AnimationOrchestrator(IJSRuntime jSRuntime, Dictionary<int, Clock> 
     private void SetRandomClockConfigs(Dictionary<int, Clock> clocks, Func<int, Components.AnimationConfig> selectFirstArmConfig, Func<int, Components.AnimationConfig> selectSecondArmConfig)
     {
         Array values = Enum.GetValues(typeof(AnimationConfigType));
-        AnimationConfigType randomAnimationType = (AnimationConfigType)values.GetValue(random.Next(values.Length));
+        object value = values.GetValue(random.Next(values.Length)) ?? AnimationConfigType.Default;
+        AnimationConfigType randomAnimationType = (AnimationConfigType)value;
 
         switch (randomAnimationType)
         {
@@ -184,7 +184,7 @@ public class AnimationOrchestrator(IJSRuntime jSRuntime, Dictionary<int, Clock> 
                             Direction = direction,
                             EasingFunction = "linear",
                             Duration = 7000,
-                            Delay = AnimationConfigs.StaggeredAnimation(true, index, 0, 500)
+                            Delay = AnimationConfigs.StaggeredAnimation(index, 0, 500)
                         };
 
                 static Components.AnimationConfig SetHourArmAnimationConfig(Clock clock, int index) =>
@@ -202,7 +202,7 @@ public class AnimationOrchestrator(IJSRuntime jSRuntime, Dictionary<int, Clock> 
     private AnimationPatternType SetRandomPattern(Dictionary<int, Clock> clocks)
     {
         Array values = Enum.GetValues(typeof(AnimationPatternType));
-        AnimationPatternType randomAnimationPatternType = (AnimationPatternType)values.GetValue(random.Next(values.Length));
+        AnimationPatternType randomAnimationPatternType = (AnimationPatternType)(values.GetValue(random.Next(values.Length)) ?? AnimationPatternType.Flower);
 
         switch (randomAnimationPatternType)
         {

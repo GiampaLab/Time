@@ -5,7 +5,7 @@ using Time.Components;
 namespace Time.AnimationEngine;
 
 public class PatternAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clocks,
-    Func<Dictionary<int, Clock>, AnimationPatternType> SetPatternAnimationStatus) : IAnimationManager
+    Func<AnimationPatternType> SetPatternAnimationStatus) : IAnimationManager
 {
     private readonly IJSRuntime jSRuntime = jSRuntime;
     private readonly Dictionary<int, Clock> clocks = clocks;
@@ -19,7 +19,7 @@ public class PatternAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock
     {
         IsFinished = false;
 
-        AnimationPatternType = SetPatternAnimationStatus(clocks);
+        AnimationPatternType = SetPatternAnimationStatus();
 
         var animationConfigsArray = animationInfo.Select(AnimationUtils.MapAnimationConfig);
 

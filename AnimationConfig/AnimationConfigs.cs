@@ -3,9 +3,9 @@ using Time.Components;
 namespace Time.AnimationConfig;
 public class AnimationConfigs
 {
-    public static int StaggeredAnimation(bool staggered, int index, int milliseconds, int staggeredMilliseconds)
+    public static int StaggeredAnimation(int index, int milliseconds, int staggeredMilliseconds)
     {
-        return staggered ? milliseconds + ((index % 2) == 1 ? (index - 1) * staggeredMilliseconds : index * staggeredMilliseconds) : milliseconds;
+        return milliseconds + ((index % 2) == 1 ? (index - 1) * staggeredMilliseconds : index * staggeredMilliseconds);
     }
 
     public static void SetStaticConfig(Dictionary<int, Clock> clocks, Components.AnimationConfig firstArmConfig, Components.AnimationConfig secondArmConfig)

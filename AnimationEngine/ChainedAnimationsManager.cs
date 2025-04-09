@@ -69,6 +69,10 @@ public partial class ChainedAnimationsManager : IAnimationManager
     {
         if (animationManagers == null)
         {
+            if (nextAnimationManager == null)
+            {
+                throw new InvalidOperationException("nextAnimationManager cannot be null.");
+            }
             var currentAnimationManager = nextAnimationManager(previousAnimationManager?.animationManager);
             currentAnimationManager.animationManager.SetDotNetObjectReference(dotNetObjectReference);
             return currentAnimationManager;
