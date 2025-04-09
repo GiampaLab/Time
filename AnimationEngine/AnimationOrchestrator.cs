@@ -119,7 +119,8 @@ public class AnimationOrchestrator(IJSRuntime jSRuntime, Dictionary<int, Clock> 
                     };
 
                 Array values = Enum.GetValues(typeof(Direction));
-                SetRandomClockConfigs(Clocks, index => SetHourArmAnimationConfig(index, (Direction)(values.GetValue(random.Next(values.Length)) ?? Direction.Clockwise)), index => SetHourArmAnimationConfig(index, (Direction)values.GetValue(random.Next(values.Length))));
+                SetRandomClockConfigs(Clocks, index => SetHourArmAnimationConfig(index, (Direction)(values.GetValue(random.Next(values.Length)) ?? Direction.Clockwise)),
+                    index => SetHourArmAnimationConfig(index, (Direction)(values.GetValue(random.Next(values.Length)) ?? Direction.Anticlockwise)));
                 return SetRandomPattern(Clocks);
             });
     }
