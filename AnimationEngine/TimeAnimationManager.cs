@@ -42,7 +42,7 @@ public class TimeAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> c
         var hoursFirstDigit = time.Hour / 10;
         var hoursSecondDigit = time.Hour % 10;
         var minuteFirstDigit = time.Minute / 10;
-        var minuteSecondDigit = time.Second / 10;
+        var minuteSecondDigit = time.Minute % 10;
 
         if (hoursFirstDigit != currentHourFirstDigit || hoursSecondDigit != currentHourSecondDigit || minuteFirstDigit != currentMinuteFirstDigit || minuteSecondDigit != currentMinuteSecondDigit)
         {

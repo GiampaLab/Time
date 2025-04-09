@@ -60,12 +60,21 @@ window.animationLoop = {
       let targetAngle = item.direction === "Clockwise" ? 360 : -360;
       // Pause using setTimeout
       setTimeout(() => {
-        item.elementReference.animate([{ transform: `rotate(${item.state}deg)` }, { transform: `rotate(${item.state + targetAngle}deg)` }], {
-          duration: item.duration,
-          iterations: Infinity,
-          fill: "both",
-          easing: item.easing,
-        });
+        item.elementReference
+          .animate([{ transform: `rotate(${item.state}deg)` }, { transform: `rotate(${item.state + targetAngle}deg)` }], {
+            duration: item.duration * 1.6,
+            iterations: 1,
+            fill: "both",
+            easing: "ease-in",
+          })
+          .finished.then(() => {
+            item.elementReference.animate([{ transform: `rotate(${item.state}deg)` }, { transform: `rotate(${item.state + targetAngle}deg)` }], {
+              duration: item.duration,
+              iterations: Infinity,
+              fill: "both",
+              easing: item.easing,
+            });
+          });
         // We do not know the end state of the animation, so we set it to null
         // and we will calculate it when the animation is finished
         previousAnimationConfigs[index].state = null;
