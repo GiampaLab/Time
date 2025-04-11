@@ -20,7 +20,7 @@ public class AnimationOrchestrator(IJSRuntime jSRuntime, Dictionary<int, Clock> 
             }
             else if (animationManager.GetAnimationType() == AnimationType.Time)
             {
-                return (GetPatternAnimationManager(), 10000);
+                return (GetPatternAnimationManager(), 15000);
             }
             else if (animationManager.GetAnimationType() == AnimationType.Pattern)
             {
@@ -47,7 +47,7 @@ public class AnimationOrchestrator(IJSRuntime jSRuntime, Dictionary<int, Clock> 
                         new()
                         {
                             Direction = direction,
-                            EasingFunction = "linear",
+                            EasingFunction = "ease-in",
                             Duration = 7000,
                             Delay = AnimationConfigs.StaggeredAnimation(index, 0, 400)
                         };
@@ -66,7 +66,7 @@ public class AnimationOrchestrator(IJSRuntime jSRuntime, Dictionary<int, Clock> 
                     Components.AnimationConfig SetHourArmAnimationConfig(int index) => new()
                     {
                         Direction = Direction.Anticlockwise,
-                        EasingFunction = "linear",
+                        EasingFunction = "ease-in",
                         Duration = 5000,
                         Delay = AnimationConfigs.StaggeredAnimation(index, 0, 80)
                     };
@@ -79,7 +79,7 @@ public class AnimationOrchestrator(IJSRuntime jSRuntime, Dictionary<int, Clock> 
                     Func<int, Components.AnimationConfig> CreateConfig(Direction direction) => index => new()
                     {
                         Direction = direction,
-                        EasingFunction = "linear",
+                        EasingFunction = "ease-in",
                         Duration = 5000,
                         Delay = 80
                     };
@@ -92,7 +92,7 @@ public class AnimationOrchestrator(IJSRuntime jSRuntime, Dictionary<int, Clock> 
                     Components.AnimationConfig SetHourArmAnimationConfig(int index) => new Components.AnimationConfig
                     {
                         Direction = Direction.Anticlockwise,
-                        EasingFunction = "linear",
+                        EasingFunction = "ease-in",
                         Duration = 5000,
                         Delay = AnimationConfigs.StaggeredAnimation(index, 0, 40)
                     };
