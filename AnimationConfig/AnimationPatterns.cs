@@ -131,6 +131,14 @@ public class AnimationPatterns
         }
     }
 
+    public static void SetDiagonalPattern(Dictionary<int, Clock> clocks)
+    {
+        for (var i = 0; i < 24; i++)
+        {
+            clocks[i + 1].UpdateState(ArmState.HPOne, ArmState.None);
+        }
+    }
+
     public static void SetFlowPattern(Dictionary<int, Clock> clocks)
     {
         clocks[1].UpdateState(ArmState.Three, ArmState.Three, 10, 10);
@@ -203,5 +211,6 @@ public enum AnimationPatternType
     Squares,
     Line,
     Flow,
-    Flower
+    Flower,
+    Diagonal,
 }

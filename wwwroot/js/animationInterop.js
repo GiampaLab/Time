@@ -65,14 +65,14 @@ window.animationLoop = {
             duration: item.duration * 1.6,
             iterations: 1,
             fill: "both",
-            easing: "ease-in",
+            easing: item.easing,
           })
           .finished.then(() => {
             item.elementReference.animate([{ transform: `rotate(${item.state}deg)` }, { transform: `rotate(${item.state + targetAngle}deg)` }], {
               duration: item.duration,
               iterations: Infinity,
               fill: "both",
-              easing: item.easing,
+              easing: "linear",
             });
           });
         // We do not know the end state of the animation, so we set it to null
