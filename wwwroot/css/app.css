@@ -96,7 +96,7 @@ code {
 .clock {
   position: relative;
   overflow: hidden;
-  margin: 5px;
+  margin: 2.5px;
   background-color: inherit;
   height: 20vmin;
   width: 20vmin;
