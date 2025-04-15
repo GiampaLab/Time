@@ -113,6 +113,19 @@ public class AnimationOrchestrator(IJSRuntime jSRuntime, Dictionary<int, Clock> 
                     AnimationConfigs.SetSpiralConfig(Clocks, SetHourArmAnimationConfig, SetHourArmAnimationConfig);
                 }),
 
+            AnimationPatternType.Numbers => new InfiniteAnimationManager(JSRuntime, Clocks, () =>
+            {
+                Components.AnimationConfig SetHourArmAnimationConfig(int index) => new Components.AnimationConfig
+                {
+                    Direction = Direction.Anticlockwise,
+                    EasingFunction = "ease-in",
+                    Duration = 7000,
+                    Delay = 0
+                };
+                Console.WriteLine("SetNumbersPattern");
+                AnimationConfigs.SetDefaultConfig(Clocks, SetHourArmAnimationConfig, SetHourArmAnimationConfig);
+            }),
+
             _ => throw new ArgumentOutOfRangeException(nameof(animationManager.AnimationPatternType), animationManager.AnimationPatternType, null),
         };
     }
@@ -239,6 +252,14 @@ public class AnimationOrchestrator(IJSRuntime jSRuntime, Dictionary<int, Clock> 
                 break;
             case AnimationPatternType.Diagonal:
                 AnimationPatterns.SetDiagonalPattern(clocks);
+                break;
+            case AnimationPatternType.Numbers:
+                var time = DateTime.Now;
+                var hoursFirstDigit = time.Hour / 10;
+                var hoursSecondDigit = time.Hour % 10;
+                var minuteFirstDigit = time.Minute / 10;
+                var minuteSecondDigit = time.Minute % 10;
+                AnimationPatterns.SetNumbersPattern(clocks, hoursFirstDigit, hoursSecondDigit, minuteFirstDigit, minuteSecondDigit, 90);
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(randomAnimationPatternType), randomAnimationPatternType, null);

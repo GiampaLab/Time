@@ -3,106 +3,106 @@ using Time.Components;
 namespace Time.AnimationConfig;
 public class AnimationPatterns
 {
-    public static void SetNumbersPattern(Dictionary<int, Clock> clocks, int hoursFirstDigit, int hoursSecondDigit, int minuteFirstDigit, int minuteSecondDigit)
+    public static void SetNumbersPattern(Dictionary<int, Clock> clocks, int hoursFirstDigit, int hoursSecondDigit, int minuteFirstDigit, int minuteSecondDigit, int rotation = 0)
     {
-        SetNumberPattern(hoursFirstDigit, [1, 2, 3, 4, 5, 6], clocks);
-        SetNumberPattern(hoursSecondDigit, [7, 8, 9, 10, 11, 12], clocks);
-        SetNumberPattern(minuteFirstDigit, [13, 14, 15, 16, 17, 18], clocks);
-        SetNumberPattern(minuteSecondDigit, [19, 20, 21, 22, 23, 24], clocks);
+        SetNumberPattern(hoursFirstDigit, [1, 2, 3, 4, 5, 6], clocks, rotation);
+        SetNumberPattern(hoursSecondDigit, [7, 8, 9, 10, 11, 12], clocks, rotation);
+        SetNumberPattern(minuteFirstDigit, [13, 14, 15, 16, 17, 18], clocks, rotation);
+        SetNumberPattern(minuteSecondDigit, [19, 20, 21, 22, 23, 24], clocks, rotation);
     }
 
-    private static void SetNumberPattern(int number, List<int> clockIndexes, Dictionary<int, Clock> clocks)
+    private static void SetNumberPattern(int number, List<int> clockIndexes, Dictionary<int, Clock> clocks, int rotation = 0)
     {
         switch (number)
         {
             case 0:
-                clocks[clockIndexes[0]].UpdateState(ArmState.Three, ArmState.Six);
-                clocks[clockIndexes[1]].UpdateState(ArmState.Zero, ArmState.Six);
-                clocks[clockIndexes[2]].UpdateState(ArmState.Zero, ArmState.Three);
-                clocks[clockIndexes[3]].UpdateState(ArmState.Nine, ArmState.Six);
-                clocks[clockIndexes[4]].UpdateState(ArmState.Zero, ArmState.Six);
-                clocks[clockIndexes[5]].UpdateState(ArmState.Zero, ArmState.Nine);
+                clocks[clockIndexes[0]].UpdateState(ArmState.Three, ArmState.Six, rotation, rotation);
+                clocks[clockIndexes[1]].UpdateState(ArmState.Zero, ArmState.Six, rotation, rotation);
+                clocks[clockIndexes[2]].UpdateState(ArmState.Zero, ArmState.Three, rotation, rotation);
+                clocks[clockIndexes[3]].UpdateState(ArmState.Nine, ArmState.Six, rotation, rotation);
+                clocks[clockIndexes[4]].UpdateState(ArmState.Zero, ArmState.Six, rotation, rotation);
+                clocks[clockIndexes[5]].UpdateState(ArmState.Zero, ArmState.Nine, rotation, rotation);
                 break;
 
             case 1:
-                clocks[clockIndexes[0]].UpdateState(ArmState.None, ArmState.None);
-                clocks[clockIndexes[1]].UpdateState(ArmState.None, ArmState.None);
-                clocks[clockIndexes[2]].UpdateState(ArmState.None, ArmState.None);
-                clocks[clockIndexes[3]].UpdateState(ArmState.Six, ArmState.Six);
-                clocks[clockIndexes[4]].UpdateState(ArmState.Zero, ArmState.Six);
-                clocks[clockIndexes[5]].UpdateState(ArmState.Zero, ArmState.Zero);
+                clocks[clockIndexes[0]].UpdateState(ArmState.None, ArmState.None, rotation, rotation);
+                clocks[clockIndexes[1]].UpdateState(ArmState.None, ArmState.None, rotation, rotation);
+                clocks[clockIndexes[2]].UpdateState(ArmState.None, ArmState.None, rotation, rotation);
+                clocks[clockIndexes[3]].UpdateState(ArmState.Six, ArmState.Six, rotation, rotation);
+                clocks[clockIndexes[4]].UpdateState(ArmState.Zero, ArmState.Six, rotation, rotation);
+                clocks[clockIndexes[5]].UpdateState(ArmState.Zero, ArmState.Zero, rotation, rotation);
                 break;
 
             case 2:
-                clocks[clockIndexes[0]].UpdateState(ArmState.Three, ArmState.Three);
-                clocks[clockIndexes[1]].UpdateState(ArmState.Three, ArmState.Six);
-                clocks[clockIndexes[2]].UpdateState(ArmState.Zero, ArmState.Three);
-                clocks[clockIndexes[3]].UpdateState(ArmState.Nine, ArmState.Six);
-                clocks[clockIndexes[4]].UpdateState(ArmState.Zero, ArmState.Nine);
-                clocks[clockIndexes[5]].UpdateState(ArmState.Nine, ArmState.Nine);
+                clocks[clockIndexes[0]].UpdateState(ArmState.Three, ArmState.Three, rotation, rotation);
+                clocks[clockIndexes[1]].UpdateState(ArmState.Three, ArmState.Six, rotation, rotation);
+                clocks[clockIndexes[2]].UpdateState(ArmState.Zero, ArmState.Three, rotation, rotation);
+                clocks[clockIndexes[3]].UpdateState(ArmState.Nine, ArmState.Six, rotation, rotation);
+                clocks[clockIndexes[4]].UpdateState(ArmState.Zero, ArmState.Nine, rotation, rotation);
+                clocks[clockIndexes[5]].UpdateState(ArmState.Nine, ArmState.Nine, rotation, rotation);
                 break;
 
             case 3:
-                clocks[clockIndexes[0]].UpdateState(ArmState.Three, ArmState.Three);
-                clocks[clockIndexes[1]].UpdateState(ArmState.Three, ArmState.Three);
-                clocks[clockIndexes[2]].UpdateState(ArmState.Three, ArmState.Three);
-                clocks[clockIndexes[3]].UpdateState(ArmState.Nine, ArmState.Six);
-                clocks[clockIndexes[4]].UpdateState(ArmState.Zero, ArmState.Six);
-                clocks[clockIndexes[5]].UpdateState(ArmState.Zero, ArmState.Nine);
+                clocks[clockIndexes[0]].UpdateState(ArmState.Three, ArmState.Three, rotation, rotation);
+                clocks[clockIndexes[1]].UpdateState(ArmState.Three, ArmState.Three, rotation, rotation);
+                clocks[clockIndexes[2]].UpdateState(ArmState.Three, ArmState.Three, rotation, rotation);
+                clocks[clockIndexes[3]].UpdateState(ArmState.Nine, ArmState.Six, rotation, rotation);
+                clocks[clockIndexes[4]].UpdateState(ArmState.Zero, ArmState.Six, rotation, rotation);
+                clocks[clockIndexes[5]].UpdateState(ArmState.Zero, ArmState.Nine, rotation, rotation);
                 break;
 
             case 4:
-                clocks[clockIndexes[0]].UpdateState(ArmState.Six, ArmState.Six);
-                clocks[clockIndexes[1]].UpdateState(ArmState.Zero, ArmState.Three);
-                clocks[clockIndexes[2]].UpdateState(ArmState.None, ArmState.None);
-                clocks[clockIndexes[3]].UpdateState(ArmState.Six, ArmState.Six);
-                clocks[clockIndexes[4]].UpdateState(ArmState.Nine, ArmState.Zero);
-                clocks[clockIndexes[5]].UpdateState(ArmState.Zero, ArmState.Zero);
+                clocks[clockIndexes[0]].UpdateState(ArmState.Six, ArmState.Six, rotation, rotation);
+                clocks[clockIndexes[1]].UpdateState(ArmState.Zero, ArmState.Three, rotation, rotation);
+                clocks[clockIndexes[2]].UpdateState(ArmState.None, ArmState.None, rotation, rotation);
+                clocks[clockIndexes[3]].UpdateState(ArmState.Six, ArmState.Six, rotation, rotation);
+                clocks[clockIndexes[4]].UpdateState(ArmState.Nine, ArmState.Zero, rotation, rotation);
+                clocks[clockIndexes[5]].UpdateState(ArmState.Zero, ArmState.Zero, rotation, rotation);
                 break;
 
             case 5:
-                clocks[clockIndexes[0]].UpdateState(ArmState.Three, ArmState.Six);
-                clocks[clockIndexes[1]].UpdateState(ArmState.Zero, ArmState.Three);
-                clocks[clockIndexes[2]].UpdateState(ArmState.Three, ArmState.Three);
-                clocks[clockIndexes[3]].UpdateState(ArmState.Nine, ArmState.Nine);
-                clocks[clockIndexes[4]].UpdateState(ArmState.Nine, ArmState.Six);
-                clocks[clockIndexes[5]].UpdateState(ArmState.Zero, ArmState.Nine);
+                clocks[clockIndexes[0]].UpdateState(ArmState.Three, ArmState.Six, rotation, rotation);
+                clocks[clockIndexes[1]].UpdateState(ArmState.Zero, ArmState.Three, rotation, rotation);
+                clocks[clockIndexes[2]].UpdateState(ArmState.Three, ArmState.Three, rotation, rotation);
+                clocks[clockIndexes[3]].UpdateState(ArmState.Nine, ArmState.Nine, rotation, rotation);
+                clocks[clockIndexes[4]].UpdateState(ArmState.Nine, ArmState.Six, rotation, rotation);
+                clocks[clockIndexes[5]].UpdateState(ArmState.Zero, ArmState.Nine, rotation, rotation);
                 break;
 
             case 6:
-                clocks[clockIndexes[0]].UpdateState(ArmState.Three, ArmState.Six);
-                clocks[clockIndexes[1]].UpdateState(ArmState.Zero, ArmState.Six);
-                clocks[clockIndexes[2]].UpdateState(ArmState.Zero, ArmState.Three);
-                clocks[clockIndexes[3]].UpdateState(ArmState.Nine, ArmState.Nine);
-                clocks[clockIndexes[4]].UpdateState(ArmState.Nine, ArmState.Six);
-                clocks[clockIndexes[5]].UpdateState(ArmState.Zero, ArmState.Nine);
+                clocks[clockIndexes[0]].UpdateState(ArmState.Three, ArmState.Six, rotation, rotation);
+                clocks[clockIndexes[1]].UpdateState(ArmState.Zero, ArmState.Six, rotation, rotation);
+                clocks[clockIndexes[2]].UpdateState(ArmState.Zero, ArmState.Three, rotation, rotation);
+                clocks[clockIndexes[3]].UpdateState(ArmState.Nine, ArmState.Nine, rotation, rotation);
+                clocks[clockIndexes[4]].UpdateState(ArmState.Nine, ArmState.Six, rotation, rotation);
+                clocks[clockIndexes[5]].UpdateState(ArmState.Zero, ArmState.Nine, rotation, rotation);
                 break;
 
             case 7:
-                clocks[clockIndexes[0]].UpdateState(ArmState.Three, ArmState.Three);
-                clocks[clockIndexes[1]].UpdateState(ArmState.None, ArmState.None);
-                clocks[clockIndexes[2]].UpdateState(ArmState.None, ArmState.None);
-                clocks[clockIndexes[3]].UpdateState(ArmState.Nine, ArmState.Six);
-                clocks[clockIndexes[4]].UpdateState(ArmState.Zero, ArmState.Six);
-                clocks[clockIndexes[5]].UpdateState(ArmState.Zero, ArmState.Zero);
+                clocks[clockIndexes[0]].UpdateState(ArmState.Three, ArmState.Three, rotation, rotation);
+                clocks[clockIndexes[1]].UpdateState(ArmState.None, ArmState.None, rotation, rotation);
+                clocks[clockIndexes[2]].UpdateState(ArmState.None, ArmState.None, rotation, rotation);
+                clocks[clockIndexes[3]].UpdateState(ArmState.Nine, ArmState.Six, rotation, rotation);
+                clocks[clockIndexes[4]].UpdateState(ArmState.Zero, ArmState.Six, rotation, rotation);
+                clocks[clockIndexes[5]].UpdateState(ArmState.Zero, ArmState.Zero, rotation, rotation);
                 break;
 
             case 8:
-                clocks[clockIndexes[0]].UpdateState(ArmState.Three, ArmState.Six);
-                clocks[clockIndexes[1]].UpdateState(ArmState.Zero, ArmState.Three);
-                clocks[clockIndexes[2]].UpdateState(ArmState.Zero, ArmState.Three);
-                clocks[clockIndexes[3]].UpdateState(ArmState.Nine, ArmState.Six);
-                clocks[clockIndexes[4]].UpdateState(ArmState.Zero, ArmState.Nine);
-                clocks[clockIndexes[5]].UpdateState(ArmState.Zero, ArmState.Nine);
+                clocks[clockIndexes[0]].UpdateState(ArmState.Three, ArmState.Six, rotation, rotation);
+                clocks[clockIndexes[1]].UpdateState(ArmState.Zero, ArmState.Three, rotation, rotation);
+                clocks[clockIndexes[2]].UpdateState(ArmState.Zero, ArmState.Three, rotation, rotation);
+                clocks[clockIndexes[3]].UpdateState(ArmState.Nine, ArmState.Six, rotation, rotation);
+                clocks[clockIndexes[4]].UpdateState(ArmState.Zero, ArmState.Nine, rotation, rotation);
+                clocks[clockIndexes[5]].UpdateState(ArmState.Zero, ArmState.Nine, rotation, rotation);
                 break;
 
             case 9:
-                clocks[clockIndexes[0]].UpdateState(ArmState.Three, ArmState.Six);
-                clocks[clockIndexes[1]].UpdateState(ArmState.Zero, ArmState.Three);
-                clocks[clockIndexes[2]].UpdateState(ArmState.Three, ArmState.Three);
-                clocks[clockIndexes[3]].UpdateState(ArmState.Nine, ArmState.Six);
-                clocks[clockIndexes[4]].UpdateState(ArmState.Zero, ArmState.Six);
-                clocks[clockIndexes[5]].UpdateState(ArmState.Zero, ArmState.Nine);
+                clocks[clockIndexes[0]].UpdateState(ArmState.Three, ArmState.Six, rotation, rotation);
+                clocks[clockIndexes[1]].UpdateState(ArmState.Zero, ArmState.Three, rotation, rotation);
+                clocks[clockIndexes[2]].UpdateState(ArmState.Three, ArmState.Three, rotation, rotation);
+                clocks[clockIndexes[3]].UpdateState(ArmState.Nine, ArmState.Six, rotation, rotation);
+                clocks[clockIndexes[4]].UpdateState(ArmState.Zero, ArmState.Six, rotation, rotation);
+                clocks[clockIndexes[5]].UpdateState(ArmState.Zero, ArmState.Nine, rotation, rotation);
                 break;
             default:
                 break;
@@ -213,4 +213,5 @@ public enum AnimationPatternType
     Flow,
     Flower,
     Diagonal,
+    Numbers,
 }
