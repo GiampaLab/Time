@@ -83,6 +83,19 @@ public class AnimationConfigs
             clocks[spiralOrder[i]].UpdateClockArmsConfig(selectFirstArmConfig(i), selectSecondArmConfig(i));
         }
     }
+
+    public static void SetSnakeConfig(Dictionary<int, Clock> clocks, Func<int, Components.AnimationConfig> selectFirstArmConfig, Func<int, Components.AnimationConfig> selectSecondArmConfig)
+    {
+        var snakeOrder = new[]
+        {
+            1, 4, 7, 10, 13, 16, 19, 22, 23, 24, 21, 18, 15, 12, 9, 6, 3, 2, 5, 8, 11, 14, 17, 20
+        };
+
+        for (var i = 0; i < snakeOrder.Length; i++)
+        {
+            clocks[snakeOrder[i]].UpdateClockArmsConfig(selectFirstArmConfig(i), selectSecondArmConfig(i));
+        }
+    }
 }
 
 public enum AnimationConfigType
@@ -91,5 +104,6 @@ public enum AnimationConfigType
     Reverse,
     ByRow,
     CenterOut,
-    Spiral
+    Spiral,
+    Snake
 }

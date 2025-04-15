@@ -204,6 +204,9 @@ public class AnimationOrchestrator(IJSRuntime jSRuntime, Dictionary<int, Clock> 
             case AnimationConfigType.Spiral:
                 AnimationConfigs.SetSpiralConfig(clocks, selectFirstArmConfig, selectSecondArmConfig);
                 break;
+            case AnimationConfigType.Snake:
+                AnimationConfigs.SetSnakeConfig(clocks, selectFirstArmConfig, selectSecondArmConfig);
+                break;
             case AnimationConfigType.CenterOut:
                 static Components.AnimationConfig CreateArmAnimationConfig(Clock clock, int index, Direction direction) =>
                         new()
