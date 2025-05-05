@@ -41,6 +41,26 @@ public class AnimationOrchestrator(IJSRuntime jSRuntime, Dictionary<int, Clock> 
     {
         return animationManager.AnimationPatternType switch
         {
+            AnimationPatternType.Triangular => new InfiniteAnimationManager(JSRuntime, Clocks, () =>
+               {
+                   static Components.AnimationConfig CreateArmAnimationConfig(Clock clock, int index, Direction direction) =>
+                       new()
+                       {
+                           Direction = direction,
+                           EasingFunction = "ease-in",
+                           Duration = 7000,
+                           Delay = 0
+                       };
+
+                   static Components.AnimationConfig SetHourArmAnimationConfig(Clock clock, int index) =>
+                       CreateArmAnimationConfig(clock, index, clock.Id <= 12 ? Direction.Anticlockwise : Direction.Clockwise);
+
+                   static Components.AnimationConfig SetMinuteArmAnimationConfig(Clock clock, int index) =>
+                       CreateArmAnimationConfig(clock, index, clock.Id <= 12 ? Direction.Anticlockwise : Direction.Clockwise);
+                   Console.WriteLine("SetFlowerPattern");
+                   AnimationConfigs.SetCenterOutConfig(Clocks, SetHourArmAnimationConfig, SetMinuteArmAnimationConfig);
+               }),
+
             AnimationPatternType.Flower => new InfiniteAnimationManager(JSRuntime, Clocks, () =>
                 {
                     static Components.AnimationConfig CreateArmAnimationConfig(Clock clock, int index, Direction direction) =>
@@ -212,7 +232,7 @@ public class AnimationOrchestrator(IJSRuntime jSRuntime, Dictionary<int, Clock> 
                         new()
                         {
                             Direction = direction,
-                            EasingFunction = "linear",
+                            EasingFunction = "ease-out",
                             Duration = 7000,
                             Delay = AnimationConfigs.StaggeredAnimation(index, 0, 500)
                         };
@@ -241,6 +261,9 @@ public class AnimationOrchestrator(IJSRuntime jSRuntime, Dictionary<int, Clock> 
 
         switch (randomAnimationPatternType)
         {
+            case AnimationPatternType.Triangular:
+                AnimationPatterns.SetTriangularPattern(clocks);
+                break;
             case AnimationPatternType.Flower:
                 AnimationPatterns.SetFlowerPattern(clocks);
                 break;

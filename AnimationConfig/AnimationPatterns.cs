@@ -204,6 +204,44 @@ public class AnimationPatterns
         clocks[21].UpdateState(ArmState.Zero, ArmState.Six, 15, 20);
         clocks[24].UpdateState(ArmState.Zero, ArmState.Six, 10, 10);
     }
+
+    public static void SetTriangularPattern(Dictionary<int, Clock> clocks)
+    {
+        var updates = new (int ClockIndex, ArmState State1, ArmState State2, int Rotation1, int Rotation2)[]
+        {
+            (1, ArmState.Six, ArmState.Three, 0, 45),
+            (2, ArmState.Zero, ArmState.Six, 0, 0),
+            (3, ArmState.Zero, ArmState.Three, 0, 0),
+            (6, ArmState.Nine, ArmState.Three, 0, 0),
+            (9, ArmState.Nine, ArmState.Nine, 0, 45),
+            (5, ArmState.Nine, ArmState.Three, 45, 45),
+            (4, ArmState.Three, ArmState.Three, 0, 45),
+            (8, ArmState.Nine, ArmState.Three, 45, 45),
+            (12, ArmState.Nine, ArmState.Zero, 45, 0),
+            (11, ArmState.Zero, ArmState.Six, 0, 0),
+            (10, ArmState.Nine, ArmState.Six, 0, 0),
+            (7, ArmState.Nine, ArmState.Three, 0, 0),
+
+            (13, ArmState.Three, ArmState.Six, 0, 0),
+            (14, ArmState.Zero, ArmState.Six, 0, 0),
+            (15, ArmState.Zero, ArmState.Zero, 0, 45),
+            (17, ArmState.Six, ArmState.Zero, 45, 45),
+            (19, ArmState.Six, ArmState.Nine, 45, 0),
+            (16, ArmState.Nine, ArmState.Three, 0, 0),
+
+            (22, ArmState.Six, ArmState.Six, 45, 0),
+            (23, ArmState.Zero, ArmState.Six, 0, 0),
+            (24, ArmState.Zero, ArmState.Nine, 0, 0),
+            (21, ArmState.Nine, ArmState.Three, 0, 0),
+            (18, ArmState.Zero, ArmState.Three, 45, 0),
+            (20, ArmState.Six, ArmState.Zero, 45, 45)
+        };
+
+        foreach (var (clockIndex, state1, state2, rotation1, rotation2) in updates)
+        {
+            clocks[clockIndex].UpdateState(state1, state2, rotation1, rotation2);
+        }
+    }
 }
 
 public enum AnimationPatternType
@@ -214,4 +252,5 @@ public enum AnimationPatternType
     Flower,
     Diagonal,
     Numbers,
+    Triangular
 }
