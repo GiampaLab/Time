@@ -11,7 +11,7 @@
         <div class="clock-container">
             @for (int i = 1; i < 4; i++)
             {
-                <div class="clock">
+                <div class="clock" @ref=ClockReference>
                     <div class="hour" @ref=HourReference>
                         <div></div>
                     </div>
@@ -27,8 +27,13 @@
 
 @code {
     Controller? controller;
+    List<ElementReference> clockReferences = new List<ElementReference>();
     List<ElementReference> hourReferences = new List<ElementReference>();
     List<ElementReference> minuteReferences = new List<ElementReference>();
+    ElementReference ClockReference
+    {
+        set { clockReferences.Add(value); }
+    }
     ElementReference HourReference
     {
         set { hourReferences.Add(value); }
@@ -43,7 +48,7 @@
     {
         if (firstRender)
         {
-            controller = new Controller(JSRuntime, hourReferences, minuteReferences);
+            controller = new Controller(JSRuntime, clockReferences, hourReferences, minuteReferences);
             controller.SetClock();
         }
     }
@@ -55,13 +60,15 @@
     {
         private ChainedAnimationsManager chainedAnimationsManager;
         public Dictionary<int, Clock> Clocks { get; private set; }
-        public Controller(IJSRuntime JSRuntime, List<ElementReference> hourReferences, List<ElementReference> minuteReferences)
+        public Controller(IJSRuntime JSRuntime, List<ElementReference> clockReferences, List<ElementReference> hourReferences,
+        List<ElementReference> minuteReferences)
         {
             Clocks = new Dictionary<int, Clock>();
 
             for (var i = 0; i < 24; i++)
                 Clocks.Add(i + 1, new Clock(i + 1, hourReferences[i], minuteReferences[i]));
 
+            JSRuntime.InvokeAsync<List<ElementReference>>("animationLoop.initShadows", clockReferences.ToArray());
             var orchestrator = new AnimationOrchestrator(JSRuntime, Clocks);
             chainedAnimationsManager = new ChainedAnimationsManager(orchestrator.GetNextAnimationManager());
         }

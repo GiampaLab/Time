@@ -2,8 +2,21 @@
 // If it's a chained continuous animation I need to calculate the end current angle and start from there
 var previousAnimationConfigs = [];
 var animations = [];
+var animationConfigs = [];
 
 window.animationLoop = {
+  initShadows: function (animationConfigs) {
+    this.animationConfigs = animationConfigs;
+    this.animationConfigs.forEach(function (item) {
+      if (item != null) {
+        updateShadow(item);
+      }
+    });
+    // Update the shadow every second (or more frequently)
+    // TODO use WAAPI instead of setInterval
+    // setInterval(() => {
+    // setInterval(updateShadow(this.animationConfigs), 1000);
+  },
   animateClockArm: function (dotNetObjectReference, animationConfigs) {
     animations = [];
     if (previousAnimationConfigs.length == 0) {
@@ -158,4 +171,28 @@ function getCurrentRotationAngle(element) {
   } else {
     return 0; // Unknown transform type
   }
+}
+
+function updateShadow(element) {
+  const now = new Date();
+  const hours = now.getHours() % 12; // 0-11
+  const minutes = now.getMinutes();
+
+  // Combine hours and minutes to get a more precise angle (optional)
+  const totalMinutes = hours * 60 + minutes;
+  const angle = (totalMinutes / 720) * 2 * Math.PI; // Map time to a 0-2*PI angle
+
+  // Calculate shadow offset based on the angle (adjust the multiplier for distance)
+  const shadowOffsetX = Math.sin(angle) * 5;
+  const shadowOffsetY = -Math.cos(angle) * 5;
+
+  const shadowBlur = 8;
+  const shadowColor = "rgba(0, 0, 0, 0.3)";
+  const shadowStyle = `inset ${shadowOffsetX}px ${shadowOffsetY}px ${shadowBlur}px ${shadowColor}`;
+
+  element.style.boxShadow = shadowStyle;
+  // element.animate([{ boxShadow: shadowStyle }], {
+  //   duration: 1000,
+  //   easing: "linear",
+  // });
 }
