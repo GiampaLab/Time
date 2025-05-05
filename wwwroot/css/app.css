@@ -76,11 +76,14 @@ code {
 
 .clocks-wrapper {
   display: flex;
-  flex-flow: row nowrap;
-  justify-content: center;
+  flex-flow: row nowrap; /* Keep clocks in a row, no wrapping */
+  justify-content: space-around; /* Distribute clocks evenly with space around */
   align-items: center;
   background-color: white;
-  height: 100vh;
+  height: 100vh; /* Make the wrapper take the full viewport height */
+  width: 100vw; /* Make the wrapper take the full viewport width */
+  padding: 20px; /* Add some padding around the edges */
+  box-sizing: border-box; /* Include padding in width and height calculations */
 }
 
 .clock-container {
@@ -89,19 +92,20 @@ code {
   flex-flow: column nowrap;
   justify-content: center;
   align-items: center;
-  /* width: 100%;
-	min-height: 75vmin; */
+  width: calc(33.33% - 20px); /* Adjust width for the number of clocks and spacing */
+  max-width: 300px; /* Optional: Set a maximum width for larger screens */
+  aspect-ratio: 1 / 1; /* Maintain a 1:1 aspect ratio for the container */
 }
 
 .clock {
   position: relative;
   overflow: hidden;
-  margin: 2.5px;
+  margin: 2.5px; /* Small margin between the clock and its container */
   background-color: inherit;
-  height: 20vmin;
-  width: 20vmin;
+  height: 100%; /* Make the clock fill its container's height */
+  width: 100%; /* Make the clock fill its container's width */
   border-radius: 50%;
-  box-shadow: inset 3px 3px 6px rgba(0, 0, 0, 0.3);
+  /* box-shadow: inset 3px 3px 6px rgba(0, 0, 0, 0.3); */
 }
 .clock div {
   position: absolute;
@@ -118,14 +122,17 @@ code {
 .clock span {
   position: absolute;
   font-family: Arial;
-  font-size: 5vmin;
+  font-size: calc(20vmin * 0.25); /* Adjust font size relative to the clock size */
   font-weight: bold;
-  color: lime;
+  color: black;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .clock .ctr {
-  width: 2.5vh;
-  height: 2.55vh;
+  width: calc(20vmin * 0.1); /* Adjust size relative to clock size */
+  height: calc(20vmin * 0.1);
   border-radius: 50%;
   left: 50%;
   top: 50%;
@@ -134,28 +141,20 @@ code {
   box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3);
 }
 
-/* .clock .hour {
-  transition: transform 3000ms ease-in-out;
-}
-
-.clock .minute {
-  transition: transform 3000ms ease-in-out;
-} */
-
 .clock .hour div {
   top: 10%;
   height: 40%;
-  width: 2.6vh;
+  width: calc(20vmin * 0.1); /* Adjust width relative to clock size */
   background-color: black;
-  margin-left: -1.3vh;
+  margin-left: calc(20vmin * -0.05); /* Adjust margin relative to width */
   box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3);
 }
 
 .clock .minute div {
   top: 10%;
   height: 40%;
-  width: 2.6vh;
+  width: calc(20vmin * 0.1); /* Adjust width relative to clock size */
   background-color: black;
-  margin-left: -1.3vh;
+  margin-left: calc(20vmin * -0.05); /* Adjust margin relative to width */
   box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3);
 }
