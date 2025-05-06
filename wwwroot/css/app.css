@@ -158,3 +158,42 @@ code {
   margin-left: calc(20vmin * -0.05); /* Adjust margin relative to width */
   box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3);
 }
+
+.fullscreen-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}
+
+.fullscreen-prompt {
+    text-align: center;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.fullscreen-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.fullscreen-buttons button {
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.fullscreen-buttons button:hover {
+    background-color: white;
+    color: black;
+    border: 2px solid black;
+}

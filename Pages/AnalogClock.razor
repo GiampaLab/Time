@@ -5,6 +5,16 @@
 @using Time.AnimationEngine;
 @using Time.Components;
 
+<div class="fullscreen-overlay" style="@(showFullscreenPrompt ? "display: flex;" : "display: none;")">
+    <div class="fullscreen-prompt">
+        <p>Enable fullscreen for a better experience</p>
+        <div class="fullscreen-buttons">
+            <button class="fullscreen-yes" @onclick="EnableFullscreen">Yes</button>
+            <button class="fullscreen-no" @onclick="RejectFullscreen">No</button>
+        </div>
+    </div>
+</div>
+
 <div class="clocks-wrapper">
     @for (int j = 0; j < 8; j++)
     {
@@ -43,13 +53,12 @@
     {
         set { minuteReferences.Add(value); }
     }
-
+    private bool showFullscreenPrompt = true;
     protected override void OnAfterRender(bool firstRender)
     {
         if (firstRender)
         {
             controller = new Controller(JSRuntime, clockReferences, hourReferences, minuteReferences);
-            controller.SetClock();
         }
     }
     public void Dispose()
@@ -82,5 +91,18 @@
         {
             chainedAnimationsManager?.Dispose();
         }
+    }
+
+    private async Task EnableFullscreen()
+    {
+        showFullscreenPrompt = false;
+        await JSRuntime.InvokeVoidAsync("animationInterop.requestFullscreen"); // Request fullscreen mode
+        controller?.SetClock(); // Start clock animation after accepting fullscreen.
+    }
+
+    private void RejectFullscreen()
+    {
+        showFullscreenPrompt = false;
+        // Optionally, handle rejection logic here.
     }
 }
