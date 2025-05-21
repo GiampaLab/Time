@@ -103,6 +103,7 @@
     private void RejectFullscreen()
     {
         showFullscreenPrompt = false;
+        controller?.SetClock();
         // Optionally, handle rejection logic here.
     }
 }
