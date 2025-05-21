@@ -16,11 +16,11 @@ public class AnimationOrchestrator(IJSRuntime jSRuntime, Dictionary<int, Clock> 
         {
             if (animationManager == null)
             {
-                return (GetTimeAnimationManager(), 30000);
+                return (GetTimeAnimationManager(), 25000);
             }
             else if (animationManager.GetAnimationType() == AnimationType.Time)
             {
-                return (GetPatternAnimationManager(), 15000);
+                return (GetPatternAnimationManager(), 13000);
             }
             else if (animationManager.GetAnimationType() == AnimationType.Pattern)
             {
@@ -28,7 +28,7 @@ public class AnimationOrchestrator(IJSRuntime jSRuntime, Dictionary<int, Clock> 
             }
             else if (animationManager.GetAnimationType() == AnimationType.Infinite)
             {
-                return (GetTimeAnimationManager(), 30000);
+                return (GetTimeAnimationManager(), 25000);
             }
             else
             {
