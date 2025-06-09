@@ -2,7 +2,7 @@
 
 ## Overview
 
-**Time** is a Blazor WebAssembly application that displays and animates a grid of analog clocks in the browser. This project is inspired by the work of the art collective [Humans since 1982](https://www.humanssince1982.com/), particularly their iconic kinetic sculpture [ClockClock 24](https://www.humanssince1982.com/clockclock-24/). ClockClock 24 features 24 analog clocks whose hands are choreographed to create mesmerizing patterns and display digital time through coordinated movement. This project aims to digitally replicate the visual and conceptual experience of ClockClock 24, blending art, technology, and playful interaction.
+**Time** is a Blazor WebAssembly application that displays and animates a grid of analog clocks in the browser. This project is inspired by the work of the art collective [Humans since 1982](https://www.humanssince1982.com/), particularly their iconic kinetic sculpture [ClockClock 24](https://www.humanssince1982.com/clockclock-24/). ClockClock 24 features 24 analog clocks whose hands are choreographed to create mesmerizing patterns and display digital time through coordinated movement. This project aims to digitally replicate the visual and conceptual experience of ClockClock 24, blending art, technology, form and function.
 
 ## Tech Stack
 
@@ -49,7 +49,7 @@ Time/
 ### Setup
 1. **Clone the repository:**
    ```sh
-   git clone https://github.com/yourusername/Time.git
+   git clone https://github.com/GiampaLab/Time.git
    cd Time
    ```
 2. **Restore dependencies:**
