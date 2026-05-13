@@ -53,12 +53,13 @@
     {
         set { minuteReferences.Add(value); }
     }
-    private bool showFullscreenPrompt = true;
+    private bool showFullscreenPrompt = false;
     protected override void OnAfterRender(bool firstRender)
     {
         if (firstRender)
         {
             controller = new Controller(JSRuntime, clockReferences, hourReferences, minuteReferences);
+            controller.SetClock();
         }
     }
     public void Dispose()

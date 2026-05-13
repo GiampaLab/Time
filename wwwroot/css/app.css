@@ -79,7 +79,7 @@ code {
   flex-flow: row nowrap; /* Keep clocks in a row, no wrapping */
   justify-content: space-around; /* Distribute clocks evenly with space around */
   align-items: center;
-  background-color: white;
+  background-color: black;
   height: 100vh; /* Make the wrapper take the full viewport height */
   width: 100vw; /* Make the wrapper take the full viewport width */
   padding: 20px; /* Add some padding around the edges */
@@ -101,7 +101,7 @@ code {
   position: relative;
   overflow: hidden;
   margin: 2.5px; /* Small margin between the clock and its container */
-  background-color: inherit;
+  background-color: black;
   height: 100%; /* Make the clock fill its container's height */
   width: 100%; /* Make the clock fill its container's width */
   border-radius: 50%;
@@ -137,26 +137,26 @@ code {
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  background-color: black;
-  box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3);
+  background-color: white;
+  box-shadow: 0px 0px 8px rgba(255, 255, 255, 0.3);
 }
 
 .clock .hour div {
   top: 10%;
   height: 40%;
   width: calc(20vmin * 0.1); /* Adjust width relative to clock size */
-  background-color: black;
+  background-color: white;
   margin-left: calc(20vmin * -0.05); /* Adjust margin relative to width */
-  box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: 0px 0px 8px rgba(255, 255, 255, 0.3);
 }
 
 .clock .minute div {
   top: 10%;
   height: 40%;
   width: calc(20vmin * 0.1); /* Adjust width relative to clock size */
-  background-color: black;
+  background-color: white;
   margin-left: calc(20vmin * -0.05); /* Adjust margin relative to width */
-  box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: 0px 0px 8px rgba(255, 255, 255, 0.3);
 }
 
 .fullscreen-overlay {
