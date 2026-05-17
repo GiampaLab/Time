@@ -1,8 +1,10 @@
 package com.giampalab.timescreensaver
 
+import android.content.Context
 import android.service.dreams.DreamService
 import android.util.Log
 import android.webkit.ConsoleMessage
+import android.webkit.MimeTypeMap
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
@@ -21,12 +23,9 @@ class TimeScreenSaverService : DreamService() {
 
         WebView.setWebContentsDebuggingEnabled(true)
 
-        // Serve assets over https://appassets.androidplatform.net/ instead of file://
-        // This is the correct way to load local assets in WebView — avoids all
-        // file:// fetch restrictions that block Blazor WASM from loading _framework files
         val assetLoader = WebViewAssetLoader.Builder()
             .setDomain("appassets.androidplatform.net")
-            .addPathHandler("/", WebViewAssetLoader.AssetsPathHandler(this))
+            .addPathHandler("/", WasmAssetsPathHandler(this))
             .build()
 
         webView = WebView(this)
@@ -35,7 +34,6 @@ class TimeScreenSaverService : DreamService() {
         webView.settings.apply {
             javaScriptEnabled = true
             domStorageEnabled = true
-            allowFileAccess = false  // not needed — assets served via https
         }
 
         webView.webViewClient = object : WebViewClient() {
@@ -58,4 +56,25 @@ class TimeScreenSaverService : DreamService() {
     override fun onDreamingStarted() { super.onDreamingStarted(); webView.onResume() }
     override fun onDreamingStopped() { super.onDreamingStopped(); webView.onPause() }
     override fun onDetachedFromWindow() { super.onDetachedFromWindow(); webView.destroy() }
+
+    // AssetsPathHandler with correct MIME types for Blazor WASM files
+    private class WasmAssetsPathHandler(context: Context) :
+        WebViewAssetLoader.AssetsPathHandler(context) {
+
+        private val mimeOverrides = mapOf(
+            "wasm" to "application/wasm",
+            "dll"  to "application/octet-stream",
+            "blat" to "application/octet-stream",
+            "dat"  to "application/octet-stream"
+        )
+
+        override fun handle(path: String): WebResourceResponse? {
+            val response = super.handle(path) ?: return null
+            val ext = path.substringAfterLast('.', "")
+            val mime = mimeOverrides[ext]
+                ?: MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext)
+                ?: "application/octet-stream"
+            return WebResourceResponse(mime, response.encoding, response.data)
+        }
+    }
 }
