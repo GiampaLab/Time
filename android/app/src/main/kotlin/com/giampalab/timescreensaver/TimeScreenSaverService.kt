@@ -50,7 +50,7 @@ class TimeScreenSaverService : DreamService() {
             }
         }
 
-        webView.loadUrl("https://appassets.androidplatform.net/index.html")
+        webView.loadUrl("https://appassets.androidplatform.net/")
     }
 
     override fun onDreamingStarted() { super.onDreamingStarted(); webView.onResume() }
