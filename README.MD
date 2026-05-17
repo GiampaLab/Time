@@ -112,16 +112,45 @@ The APK is output to `android/app/build/outputs/apk/debug/app-debug.apk`.
 
 ### Install & Enable
 
+**Install via adb** (USB debugging must be enabled on the device):
 ```sh
-# Install on a connected device (USB debugging must be enabled)
-adb install android/app/build/outputs/apk/debug/app-debug.apk
+# Run from the repo root
+adb install -r android/app/build/outputs/apk/debug/app-debug.apk
 ```
 
-Then on the device:
-
-1. Go to **Settings → Display → Screen saver** (may be under Sleep or Daydream on some devices)
+**Enable the screen saver on the device:**
+1. Go to **Settings → Display & touch → Screen saver**
 2. Select **Time**
-3. Tap **Preview** to test immediately, or plug in the device to trigger it automatically
+3. Tap **When to start** and choose **While charging** or **Either**
+
+**Test immediately without waiting for charging:**
+
+Option A — via adb:
+```sh
+adb shell cmd dreams set-active-dream com.giampalab.timescreensaver/.TimeScreenSaverService
+adb shell cmd dreams start-dreaming
+```
+
+Option B — on the device: tap **Preview** in the Screen saver settings.
+
+**When iterating** (after any change to the Blazor or Android code), run all three steps from the repo root:
+```sh
+./build-android-assets.sh
+cd android && ./gradlew assembleDebug
+cd .. && adb install -r android/app/build/outputs/apk/debug/app-debug.apk
+```
+
+> **Note:** The screen saver only activates automatically while charging or docked — this is an Android OS limitation. To trigger it on idle without charging, use a third-party automation app such as Tasker.
+
+### Troubleshooting
+
+| Symptom | Fix |
+|---|---|
+| `adb: no devices/emulators found` on WSL2 | Re-run `usbipd attach --wsl --busid <BUSID>` in PowerShell (Admin) — the attachment drops on device reconnect |
+| Device shows as `unauthorized` | On the device go to Developer Options → Revoke USB debugging authorizations, then re-run `adb devices` and accept the prompt |
+| Device shows `no permissions` | Run the udev rules setup (see WSL2 section below) |
+| Build fails with `25.0.3-ea` error | Java 25-ea is not supported — ensure `JAVA_HOME` points to JDK 17 or 21 |
+| `ANDROID_HOME not set` | Add `export ANDROID_HOME=~/android-sdk` to `~/.bashrc` and run `source ~/.bashrc` |
 
 ### Project Structure (Android)
 
