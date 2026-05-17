@@ -21,8 +21,8 @@ android {
         }
     }
 
-    aaptOptions {
-        ignoreAssetsPattern = "*.gz:*.br"
+    androidResources {
+        ignoreAssetsPatterns += listOf("*.gz", "*.br")
     }
 
     compileOptions {
