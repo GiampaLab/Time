@@ -4,8 +4,11 @@ import android.service.dreams.DreamService
 import android.util.Log
 import android.webkit.ConsoleMessage
 import android.webkit.WebChromeClient
+import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.webkit.WebViewAssetLoader
 
 class TimeScreenSaverService : DreamService() {
 
@@ -16,8 +19,15 @@ class TimeScreenSaverService : DreamService() {
         isFullscreen = true
         isInteractive = false
 
-        // Enable Chrome DevTools inspection via chrome://inspect on desktop
         WebView.setWebContentsDebuggingEnabled(true)
+
+        // Serve assets over https://appassets.androidplatform.net/ instead of file://
+        // This is the correct way to load local assets in WebView — avoids all
+        // file:// fetch restrictions that block Blazor WASM from loading _framework files
+        val assetLoader = WebViewAssetLoader.Builder()
+            .setDomain("appassets.androidplatform.net")
+            .addPathHandler("/", WebViewAssetLoader.AssetsPathHandler(this))
+            .build()
 
         webView = WebView(this)
         setContentView(webView)
@@ -25,15 +35,16 @@ class TimeScreenSaverService : DreamService() {
         webView.settings.apply {
             javaScriptEnabled = true
             domStorageEnabled = true
-            allowFileAccess = true
-            // Required for Blazor WASM: allows fetch() to load _framework files
-            // from file:// URLs (same origin as index.html)
-            @Suppress("SetJavaScriptEnabled")
-            allowFileAccessFromFileURLs = true
-            allowUniversalAccessFromFileURLs = true
+            allowFileAccess = false  // not needed — assets served via https
         }
 
-        // Log JS console output to logcat (visible via: adb logcat -s TimeWebView)
+        webView.webViewClient = object : WebViewClient() {
+            override fun shouldInterceptRequest(
+                view: WebView,
+                request: WebResourceRequest
+            ): WebResourceResponse? = assetLoader.shouldInterceptRequest(request.url)
+        }
+
         webView.webChromeClient = object : WebChromeClient() {
             override fun onConsoleMessage(msg: ConsoleMessage): Boolean {
                 Log.d("TimeWebView", "${msg.messageLevel()} ${msg.message()} [${msg.sourceId()}:${msg.lineNumber()}]")
@@ -41,8 +52,7 @@ class TimeScreenSaverService : DreamService() {
             }
         }
 
-        webView.webViewClient = WebViewClient()
-        webView.loadUrl("file:///android_asset/index.html")
+        webView.loadUrl("https://appassets.androidplatform.net/index.html")
     }
 
     override fun onDreamingStarted() { super.onDreamingStarted(); webView.onResume() }

@@ -35,4 +35,6 @@ android {
     }
 }
 
-// No extra dependencies — WebView ships with Android
+dependencies {
+    implementation("androidx.webkit:webkit:1.11.0")
+}
