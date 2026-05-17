@@ -71,8 +71,9 @@ class TimeScreenSaverService : DreamService() {
         )
 
         override fun handle(path: String): WebResourceResponse? {
-            val response = delegate.handle(path) ?: return null
-            val ext = path.substringAfterLast('.', "")
+            val resolvedPath = if (path.isEmpty() || path == "/") "index.html" else path
+            val response = delegate.handle(resolvedPath) ?: return null
+            val ext = resolvedPath.substringAfterLast('.', "")
             val mime = mimeOverrides[ext]
                 ?: MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext)
                 ?: "application/octet-stream"
