@@ -57,9 +57,11 @@ class TimeScreenSaverService : DreamService() {
     override fun onDreamingStopped() { super.onDreamingStopped(); webView.onPause() }
     override fun onDetachedFromWindow() { super.onDetachedFromWindow(); webView.destroy() }
 
-    // AssetsPathHandler with correct MIME types for Blazor WASM files
+    // Wraps AssetsPathHandler to set correct MIME types for Blazor WASM files
     private class WasmAssetsPathHandler(context: Context) :
-        WebViewAssetLoader.AssetsPathHandler(context) {
+        WebViewAssetLoader.PathHandler {
+
+        private val delegate = WebViewAssetLoader.AssetsPathHandler(context)
 
         private val mimeOverrides = mapOf(
             "wasm" to "application/wasm",
@@ -69,7 +71,7 @@ class TimeScreenSaverService : DreamService() {
         )
 
         override fun handle(path: String): WebResourceResponse? {
-            val response = super.handle(path) ?: return null
+            val response = delegate.handle(path) ?: return null
             val ext = path.substringAfterLast('.', "")
             val mime = mimeOverrides[ext]
                 ?: MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext)
