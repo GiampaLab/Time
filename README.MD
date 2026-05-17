@@ -148,9 +148,34 @@ cd .. && adb install -r android/app/build/outputs/apk/debug/app-debug.apk
 |---|---|
 | `adb: no devices/emulators found` on WSL2 | Re-run `usbipd attach --wsl --busid <BUSID>` in PowerShell (Admin) — the attachment drops on device reconnect |
 | Device shows as `unauthorized` | On the device go to Developer Options → Revoke USB debugging authorizations, then re-run `adb devices` and accept the prompt |
-| Device shows `no permissions` | Run the udev rules setup (see WSL2 section below) |
+| Device shows `no permissions` on WSL2 | Run the udev rules setup below |
 | Build fails with `25.0.3-ea` error | Java 25-ea is not supported — ensure `JAVA_HOME` points to JDK 17 or 21 |
 | `ANDROID_HOME not set` | Add `export ANDROID_HOME=~/android-sdk` to `~/.bashrc` and run `source ~/.bashrc` |
+
+**Fixing `no permissions` — udev rules (WSL2/Linux, one-time setup):**
+
+If `adb devices` shows your device as `no permissions`, the current user lacks access to the USB device. Run:
+
+```sh
+# For Google/Pixel devices (vendor ID 18d1)
+echo 'SUBSYSTEM=="usb", ATTR{idVendor}=="18d1", MODE="0666", GROUP="plugdev"' | sudo tee /etc/udev/rules.d/51-android.rules
+sudo udevadm control --reload-rules
+sudo udevadm trigger
+adb kill-server
+adb devices
+```
+
+> For non-Google devices, replace `18d1` with your device's vendor ID. You can find it by running `lsusb` and looking at the `ID xxxx:yyyy` field — the `xxxx` part is the vendor ID.
+
+**usbipd-win quick reference (WSL2):**
+
+The USB attachment drops every time the device is reconnected or the session restarts. Run these in PowerShell (Admin) each time:
+
+```powershell
+usbipd list                          # find your device BUSID
+usbipd bind --busid <BUSID>          # one-time, makes the device shareable
+usbipd attach --wsl --busid <BUSID>  # repeat each session
+```
 
 ### Project Structure (Android)
 
