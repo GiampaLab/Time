@@ -10,32 +10,28 @@ def create_clock_icon(size):
     cx = cy = ss / 2
     r = ss / 2
 
-    img = Image.new("RGBA", (ss, ss), (0, 0, 0, 0))
+    img = Image.new("RGBA", (ss, ss), (0, 0, 0, 255))  # solid black square
     draw = ImageDraw.Draw(img)
-
-    # Black circle background
-    draw.ellipse([0, 0, ss - 1, ss - 1], fill=(0, 0, 0, 255))
 
     arm_w = r * 0.10
 
-    def arm(angle_deg, front, back):
+    def arm(angle_deg, length):
+        """Draw arm from centre outward — no back stub, flat base at centre."""
         a = math.radians(angle_deg)
-        tx = cx + front * r * math.sin(a)
-        ty = cy - front * r * math.cos(a)
-        bx = cx - back * r * math.sin(a)
-        by = cy + back * r * math.cos(a)
+        tx = cx + length * math.sin(a)
+        ty = cy - length * math.cos(a)
         w = int(arm_w)
-        draw.line([(bx, by), (tx, ty)], fill=(255, 255, 255, 255), width=w)
+        draw.line([(cx, cy), (tx, ty)], fill=(255, 255, 255, 255), width=w)
+        # Round cap only at the tip
         cr = arm_w / 2
-        for px, py in [(tx, ty), (bx, by)]:
-            draw.ellipse([px - cr, py - cr, px + cr, py + cr], fill=(255, 255, 255, 255))
+        draw.ellipse([tx - cr, ty - cr, tx + cr, ty + cr], fill=(255, 255, 255, 255))
 
-    # Minute hand: straight down (180°), longer
-    arm(180, 0.74, 0.14)
-    # Hour hand: 7:30 position (225°), shorter
-    arm(225, 0.54, 0.12)
+    # Minute hand: 180° (straight down), longer
+    arm(180, r * 0.72)
+    # Hour hand: 225° (7:30 lower-left), shorter
+    arm(225, r * 0.52)
 
-    # Centre dot
+    # Centre dot on top of both arms
     dr = arm_w * 1.1
     draw.ellipse([cx - dr, cy - dr, cx + dr, cy + dr], fill=(255, 255, 255, 255))
 
