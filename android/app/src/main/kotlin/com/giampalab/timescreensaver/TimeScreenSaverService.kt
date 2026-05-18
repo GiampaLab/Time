@@ -1,6 +1,7 @@
 package com.giampalab.timescreensaver
 
 import android.content.Context
+import android.content.pm.ActivityInfo
 import android.service.dreams.DreamService
 import android.util.Log
 import android.webkit.ConsoleMessage
@@ -20,6 +21,12 @@ class TimeScreenSaverService : DreamService() {
         super.onAttachedToWindow()
         isFullscreen = true
         isInteractive = false
+
+        window?.let { win ->
+            val lp = win.attributes
+            lp.screenOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+            win.attributes = lp
+        }
 
         WebView.setWebContentsDebuggingEnabled(true)
 

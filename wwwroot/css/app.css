@@ -103,12 +103,12 @@ code {
 .clock {
   position: relative;
   overflow: hidden;
-  margin: 2.5px; /* Small margin between the clock and its container */
+  margin: 2.5px;
   background-color: black;
-  height: 100%; /* Make the clock fill its container's height */
-  width: 100%; /* Make the clock fill its container's width */
+  height: 100%;
+  width: 100%;
   border-radius: 50%;
-  /* box-shadow: inset 3px 3px 6px rgba(0, 0, 0, 0.3); */
+  container-type: size; /* enables cqmin inside — arms scale with clock diameter */
 }
 .clock div {
   position: absolute;
@@ -125,7 +125,7 @@ code {
 .clock span {
   position: absolute;
   font-family: Arial;
-  font-size: calc(20vmin * 0.25); /* Adjust font size relative to the clock size */
+  font-size: 25cqmin;
   font-weight: bold;
   color: black;
   top: 50%;
@@ -134,8 +134,8 @@ code {
 }
 
 .clock .ctr {
-  width: calc(20vmin * 0.1); /* Adjust size relative to clock size */
-  height: calc(20vmin * 0.1);
+  width: 10cqmin;
+  height: 10cqmin;
   border-radius: 50%;
   left: 50%;
   top: 50%;
@@ -147,18 +147,18 @@ code {
 .clock .hour div {
   top: 10%;
   height: 40%;
-  width: calc(20vmin * 0.1); /* Adjust width relative to clock size */
+  width: 8cqmin;
   background-color: white;
-  margin-left: calc(20vmin * -0.05); /* Adjust margin relative to width */
+  margin-left: -4cqmin;
   box-shadow: 0px 0px 8px rgba(255, 255, 255, 0.3);
 }
 
 .clock .minute div {
   top: 10%;
   height: 40%;
-  width: calc(20vmin * 0.1); /* Adjust width relative to clock size */
+  width: 8cqmin;
   background-color: white;
-  margin-left: calc(20vmin * -0.05); /* Adjust margin relative to width */
+  margin-left: -4cqmin;
   box-shadow: 0px 0px 8px rgba(255, 255, 255, 0.3);
 }
 
