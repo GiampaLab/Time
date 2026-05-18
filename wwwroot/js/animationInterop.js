@@ -21,7 +21,17 @@ function enforceLandscape() {
   el.style.transformOrigin = (H / 2) + 'px ' + (W / 2) + 'px';
 }
 
-window.addEventListener('load', enforceLandscape);
+window.addEventListener('load', function () {
+  // .clocks-wrapper is rendered by Blazor after the framework boots,
+  // so retry until it appears before applying the rotation.
+  (function retry() {
+    if (document.querySelector('.clocks-wrapper')) {
+      enforceLandscape();
+    } else {
+      setTimeout(retry, 100);
+    }
+  })();
+});
 window.addEventListener('resize', enforceLandscape);
 
 // Keep track of the previous animation to know the start point of the next animation
