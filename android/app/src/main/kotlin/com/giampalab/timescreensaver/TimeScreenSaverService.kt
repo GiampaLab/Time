@@ -22,12 +22,6 @@ class TimeScreenSaverService : DreamService() {
         isFullscreen = true
         isInteractive = false
 
-        window?.let { win ->
-            val lp = win.attributes
-            lp.screenOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
-            win.attributes = lp
-        }
-
         WebView.setWebContentsDebuggingEnabled(true)
 
         val assetLoader = WebViewAssetLoader.Builder()
@@ -60,7 +54,15 @@ class TimeScreenSaverService : DreamService() {
         webView.loadUrl("https://appassets.androidplatform.net/")
     }
 
-    override fun onDreamingStarted() { super.onDreamingStarted(); webView.onResume() }
+    override fun onDreamingStarted() {
+        super.onDreamingStarted()
+        webView.onResume()
+        window?.let { win ->
+            val lp = win.attributes
+            lp.screenOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+            win.attributes = lp
+        }
+    }
     override fun onDreamingStopped() { super.onDreamingStopped(); webView.onPause() }
     override fun onDetachedFromWindow() { super.onDetachedFromWindow(); webView.destroy() }
 

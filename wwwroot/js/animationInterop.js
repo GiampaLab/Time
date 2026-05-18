@@ -1,3 +1,7 @@
+if (typeof screen !== 'undefined' && screen.orientation && screen.orientation.lock) {
+  screen.orientation.lock('landscape').catch(function () {});
+}
+
 // Keep track of the previous animation to know the start point of the next animation
 // If it's a chained continuous animation I need to calculate the end current angle and start from there
 var previousAnimationConfigs = [];
