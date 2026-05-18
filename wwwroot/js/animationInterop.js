@@ -2,6 +2,28 @@ if (typeof screen !== 'undefined' && screen.orientation && screen.orientation.lo
   screen.orientation.lock('landscape').catch(function () {});
 }
 
+function enforceLandscape() {
+  var el = document.querySelector('.clocks-wrapper');
+  if (!el) return;
+  var W = window.innerWidth;
+  var H = window.innerHeight;
+  if (H <= W) {
+    el.style.cssText = '';
+    return;
+  }
+  // Portrait: rotate content to fill landscape dimensions
+  el.style.width = H + 'px';
+  el.style.height = W + 'px';
+  el.style.position = 'fixed';
+  el.style.top = ((H - W) / 2) + 'px';
+  el.style.left = ((W - H) / 2) + 'px';
+  el.style.transform = 'rotate(90deg)';
+  el.style.transformOrigin = (H / 2) + 'px ' + (W / 2) + 'px';
+}
+
+window.addEventListener('load', enforceLandscape);
+window.addEventListener('resize', enforceLandscape);
+
 // Keep track of the previous animation to know the start point of the next animation
 // If it's a chained continuous animation I need to calculate the end current angle and start from there
 var previousAnimationConfigs = [];
