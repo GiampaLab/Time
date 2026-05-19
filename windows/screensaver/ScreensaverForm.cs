@@ -8,13 +8,9 @@ public class ScreensaverForm : Form
     private readonly WebView2 _webView = new() { Dock = DockStyle.Fill };
     private HttpListener? _http;
 
-    // Static so hooks are installed once across all monitor instances
-    private static nint _mouseHook;
-    private static nint _keyboardHook;
-    private static HookProc? _mouseProc;
-    private static HookProc? _keyboardProc;
     private static Point _startPos;
-    private static bool _hooksInstalled;
+    private static System.Windows.Forms.Timer? _inputTimer;
+    private static int _warmup = 3; // skip first few ticks while screensaver starts
 
     public ScreensaverForm(Rectangle bounds)
     {
@@ -26,42 +22,33 @@ public class ScreensaverForm : Form
         Controls.Add(_webView);
         Load += async (_, _) => await InitAsync();
 
-        if (!_hooksInstalled)
+        if (_inputTimer == null)
         {
             _startPos = Cursor.Position;
-            _mouseProc = MouseHook;
-            _keyboardProc = KeyboardHook;
-            using var mod = System.Diagnostics.Process.GetCurrentProcess().MainModule!;
-            var hMod = GetModuleHandle(mod.ModuleName);
-            _mouseHook = SetWindowsHookEx(14 /* WH_MOUSE_LL */, _mouseProc, hMod, 0);
-            _keyboardHook = SetWindowsHookEx(13 /* WH_KEYBOARD_LL */, _keyboardProc, hMod, 0);
-            _hooksInstalled = true;
+            _inputTimer = new System.Windows.Forms.Timer { Interval = 50 };
+            _inputTimer.Tick += InputTick;
+            _inputTimer.Start();
         }
     }
 
-    private static nint MouseHook(int code, nint wParam, nint lParam)
+    private static void InputTick(object? sender, EventArgs e)
     {
-        if (code >= 0)
+        if (_warmup > 0) { _warmup--; return; }
+
+        var pos = Cursor.Position;
+        if (Math.Abs(pos.X - _startPos.X) > 5 || Math.Abs(pos.Y - _startPos.Y) > 5)
+        { Application.Exit(); return; }
+
+        // Mouse buttons
+        if (GetAsyncKeyState(0x01) < 0 || GetAsyncKeyState(0x02) < 0 || GetAsyncKeyState(0x04) < 0)
+        { Application.Exit(); return; }
+
+        // Any keyboard key (skip VK 0-7 which are mouse/undefined)
+        for (int vk = 8; vk < 256; vk++)
         {
-            if (wParam is 0x0201 or 0x0204 or 0x0207 or 0x020A) // button down or wheel
-            {
-                Application.Exit();
-            }
-            else if (wParam == 0x0200) // WM_MOUSEMOVE
-            {
-                var p = Cursor.Position;
-                if (Math.Abs(p.X - _startPos.X) > 10 || Math.Abs(p.Y - _startPos.Y) > 10)
-                    Application.Exit();
-            }
+            if (GetAsyncKeyState(vk) < 0)
+            { Application.Exit(); return; }
         }
-        return CallNextHookEx(_mouseHook, code, wParam, lParam);
-    }
-
-    private static nint KeyboardHook(int code, nint wParam, nint lParam)
-    {
-        if (code >= 0 && wParam == 0x0100) // WM_KEYDOWN
-            Application.Exit();
-        return CallNextHookEx(_keyboardHook, code, wParam, lParam);
     }
 
     private async Task InitAsync()
@@ -145,21 +132,11 @@ public class ScreensaverForm : Form
     protected override void OnFormClosed(FormClosedEventArgs e)
     {
         base.OnFormClosed(e);
-        if (_hooksInstalled)
-        {
-            UnhookWindowsHookEx(_mouseHook);
-            UnhookWindowsHookEx(_keyboardHook);
-            _hooksInstalled = false;
-        }
+        _inputTimer?.Stop();
         Cursor.Show();
         _http?.Stop();
         Application.Exit();
     }
 
-    delegate nint HookProc(int code, nint wParam, nint lParam);
-
-    [DllImport("user32.dll")] static extern nint SetWindowsHookEx(int id, HookProc proc, nint hMod, uint threadId);
-    [DllImport("user32.dll")] static extern bool UnhookWindowsHookEx(nint hook);
-    [DllImport("user32.dll")] static extern nint CallNextHookEx(nint hook, int code, nint wParam, nint lParam);
-    [DllImport("kernel32.dll")] static extern nint GetModuleHandle(string? name);
+    [DllImport("user32.dll")] private static extern short GetAsyncKeyState(int vKey);
 }
