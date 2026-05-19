@@ -1,7 +1,7 @@
 $ErrorActionPreference = "Stop"
 
 Write-Host "Publishing Blazor app..."
-dotnet publish -c Release -o publish -p:BlazorEnableCompression=false
+dotnet publish Time.csproj -c Release -o publish -p:BlazorEnableCompression=false
 
 Write-Host "Building Windows screensaver..."
 dotnet publish windows/screensaver/TimeScreensaver.csproj `

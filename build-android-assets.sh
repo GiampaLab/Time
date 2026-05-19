@@ -4,7 +4,7 @@ set -e
 ASSETS_DIR="android/app/src/main/assets"
 
 echo "Publishing Blazor app..."
-dotnet publish -c Release -o publish -p:BlazorEnableCompression=false
+dotnet publish Time.csproj -c Release -o publish -p:BlazorEnableCompression=false
 
 echo "Syncing to Android assets..."
 rm -rf "$ASSETS_DIR"

@@ -2,7 +2,7 @@
 set -e
 
 echo "Publishing Blazor app..."
-dotnet publish -c Release -o publish -p:BlazorEnableCompression=false
+dotnet publish Time.csproj -c Release -o publish -p:BlazorEnableCompression=false
 
 echo "Building Windows screensaver..."
 dotnet publish windows/screensaver/TimeScreensaver.csproj \

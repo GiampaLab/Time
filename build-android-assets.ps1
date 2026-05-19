@@ -3,7 +3,7 @@ $ErrorActionPreference = "Stop"
 $AssetsDir = "android\app\src\main\assets"
 
 Write-Host "Publishing Blazor app..."
-dotnet publish -c Release -o publish -p:BlazorEnableCompression=false
+dotnet publish Time.csproj -c Release -o publish -p:BlazorEnableCompression=false
 
 Write-Host "Syncing to Android assets..."
 if (Test-Path $AssetsDir) { Remove-Item -Recurse -Force $AssetsDir }
