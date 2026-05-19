@@ -1,3 +1,4 @@
+using System.Net;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
 
@@ -5,6 +6,7 @@ public class ScreensaverForm : Form
 {
     private readonly WebView2 _webView = new() { Dock = DockStyle.Fill };
     private Point _lastMouse = Point.Empty;
+    private HttpListener? _http;
 
     public ScreensaverForm(Rectangle bounds)
     {
@@ -19,49 +21,81 @@ public class ScreensaverForm : Form
 
     private async Task InitAsync()
     {
+        var wwwroot = Path.Combine(AppContext.BaseDirectory, "wwwroot");
+        var port = StartFileServer(wwwroot);
+
+        var env = await CoreWebView2Environment.CreateAsync(
+            userDataFolder: Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "TimeScreensaver"));
+        await _webView.EnsureCoreWebView2Async(env);
+        _webView.CoreWebView2.Navigate($"http://localhost:{port}/");
+    }
+
+    private int StartFileServer(string wwwroot)
+    {
+        var probe = new System.Net.Sockets.TcpListener(IPAddress.Loopback, 0);
+        probe.Start();
+        int port = ((IPEndPoint)probe.LocalEndpoint).Port;
+        probe.Stop();
+
+        _http = new HttpListener();
+        _http.Prefixes.Add($"http://localhost:{port}/");
+        _http.Start();
+        _ = ServeAsync(_http, wwwroot);
+        return port;
+    }
+
+    private static async Task ServeAsync(HttpListener listener, string wwwroot)
+    {
+        while (listener.IsListening)
+        {
+            HttpListenerContext ctx;
+            try { ctx = await listener.GetContextAsync(); }
+            catch { return; }
+            _ = Task.Run(() => HandleRequest(ctx, wwwroot));
+        }
+    }
+
+    private static void HandleRequest(HttpListenerContext ctx, string wwwroot)
+    {
         try
         {
-            var env = await CoreWebView2Environment.CreateAsync(
-                userDataFolder: Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                    "TimeScreensaver"));
-            await _webView.EnsureCoreWebView2Async(env);
+            var urlPath = ctx.Request.Url?.LocalPath.TrimStart('/') ?? "";
+            if (string.IsNullOrEmpty(urlPath)) urlPath = "index.html";
 
-            var wwwroot = Path.Combine(AppContext.BaseDirectory, "wwwroot");
-            _webView.CoreWebView2.SetVirtualHostNameToFolderMapping(
-                "time.app", wwwroot, CoreWebView2HostResourceAccessKind.Allow);
+            var filePath = Path.GetFullPath(
+                Path.Combine(wwwroot, urlPath.Replace('/', Path.DirectorySeparatorChar)));
 
-            _webView.CoreWebView2.NavigationCompleted += OnNavCompleted;
-            _webView.CoreWebView2.Navigate("https://time.app/");
+            if (!filePath.StartsWith(wwwroot, StringComparison.OrdinalIgnoreCase) || !File.Exists(filePath))
+            {
+                ctx.Response.StatusCode = 404;
+                ctx.Response.Close();
+                return;
+            }
+
+            ctx.Response.StatusCode = 200;
+            ctx.Response.ContentType = MimeType(filePath);
+            using var fs = File.OpenRead(filePath);
+            fs.CopyTo(ctx.Response.OutputStream);
         }
-        catch (Exception ex)
-        {
-            ShowDiag($"Init failed: {ex.Message}");
-        }
+        catch { }
+        finally { try { ctx.Response.Close(); } catch { } }
     }
 
-    private void OnNavCompleted(object? sender, CoreWebView2NavigationCompletedEventArgs e)
+    private static string MimeType(string path) => Path.GetExtension(path).ToLowerInvariant() switch
     {
-        if (e.IsSuccess) return;
-        _webView.CoreWebView2.NavigationCompleted -= OnNavCompleted;
-
-        var wwwroot = Path.Combine(AppContext.BaseDirectory, "wwwroot");
-        var indexExists = File.Exists(Path.Combine(wwwroot, "index.html"));
-        ShowDiag(
-            $"Navigation failed ({e.WebErrorStatus})\n" +
-            $"wwwroot path: {wwwroot}\n" +
-            $"wwwroot exists: {Directory.Exists(wwwroot)}\n" +
-            $"index.html exists: {indexExists}\n" +
-            $"BaseDirectory: {AppContext.BaseDirectory}");
-    }
-
-    private void ShowDiag(string msg)
-    {
-        if (_webView.CoreWebView2 == null) return;
-        var html = $"<body style='background:black;color:white;font:16px monospace;padding:30px'>" +
-                   $"<pre>{System.Net.WebUtility.HtmlEncode(msg)}</pre></body>";
-        _webView.CoreWebView2.NavigateToString(html);
-    }
+        ".html" => "text/html; charset=utf-8",
+        ".js"   => "text/javascript",
+        ".css"  => "text/css",
+        ".wasm" => "application/wasm",
+        ".json" => "application/json",
+        ".png"  => "image/png",
+        ".ico"  => "image/x-icon",
+        ".svg"  => "image/svg+xml",
+        ".dat"  => "application/octet-stream",
+        _       => "application/octet-stream",
+    };
 
     protected override void OnKeyDown(KeyEventArgs e) => Close();
     protected override void OnMouseDown(MouseEventArgs e) => Close();
@@ -73,6 +107,7 @@ public class ScreensaverForm : Form
     protected override void OnFormClosed(FormClosedEventArgs e)
     {
         base.OnFormClosed(e);
+        _http?.Stop();
         Application.Exit();
     }
 }
