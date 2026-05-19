@@ -1,5 +1,11 @@
 $ErrorActionPreference = "Stop"
 
+Write-Host "Stopping any running screensaver instances..."
+Get-Process -Name "TimeScreensaver" -ErrorAction SilentlyContinue | Stop-Process -Force
+Get-Process -Name "Time" -ErrorAction SilentlyContinue |
+    Where-Object { $_.Path -like "*windows\build*" } | Stop-Process -Force
+Start-Sleep -Milliseconds 500
+
 Write-Host "Publishing Blazor app..."
 dotnet publish Time.csproj -c Release -o publish -p:BlazorEnableCompression=false
 
