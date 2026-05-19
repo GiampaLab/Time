@@ -30,19 +30,19 @@ public class PreviewForm : Form
             ? "data:image/png;base64," + Convert.ToBase64String(File.ReadAllBytes(iconPath))
             : "";
 
-        _webView.CoreWebView2.NavigateToString($"""
+        _webView.CoreWebView2.NavigateToString($$"""
             <!DOCTYPE html>
             <html>
             <head>
             <style>
-            * {{ margin: 0; padding: 0; box-sizing: border-box; }}
-            body {{ background: black; width: 100vw; height: 100vh;
-                   display: flex; align-items: center; justify-content: center; }}
-            img {{ width: 70%; height: 70%; object-fit: contain; }}
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { background: black; width: 100vw; height: 100vh;
+                   display: flex; align-items: center; justify-content: center; }
+            img { width: 70%; height: 70%; object-fit: contain; }
             </style>
             </head>
             <body>
-            <img src="{iconData}" />
+            <img src="{{iconData}}" />
             </body>
             </html>
             """);
