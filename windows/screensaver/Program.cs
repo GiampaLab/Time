@@ -1,8 +1,9 @@
 Application.SetHighDpiMode(HighDpiMode.SystemAware);
 Application.EnableVisualStyles();
 
-var args = Environment.GetCommandLineArgs();
-var mode = args.Length > 1 ? args[1].ToLower() : "/s";
+// In top-level programs, implicit 'args' contains command-line args without the exe name.
+// Windows passes: /s (run), /p <hwnd> (preview), /c (settings)
+var mode = args.Length > 0 ? args[0].ToLower() : "/s";
 
 if (mode.StartsWith("/s"))
 {
@@ -10,9 +11,9 @@ if (mode.StartsWith("/s"))
         new ScreensaverForm(screen.Bounds).Show();
     Application.Run();
 }
-else if (mode.StartsWith("/p") && args.Length > 2)
+else if (mode.StartsWith("/p") && args.Length > 1)
 {
-    var hwnd = nint.Parse(args[2]);
+    var hwnd = nint.Parse(args[1]);
     Application.Run(new PreviewForm(hwnd));
 }
 else if (mode.StartsWith("/c"))
