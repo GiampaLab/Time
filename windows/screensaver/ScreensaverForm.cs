@@ -37,18 +37,13 @@ public class ScreensaverForm : Form
 
         var pos = Cursor.Position;
         if (Math.Abs(pos.X - _startPos.X) > 5 || Math.Abs(pos.Y - _startPos.Y) > 5)
-        { Application.Exit(); return; }
+            Environment.Exit(0);
 
-        // Mouse buttons
         if (GetAsyncKeyState(0x01) < 0 || GetAsyncKeyState(0x02) < 0 || GetAsyncKeyState(0x04) < 0)
-        { Application.Exit(); return; }
+            Environment.Exit(0);
 
-        // Any keyboard key (skip VK 0-7 which are mouse/undefined)
         for (int vk = 8; vk < 256; vk++)
-        {
-            if (GetAsyncKeyState(vk) < 0)
-            { Application.Exit(); return; }
-        }
+            if (GetAsyncKeyState(vk) < 0) Environment.Exit(0);
     }
 
     private async Task InitAsync()
