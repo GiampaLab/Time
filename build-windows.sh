@@ -4,19 +4,15 @@ set -e
 echo "Publishing Blazor app..."
 dotnet publish Time.csproj -c Release -o publish -p:BlazorEnableCompression=false
 
-echo "Building Windows screensaver..."
-dotnet publish windows/screensaver/TimeScreensaver.csproj \
-    -c Release -r win-x64 --self-contained false \
-    -o windows/build
-
-echo "Copying Blazor assets..."
+echo "Copying Blazor assets to windows/build/wwwroot..."
 rm -rf windows/build/wwwroot
+mkdir -p windows/build
 cp -r publish/wwwroot windows/build/wwwroot
 
-echo "Creating .scr..."
-cp windows/build/TimeScreensaver.exe windows/build/Time.scr
-
 echo ""
-echo "Done. Output: windows/build/"
-echo "Install: right-click Time.scr -> Install"
-echo "  or copy Time.scr + wwwroot/ folder to C:\\Windows\\System32"
+echo "Blazor assets ready at windows/build/wwwroot/"
+echo ""
+echo "The screensaver .exe requires the Windows Desktop SDK and must be"
+echo "compiled on Windows. Run this from a Windows PowerShell terminal:"
+echo ""
+echo "  .\\build-windows.ps1"
