@@ -32,7 +32,7 @@ public class ScreensaverForm : Form
                 "time.app", wwwroot, CoreWebView2HostResourceAccessKind.Allow);
 
             _webView.CoreWebView2.NavigationCompleted += OnNavCompleted;
-            _webView.CoreWebView2.Navigate("https://time.app/index.html");
+            _webView.CoreWebView2.Navigate("https://time.app/");
         }
         catch (Exception ex)
         {
