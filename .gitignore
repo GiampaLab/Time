@@ -8,3 +8,8 @@ android/app/src/main/assets/
 android/.gradle/
 android/build/
 android/app/build/
+
+# Windows
+windows/build/
+windows/screensaver/bin/
+windows/screensaver/obj/
