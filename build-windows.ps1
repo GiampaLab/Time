@@ -15,8 +15,9 @@ dotnet publish windows/screensaver/TimeScreensaver.csproj `
     -o windows/build
 
 Write-Host "Copying Blazor assets..."
-if (Test-Path "windows/build/wwwroot") { Remove-Item -Recurse -Force "windows/build/wwwroot" }
-Copy-Item -Recurse "publish/wwwroot" "windows/build/wwwroot"
+Remove-Item -Recurse -Force "windows/build/wwwroot" -ErrorAction SilentlyContinue
+New-Item -ItemType Directory -Force -Path "windows/build/wwwroot" | Out-Null
+Copy-Item -Path "publish/wwwroot/*" -Destination "windows/build/wwwroot/" -Recurse -Force
 
 Write-Host "Creating .scr..."
 Copy-Item -Force "windows/build/TimeScreensaver.exe" "windows/build/Time.scr"

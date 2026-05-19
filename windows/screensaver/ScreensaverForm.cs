@@ -19,16 +19,48 @@ public class ScreensaverForm : Form
 
     private async Task InitAsync()
     {
-        var env = await CoreWebView2Environment.CreateAsync(
-            userDataFolder: Path.Combine(Path.GetTempPath(), "TimeScreensaver"));
-        await _webView.EnsureCoreWebView2Async(env);
+        try
+        {
+            var env = await CoreWebView2Environment.CreateAsync(
+                userDataFolder: Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    "TimeScreensaver"));
+            await _webView.EnsureCoreWebView2Async(env);
 
-        var wwwroot = Path.Combine(
-            Path.GetDirectoryName(Application.ExecutablePath)!, "wwwroot");
-        _webView.CoreWebView2.SetVirtualHostNameToFolderMapping(
-            "time.app", wwwroot, CoreWebView2HostResourceAccessKind.Allow);
+            var wwwroot = Path.Combine(AppContext.BaseDirectory, "wwwroot");
+            _webView.CoreWebView2.SetVirtualHostNameToFolderMapping(
+                "time.app", wwwroot, CoreWebView2HostResourceAccessKind.Allow);
 
-        _webView.CoreWebView2.Navigate("https://time.app/index.html");
+            _webView.CoreWebView2.NavigationCompleted += OnNavCompleted;
+            _webView.CoreWebView2.Navigate("https://time.app/index.html");
+        }
+        catch (Exception ex)
+        {
+            ShowDiag($"Init failed: {ex.Message}");
+        }
+    }
+
+    private void OnNavCompleted(object? sender, CoreWebView2NavigationCompletedEventArgs e)
+    {
+        if (e.IsSuccess) return;
+        _webView.CoreWebView2.NavigationCompleted -= OnNavCompleted;
+
+        var wwwroot = Path.Combine(AppContext.BaseDirectory, "wwwroot");
+        var indexExists = File.Exists(Path.Combine(wwwroot, "index.html"));
+        ShowDiag(
+            $"Navigation failed ({e.WebErrorStatus})\n" +
+            $"wwwroot path: {wwwroot}\n" +
+            $"wwwroot exists: {Directory.Exists(wwwroot)}\n" +
+            $"index.html exists: {indexExists}\n" +
+            $"BaseDirectory: {AppContext.BaseDirectory}");
+    }
+
+    private void ShowDiag(string msg)
+    {
+        if (_webView.CoreWebView2 == null) return;
+        var html = $"<body style='background:black;color:white;font:16px monospace;padding:30px'>" +
+                   $"<pre>{System.Net.WebUtility.HtmlEncode(msg)}</pre></body>";
+        _webView.CoreWebView2.NavigateToString(html);
     }
 
     protected override void OnKeyDown(KeyEventArgs e) => Close();
