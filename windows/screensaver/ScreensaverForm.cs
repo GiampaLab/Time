@@ -37,14 +37,19 @@ public class ScreensaverForm : Form
 
         var pos = Cursor.Position;
         if (Math.Abs(pos.X - _startPos.X) > 5 || Math.Abs(pos.Y - _startPos.Y) > 5)
-            Environment.Exit(0);
+            Die();
 
         if (GetAsyncKeyState(0x01) < 0 || GetAsyncKeyState(0x02) < 0 || GetAsyncKeyState(0x04) < 0)
-            Environment.Exit(0);
+            Die();
 
         for (int vk = 8; vk < 256; vk++)
-            if (GetAsyncKeyState(vk) < 0) Environment.Exit(0);
+            if (GetAsyncKeyState(vk) < 0) Die();
     }
+
+    private static void Die() => TerminateProcess(GetCurrentProcess(), 0);
+
+    [DllImport("kernel32.dll")] private static extern bool TerminateProcess(nint h, uint code);
+    [DllImport("kernel32.dll")] private static extern nint GetCurrentProcess();
 
     private async Task InitAsync()
     {
