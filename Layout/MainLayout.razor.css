@@ -2,11 +2,21 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  background-color: white;
+  background-color: black;
+  height: 100vh;
+  overflow: hidden;
 }
 
 main {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+article.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .sidebar {
