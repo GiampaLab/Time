@@ -7,10 +7,7 @@ public class ScreensaverForm : Form
 {
     private readonly WebView2 _webView = new() { Dock = DockStyle.Fill };
     private HttpListener? _http;
-
-    private static Point _startPos;
-    private static System.Windows.Forms.Timer? _inputTimer;
-    private static int _warmup = 3; // skip first few ticks while screensaver starts
+    private static bool _monitorStarted;
 
     public ScreensaverForm(Rectangle bounds)
     {
@@ -22,34 +19,41 @@ public class ScreensaverForm : Form
         Controls.Add(_webView);
         Load += async (_, _) => await InitAsync();
 
-        if (_inputTimer == null)
+        if (!_monitorStarted)
         {
-            _startPos = Cursor.Position;
-            _inputTimer = new System.Windows.Forms.Timer { Interval = 50 };
-            _inputTimer.Tick += InputTick;
-            _inputTimer.Start();
+            _monitorStarted = true;
+            var startPos = Cursor.Position;
+            new Thread(() =>
+            {
+                Thread.Sleep(1000);
+                while (true)
+                {
+                    Thread.Sleep(50);
+                    var p = Cursor.Position;
+                    if (Math.Abs(p.X - startPos.X) > 5 || Math.Abs(p.Y - startPos.Y) > 5) Die();
+                    if (GetAsyncKeyState(1) < 0 || GetAsyncKeyState(2) < 0 || GetAsyncKeyState(4) < 0) Die();
+                    for (int vk = 8; vk < 256; vk++)
+                        if (GetAsyncKeyState(vk) < 0) Die();
+                }
+            }) { IsBackground = true }.Start();
         }
     }
 
-    private static void InputTick(object? sender, EventArgs e)
+    // WM_CLOSE (0x10) = Windows dismissing screensaver
+    // WM_ACTIVATE (0x06) with WA_INACTIVE (0) = screensaver losing focus
+    protected override void WndProc(ref Message m)
     {
-        if (_warmup > 0) { _warmup--; return; }
-
-        var pos = Cursor.Position;
-        if (Math.Abs(pos.X - _startPos.X) > 5 || Math.Abs(pos.Y - _startPos.Y) > 5)
+        if (m.Msg == 0x10 || (m.Msg == 0x06 && (nint)m.WParam == 0))
             Die();
-
-        if (GetAsyncKeyState(0x01) < 0 || GetAsyncKeyState(0x02) < 0 || GetAsyncKeyState(0x04) < 0)
-            Die();
-
-        for (int vk = 8; vk < 256; vk++)
-            if (GetAsyncKeyState(vk) < 0) Die();
+        base.WndProc(ref m);
     }
 
-    private static void Die() => TerminateProcess(GetCurrentProcess(), 0);
-
-    [DllImport("kernel32.dll")] private static extern bool TerminateProcess(nint h, uint code);
-    [DllImport("kernel32.dll")] private static extern nint GetCurrentProcess();
+    private static void Die()
+    {
+        Cursor.Show();
+        TerminateProcess(GetCurrentProcess(), 0);
+        Environment.FailFast(null);
+    }
 
     private async Task InitAsync()
     {
@@ -129,11 +133,7 @@ public class ScreensaverForm : Form
         _       => "application/octet-stream",
     };
 
-    protected override void OnFormClosed(FormClosedEventArgs e)
-    {
-        base.OnFormClosed(e);
-        Die();
-    }
-
     [DllImport("user32.dll")] private static extern short GetAsyncKeyState(int vKey);
+    [DllImport("kernel32.dll")] private static extern bool TerminateProcess(nint h, uint code);
+    [DllImport("kernel32.dll")] private static extern nint GetCurrentProcess();
 }
