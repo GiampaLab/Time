@@ -13,7 +13,6 @@ static class Program
             foreach (var screen in Screen.AllScreens)
                 new ScreensaverForm(screen.Bounds).Show();
             Application.Run();
-            Environment.Exit(0);
         }
         else if (mode.StartsWith("/p") && args.Length > 1)
         {

@@ -132,10 +132,7 @@ public class ScreensaverForm : Form
     protected override void OnFormClosed(FormClosedEventArgs e)
     {
         base.OnFormClosed(e);
-        _inputTimer?.Stop();
-        Cursor.Show();
-        _http?.Stop();
-        Application.Exit();
+        Die();
     }
 
     [DllImport("user32.dll")] private static extern short GetAsyncKeyState(int vKey);
