@@ -11,7 +11,8 @@ dotnet publish Time.csproj -c Release -o publish -p:BlazorEnableCompression=fals
 
 Write-Host "Building Windows screensaver..."
 dotnet publish windows/screensaver/TimeScreensaver.csproj `
-    -c Release -r win-x64 --self-contained false `
+    -c Release -r win-x64 --self-contained true `
+    -p:PublishSingleFile=true `
     -o windows/build
 
 Write-Host "Copying Blazor assets..."
