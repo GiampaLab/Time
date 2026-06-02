@@ -268,9 +268,62 @@ adb install app\build\outputs\apk\debug\app-debug.apk
 
 ## Extending the Project
 
-- **Add new animation patterns:**
-  - Implement new classes in `AnimationConfig/` and `AnimationEngine/`.
-  - Register and orchestrate them via the `AnimationOrchestrator`.
+### Add a new animation pattern
+
+A "pattern" is a posed shape the 24 clocks form, plus the continuous motion it animates
+into before the clock returns to showing the time. Patterns are declarative: each one is a
+self-contained class implementing `IClockPattern`
+(`AnimationEngine/Patterns/IClockPattern.cs`). Adding one is **3 additive steps** — no
+switch statements, no enums, no orchestrator edits:
+
+1. **(Optional) Add a pose helper.** In `AnimationConfig/AnimationPatterns.cs`, add a
+   `SetXxxPattern(Dictionary<int, Clock> clocks)` that positions the arms (or reuse an
+   existing one). Clock IDs are `1..24` in a 3-row × 8-column, column-major grid
+   (`column c, row r → id = c*3 + r + 1`; see the "Clocks IDs configuration" table below).
+
+2. **Add the pattern class.** Create `AnimationEngine/Patterns/XxxPattern.cs`:
+
+   ```csharp
+   using Microsoft.JSInterop;
+   using Time.AnimationConfig;
+   using Time.Components;
+
+   namespace Time.AnimationEngine.Patterns;
+
+   public sealed class XxxPattern : IClockPattern
+   {
+       public string Name => "Xxx";
+
+       public void Pose(Dictionary<int, Clock> clocks) => AnimationPatterns.SetXxxPattern(clocks);
+
+       public IAnimationManager BuildInfinite(IJSRuntime js, Dictionary<int, Clock> clocks) =>
+           new InfiniteAnimationManager(js, clocks, () =>
+           {
+               Components.AnimationConfig Config(int index) => new()
+               {
+                   Direction = Direction.Anticlockwise,
+                   EasingFunction = "ease-in",
+                   Duration = 5000,
+                   Delay = AnimationConfigs.StaggeredAnimation(index, 0, 40)
+               };
+               // Distribute the motion using a helper from AnimationConfigs:
+               // SetDefaultConfig / SetSpiralConfig / SetCenterOutConfig / SetSnakeConfig ...
+               AnimationConfigs.SetDefaultConfig(clocks, Config, Config);
+           });
+           // Pass jsFunctionName: "..." only when the pattern needs a bespoke JS motion primitive.
+   }
+   ```
+
+3. **Register it.** Add one line to `PatternRegistry.All`
+   (`AnimationEngine/Patterns/PatternRegistry.cs`):
+
+   ```csharp
+   new XxxPattern(),
+   ```
+
+That's it — the orchestrator picks it up automatically (random selection, no repeats until
+all patterns have been shown). The compiler enforces that both `Pose` and `BuildInfinite`
+exist, so a pattern can never be half-wired.
 
 ## Contribution Guidelines
 
