@@ -253,15 +253,3 @@ public class AnimationPatterns
         }
     }
 }
-
-public enum AnimationPatternType
-{
-    Squares,
-    Line,
-    Flow,
-    Flower,
-    Diagonal,
-    Numbers,
-    Triangular,
-    Pendulum
-}
