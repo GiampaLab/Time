@@ -131,6 +131,16 @@ public class AnimationPatterns
         }
     }
 
+    public static void SetPendulumPattern(Dictionary<int, Clock> clocks)
+    {
+        // Both arms hang straight down (180°) so each clock reads as a single
+        // downward needle: a wall of pendulums at rest, ready to swing.
+        for (var i = 0; i < 24; i++)
+        {
+            clocks[i + 1].UpdateState(ArmState.Six, ArmState.Six);
+        }
+    }
+
     public static void SetDiagonalPattern(Dictionary<int, Clock> clocks)
     {
         for (var i = 0; i < 24; i++)
@@ -252,5 +262,6 @@ public enum AnimationPatternType
     Flower,
     Diagonal,
     Numbers,
-    Triangular
+    Triangular,
+    Pendulum
 }
