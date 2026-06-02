@@ -6,8 +6,9 @@ namespace Time.AnimationEngine.Patterns;
 
 /// <summary>
 /// A wall of clock needles that hang downward then swing back and forth like synchronized
-/// metronomes. Clocks within a column share a period/phase while successive columns swing
-/// slightly slower and later, so the field drifts in and out of sync (a pendulum-wave).
+/// metronomes. Every column shares the same swing period, so the only difference between
+/// columns is a constant start delay — this yields a coherent travelling wave that keeps
+/// its phase relationship indefinitely (it never drifts out of sync).
 /// The swing motion uses the bespoke "animateClockArmPendulum" JS primitive.
 /// </summary>
 public sealed class PendulumPattern : IClockPattern
@@ -21,16 +22,17 @@ public sealed class PendulumPattern : IClockPattern
         {
             Components.AnimationConfig Config(int index)
             {
-                // Clocks share a period/phase within a column (3 clocks each),
-                // while successive columns swing slightly slower and later so the
-                // wall of pendulums drifts in and out of sync (pendulum-wave).
+                // The 3 clocks in a column share one period and phase. Every column uses the
+                // SAME period (no per-column duration drift) and differs only by a constant
+                // start delay, so the staggered launch becomes a travelling wave that stays
+                // connected forever instead of drifting apart over time.
                 var col = index / 3;
                 return new()
                 {
                     Direction = Direction.Clockwise,
                     EasingFunction = "ease-in-out",
-                    Duration = 2600 + col * 120,
-                    Delay = col * 180
+                    Duration = 2600,
+                    Delay = col * 260
                 };
             }
 
