@@ -1,5 +1,6 @@
 using Microsoft.JSInterop;
 using Time.AnimationConfig;
+using Time.AnimationEngine.Patterns;
 using Time.Components;
 
 namespace Time.AnimationEngine;
@@ -8,7 +9,8 @@ public class AnimationOrchestrator(IJSRuntime jSRuntime, Dictionary<int, Clock> 
     private readonly IJSRuntime JSRuntime = jSRuntime;
     private readonly Dictionary<int, Clock> Clocks = clocks;
     private readonly Random random = new();
-    private List<AnimationPatternType> remainingPatterns = Enum.GetValues(typeof(AnimationPatternType)).Cast<AnimationPatternType>().ToList();
+    private List<IClockPattern> remainingPatterns = PatternRegistry.All.ToList();
+    private IClockPattern? currentPattern;
 
     public Func<IAnimationManager?, (IAnimationManager animationManager, int duration)> GetNextAnimationManager()
     {
@@ -24,7 +26,7 @@ public class AnimationOrchestrator(IJSRuntime jSRuntime, Dictionary<int, Clock> 
             }
             else if (animationManager.GetAnimationType() == AnimationType.Pattern)
             {
-                return (GetInfiniteAnimationManager((PatternAnimationManager)animationManager), 25000);
+                return (GetInfiniteAnimationManager(), 25000);
             }
             else if (animationManager.GetAnimationType() == AnimationType.Infinite)
             {
@@ -37,138 +39,10 @@ public class AnimationOrchestrator(IJSRuntime jSRuntime, Dictionary<int, Clock> 
         };
     }
 
-    private IAnimationManager GetInfiniteAnimationManager(PatternAnimationManager animationManager)
-    {
-        return animationManager.AnimationPatternType switch
-        {
-            AnimationPatternType.Triangular => new InfiniteAnimationManager(JSRuntime, Clocks, () =>
-               {
-                   static Components.AnimationConfig CreateArmAnimationConfig(Clock clock, int index, Direction direction) =>
-                       new()
-                       {
-                           Direction = direction,
-                           EasingFunction = "ease-in",
-                           Duration = 7000,
-                           Delay = 0
-                       };
-
-                   static Components.AnimationConfig SetHourArmAnimationConfig(Clock clock, int index) =>
-                       CreateArmAnimationConfig(clock, index, clock.Id <= 12 ? Direction.Anticlockwise : Direction.Clockwise);
-
-                   static Components.AnimationConfig SetMinuteArmAnimationConfig(Clock clock, int index) =>
-                       CreateArmAnimationConfig(clock, index, clock.Id <= 12 ? Direction.Anticlockwise : Direction.Clockwise);
-                   Console.WriteLine("SetFlowerPattern");
-                   AnimationConfigs.SetCenterOutConfig(Clocks, SetHourArmAnimationConfig, SetMinuteArmAnimationConfig);
-               }),
-
-            AnimationPatternType.Flower => new InfiniteAnimationManager(JSRuntime, Clocks, () =>
-                {
-                    static Components.AnimationConfig CreateArmAnimationConfig(Clock clock, int index, Direction direction) =>
-                        new()
-                        {
-                            Direction = direction,
-                            EasingFunction = "ease-in",
-                            Duration = 7000,
-                            Delay = AnimationConfigs.StaggeredAnimation(index, 0, 400)
-                        };
-
-                    static Components.AnimationConfig SetHourArmAnimationConfig(Clock clock, int index) =>
-                        CreateArmAnimationConfig(clock, index, clock.Id <= 12 ? Direction.Clockwise : Direction.Anticlockwise);
-
-                    static Components.AnimationConfig SetMinuteArmAnimationConfig(Clock clock, int index) =>
-                        CreateArmAnimationConfig(clock, index, clock.Id <= 12 ? Direction.Anticlockwise : Direction.Clockwise);
-                    Console.WriteLine("SetFlowerPattern");
-                    AnimationConfigs.SetCenterOutConfig(Clocks, SetHourArmAnimationConfig, SetMinuteArmAnimationConfig);
-                }),
-
-            AnimationPatternType.Line => new InfiniteAnimationManager(JSRuntime, Clocks, () =>
-                {
-                    Func<int, Components.AnimationConfig> CreateConfig(Direction direction) => index => new()
-                    {
-                        Direction = direction,
-                        EasingFunction = "ease-in",
-                        Duration = 5000,
-                        Delay = AnimationConfigs.StaggeredAnimation(index, 0, 40)
-                    };
-                    Console.WriteLine("SetLinePattern");
-                    AnimationConfigs.SetDefaultConfig(Clocks, CreateConfig(Direction.Anticlockwise), CreateConfig(Direction.Clockwise));
-                }),
-
-            AnimationPatternType.Diagonal => new InfiniteAnimationManager(JSRuntime, Clocks, () =>
-               {
-                   Components.AnimationConfig SetHourArmAnimationConfig(int index) => new()
-                   {
-                       Direction = Direction.Anticlockwise,
-                       EasingFunction = "ease-in",
-                       Duration = 5000,
-                       Delay = AnimationConfigs.StaggeredAnimation(index, 0, 80)
-                   };
-                   Console.WriteLine("SetDiagonalPattern");
-                   AnimationConfigs.SetDefaultConfig(Clocks, SetHourArmAnimationConfig, SetHourArmAnimationConfig);
-               }),
-
-            AnimationPatternType.Squares => new InfiniteAnimationManager(JSRuntime, Clocks, () =>
-                {
-                    Func<int, Components.AnimationConfig> CreateConfig(Direction direction) => index => new()
-                    {
-                        Direction = direction,
-                        EasingFunction = "ease-in",
-                        Duration = 5000,
-                        Delay = 80
-                    };
-                    Console.WriteLine("SetSquaresPattern");
-                    AnimationConfigs.SetDefaultConfig(Clocks, CreateConfig(Direction.Anticlockwise), CreateConfig(Direction.Clockwise));
-                }),
-
-            AnimationPatternType.Flow => new InfiniteAnimationManager(JSRuntime, Clocks, () =>
-                {
-                    Components.AnimationConfig SetHourArmAnimationConfig(int index) => new Components.AnimationConfig
-                    {
-                        Direction = Direction.Anticlockwise,
-                        EasingFunction = "ease-in",
-                        Duration = 5000,
-                        Delay = AnimationConfigs.StaggeredAnimation(index, 0, 40)
-                    };
-                    Console.WriteLine("SetFlowPattern");
-                    AnimationConfigs.SetSpiralConfig(Clocks, SetHourArmAnimationConfig, SetHourArmAnimationConfig);
-                }),
-
-            AnimationPatternType.Numbers => new InfiniteAnimationManager(JSRuntime, Clocks, () =>
-            {
-                Components.AnimationConfig SetHourArmAnimationConfig(int index) => new Components.AnimationConfig
-                {
-                    Direction = Direction.Anticlockwise,
-                    EasingFunction = "ease-in",
-                    Duration = 7000,
-                    Delay = 0
-                };
-                Console.WriteLine("SetNumbersPattern");
-                AnimationConfigs.SetDefaultConfig(Clocks, SetHourArmAnimationConfig, SetHourArmAnimationConfig);
-            }),
-
-            AnimationPatternType.Pendulum => new InfiniteAnimationManager(JSRuntime, Clocks, () =>
-            {
-                Components.AnimationConfig Config(int index)
-                {
-                    // Clocks share a period/phase within a column (3 clocks each),
-                    // while successive columns swing slightly slower and later so the
-                    // wall of pendulums drifts in and out of sync (pendulum-wave).
-                    var col = index / 3;
-                    return new()
-                    {
-                        Direction = Direction.Clockwise,
-                        EasingFunction = "ease-in-out",
-                        Duration = 2600 + col * 120,
-                        Delay = col * 180
-                    };
-                }
-                Console.WriteLine("SetPendulumPattern");
-                AnimationConfigs.SetDefaultConfig(Clocks, Config, Config);
-            }, jsFunctionName: "animateClockArmPendulum"),
-
-            _ => throw new ArgumentOutOfRangeException(nameof(animationManager.AnimationPatternType), animationManager.AnimationPatternType, null),
-        };
-    }
+    // Plays the continuous motion for the pattern that the Pattern phase just posed.
+    private IAnimationManager GetInfiniteAnimationManager() =>
+        (currentPattern ?? throw new InvalidOperationException("No pattern selected; the Pattern phase must run before the Infinite phase."))
+            .BuildInfinite(JSRuntime, Clocks);
 
     private IAnimationManager GetPatternAnimationManager()
     {
@@ -187,7 +61,9 @@ public class AnimationOrchestrator(IJSRuntime jSRuntime, Dictionary<int, Clock> 
                 Array values = Enum.GetValues(typeof(Direction));
                 SetRandomClockConfigs(Clocks, index => SetHourArmAnimationConfig(index, (Direction)(values.GetValue(random.Next(values.Length)) ?? Direction.Clockwise)),
                     index => SetHourArmAnimationConfig(index, (Direction)(values.GetValue(random.Next(values.Length)) ?? Direction.Anticlockwise)));
-                return SetRandomPattern(Clocks);
+
+                currentPattern = SelectNextPattern();
+                currentPattern.Pose(Clocks);
             });
     }
 
@@ -269,50 +145,16 @@ public class AnimationOrchestrator(IJSRuntime jSRuntime, Dictionary<int, Clock> 
         }
     }
 
-    private AnimationPatternType SetRandomPattern(Dictionary<int, Clock> clocks)
+    // Randomly pick a pattern, not repeating any until every registered pattern has been shown.
+    private IClockPattern SelectNextPattern()
     {
         if (remainingPatterns.Count == 0)
         {
-            remainingPatterns = Enum.GetValues(typeof(AnimationPatternType)).Cast<AnimationPatternType>().ToList();
+            remainingPatterns = PatternRegistry.All.ToList();
         }
 
-        AnimationPatternType randomAnimationPatternType = remainingPatterns[random.Next(remainingPatterns.Count)];
-        remainingPatterns.Remove(randomAnimationPatternType);
-
-        switch (randomAnimationPatternType)
-        {
-            case AnimationPatternType.Triangular:
-                AnimationPatterns.SetTriangularPattern(clocks);
-                break;
-            case AnimationPatternType.Flower:
-                AnimationPatterns.SetFlowerPattern(clocks);
-                break;
-            case AnimationPatternType.Line:
-                AnimationPatterns.SetLinePattern(clocks);
-                break;
-            case AnimationPatternType.Squares:
-                AnimationPatterns.SetSquaresPattern(clocks);
-                break;
-            case AnimationPatternType.Flow:
-                AnimationPatterns.SetFlowPattern(clocks);
-                break;
-            case AnimationPatternType.Diagonal:
-                AnimationPatterns.SetDiagonalPattern(clocks);
-                break;
-            case AnimationPatternType.Numbers:
-                var time = DateTime.Now;
-                var hoursFirstDigit = time.Hour / 10;
-                var hoursSecondDigit = time.Hour % 10;
-                var minuteFirstDigit = time.Minute / 10;
-                var minuteSecondDigit = time.Minute % 10;
-                AnimationPatterns.SetNumbersPattern(clocks, hoursFirstDigit, hoursSecondDigit, minuteFirstDigit, minuteSecondDigit, 90);
-                break;
-            case AnimationPatternType.Pendulum:
-                AnimationPatterns.SetPendulumPattern(clocks);
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(randomAnimationPatternType), randomAnimationPatternType, null);
-        }
-        return randomAnimationPatternType;
+        IClockPattern pattern = remainingPatterns[random.Next(remainingPatterns.Count)];
+        remainingPatterns.Remove(pattern);
+        return pattern;
     }
 }
