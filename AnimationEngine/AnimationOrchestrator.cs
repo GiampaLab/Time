@@ -146,6 +146,26 @@ public class AnimationOrchestrator(IJSRuntime jSRuntime, Dictionary<int, Clock> 
                 AnimationConfigs.SetDefaultConfig(Clocks, SetHourArmAnimationConfig, SetHourArmAnimationConfig);
             }),
 
+            AnimationPatternType.Pendulum => new InfiniteAnimationManager(JSRuntime, Clocks, () =>
+            {
+                Components.AnimationConfig Config(int index)
+                {
+                    // Clocks share a period/phase within a column (3 clocks each),
+                    // while successive columns swing slightly slower and later so the
+                    // wall of pendulums drifts in and out of sync (pendulum-wave).
+                    var col = index / 3;
+                    return new()
+                    {
+                        Direction = Direction.Clockwise,
+                        EasingFunction = "ease-in-out",
+                        Duration = 2600 + col * 120,
+                        Delay = col * 180
+                    };
+                }
+                Console.WriteLine("SetPendulumPattern");
+                AnimationConfigs.SetDefaultConfig(Clocks, Config, Config);
+            }, jsFunctionName: "animateClockArmPendulum"),
+
             _ => throw new ArgumentOutOfRangeException(nameof(animationManager.AnimationPatternType), animationManager.AnimationPatternType, null),
         };
     }
@@ -286,6 +306,9 @@ public class AnimationOrchestrator(IJSRuntime jSRuntime, Dictionary<int, Clock> 
                 var minuteFirstDigit = time.Minute / 10;
                 var minuteSecondDigit = time.Minute % 10;
                 AnimationPatterns.SetNumbersPattern(clocks, hoursFirstDigit, hoursSecondDigit, minuteFirstDigit, minuteSecondDigit, 90);
+                break;
+            case AnimationPatternType.Pendulum:
+                AnimationPatterns.SetPendulumPattern(clocks);
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(randomAnimationPatternType), randomAnimationPatternType, null);

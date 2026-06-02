@@ -3,9 +3,10 @@ using Time.AnimationConfig;
 using Time.Components;
 
 namespace Time.AnimationEngine;
-public class InfiniteAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clocks, Action SetInfiniteAnimationConfig) : IAnimationManager
+public class InfiniteAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> clocks, Action SetInfiniteAnimationConfig, string jsFunctionName = "animateClockArmInfinite") : IAnimationManager
 {
     private readonly IJSRuntime jSRuntime = jSRuntime;
+    private readonly string jsFunctionName = jsFunctionName;
     private readonly IList<Components.AnimationConfig> animationConfigs = clocks.Values.SelectMany(x =>
             new[] { x.FirstArm.Config, x.SecondArm.Config }).ToArray();
 
@@ -17,7 +18,7 @@ public class InfiniteAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Cloc
 
         var args = animationConfigs.Select(AnimationUtils.MapAnimationConfig);
 
-        await jSRuntime.InvokeVoidAsync("animationLoop.animateClockArmInfinite", null, args);
+        await jSRuntime.InvokeVoidAsync($"animationLoop.{jsFunctionName}", null, args);
     }
 
     [JSInvokable]

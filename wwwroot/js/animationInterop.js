@@ -40,6 +40,9 @@ var previousAnimationConfigs = [];
 var animations = [];
 var animationConfigs = [];
 
+// Half-angle (in degrees) a pendulum needle swings to either side of its resting angle.
+const PENDULUM_SWING = 55;
+
 window.animationLoop = {
   initShadows: function (animationConfigs) {
     this.animationConfigs = animationConfigs;
@@ -126,6 +129,45 @@ window.animationLoop = {
           });
         // We do not know the end state of the animation, so we set it to null
         // and we will calculate it when the animation is finished
+        previousAnimationConfigs[index].state = null;
+        previousAnimationConfigs[index].direction = item.direction;
+      }, item.delay);
+    });
+  },
+  animateClockArmPendulum: function (something, animationConfigs) {
+    animations = [];
+    if (previousAnimationConfigs.length == 0) {
+      previousAnimationConfigs = Array.from({ length: animationConfigs.length }, () => {
+        return createDefaultAnimationConfig();
+      });
+    }
+    animationConfigs.forEach(function (item, index) {
+      const center = item.state;
+      const to = center + PENDULUM_SWING;
+      const from = center - PENDULUM_SWING;
+      setTimeout(() => {
+        // Ease out from the resting angle to one extreme (half a swing) so the motion
+        // starts smoothly without snapping to a keyframe edge...
+        item.elementReference
+          .animate([{ transform: `rotate(${center}deg)` }, { transform: `rotate(${to}deg)` }], {
+            duration: item.duration * 0.5,
+            iterations: 1,
+            fill: "both",
+            easing: "ease-out",
+          })
+          .finished.then(() => {
+            // ...then swing forever between the two extremes, easing in and out at each
+            // end like a real pendulum/metronome.
+            item.elementReference.animate([{ transform: `rotate(${to}deg)` }, { transform: `rotate(${from}deg)` }], {
+              duration: item.duration,
+              iterations: Infinity,
+              direction: "alternate",
+              fill: "both",
+              easing: "ease-in-out",
+            });
+          });
+        // The swing never settles, so mark the end state unknown; the next finite
+        // animation will read the live angle to chain from it without jumping.
         previousAnimationConfigs[index].state = null;
         previousAnimationConfigs[index].direction = item.direction;
       }, item.delay);
