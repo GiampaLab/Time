@@ -160,37 +160,40 @@ public class AnimationPatterns
         }
     }
 
-    public static void SetFlowPattern(Dictionary<int, Clock> clocks)
+    // `rotation` turns every needle by the same offset (degrees), like SetNumbersPattern's
+    // rotation arg. The default 0 is the inward-converging Flow field; passing 180 flips it
+    // into an outward-pointing radial sunburst (reused as-is by the Starburst pattern's pose).
+    public static void SetFlowPattern(Dictionary<int, Clock> clocks, int rotation = 0)
     {
-        clocks[1].UpdateState(ArmState.Three, ArmState.Three, 10, 10);
-        clocks[4].UpdateState(ArmState.Three, ArmState.Three, 20, 20);
-        clocks[7].UpdateState(ArmState.Three, ArmState.Three, 30, 30);
-        clocks[10].UpdateState(ArmState.Three, ArmState.Three, 40, 40);
+        clocks[1].UpdateState(ArmState.Three, ArmState.Three, 10 + rotation, 10 + rotation);
+        clocks[4].UpdateState(ArmState.Three, ArmState.Three, 20 + rotation, 20 + rotation);
+        clocks[7].UpdateState(ArmState.Three, ArmState.Three, 30 + rotation, 30 + rotation);
+        clocks[10].UpdateState(ArmState.Three, ArmState.Three, 40 + rotation, 40 + rotation);
 
-        clocks[13].UpdateState(ArmState.Nine, ArmState.Nine, -40, -40);
-        clocks[16].UpdateState(ArmState.Nine, ArmState.Nine, -30, -30);
-        clocks[19].UpdateState(ArmState.Nine, ArmState.Nine, -20, -20);
-        clocks[22].UpdateState(ArmState.Nine, ArmState.Nine, -10, -10);
+        clocks[13].UpdateState(ArmState.Nine, ArmState.Nine, -40 + rotation, -40 + rotation);
+        clocks[16].UpdateState(ArmState.Nine, ArmState.Nine, -30 + rotation, -30 + rotation);
+        clocks[19].UpdateState(ArmState.Nine, ArmState.Nine, -20 + rotation, -20 + rotation);
+        clocks[22].UpdateState(ArmState.Nine, ArmState.Nine, -10 + rotation, -10 + rotation);
 
-        clocks[2].UpdateState(ArmState.Three, ArmState.Three);
-        clocks[5].UpdateState(ArmState.Three, ArmState.Three);
-        clocks[8].UpdateState(ArmState.Three, ArmState.Three);
-        clocks[11].UpdateState(ArmState.Three, ArmState.Three);
+        clocks[2].UpdateState(ArmState.Three, ArmState.Three, rotation, rotation);
+        clocks[5].UpdateState(ArmState.Three, ArmState.Three, rotation, rotation);
+        clocks[8].UpdateState(ArmState.Three, ArmState.Three, rotation, rotation);
+        clocks[11].UpdateState(ArmState.Three, ArmState.Three, rotation, rotation);
 
-        clocks[14].UpdateState(ArmState.Nine, ArmState.Nine);
-        clocks[17].UpdateState(ArmState.Nine, ArmState.Nine);
-        clocks[20].UpdateState(ArmState.Nine, ArmState.Nine);
-        clocks[23].UpdateState(ArmState.Nine, ArmState.Nine);
+        clocks[14].UpdateState(ArmState.Nine, ArmState.Nine, rotation, rotation);
+        clocks[17].UpdateState(ArmState.Nine, ArmState.Nine, rotation, rotation);
+        clocks[20].UpdateState(ArmState.Nine, ArmState.Nine, rotation, rotation);
+        clocks[23].UpdateState(ArmState.Nine, ArmState.Nine, rotation, rotation);
 
-        clocks[3].UpdateState(ArmState.Three, ArmState.Three, -10, -10);
-        clocks[6].UpdateState(ArmState.Three, ArmState.Three, -20, -20);
-        clocks[9].UpdateState(ArmState.Three, ArmState.Three, -30, -30);
-        clocks[12].UpdateState(ArmState.Three, ArmState.Three, -40, -40);
+        clocks[3].UpdateState(ArmState.Three, ArmState.Three, -10 + rotation, -10 + rotation);
+        clocks[6].UpdateState(ArmState.Three, ArmState.Three, -20 + rotation, -20 + rotation);
+        clocks[9].UpdateState(ArmState.Three, ArmState.Three, -30 + rotation, -30 + rotation);
+        clocks[12].UpdateState(ArmState.Three, ArmState.Three, -40 + rotation, -40 + rotation);
 
-        clocks[15].UpdateState(ArmState.Nine, ArmState.Nine, 40, 40);
-        clocks[18].UpdateState(ArmState.Nine, ArmState.Nine, 30, 30);
-        clocks[21].UpdateState(ArmState.Nine, ArmState.Nine, 20, 20);
-        clocks[24].UpdateState(ArmState.Nine, ArmState.Nine, 10, 10);
+        clocks[15].UpdateState(ArmState.Nine, ArmState.Nine, 40 + rotation, 40 + rotation);
+        clocks[18].UpdateState(ArmState.Nine, ArmState.Nine, 30 + rotation, 30 + rotation);
+        clocks[21].UpdateState(ArmState.Nine, ArmState.Nine, 20 + rotation, 20 + rotation);
+        clocks[24].UpdateState(ArmState.Nine, ArmState.Nine, 10 + rotation, 10 + rotation);
     }
 
     public static void SetFlowerPattern(Dictionary<int, Clock> clocks)
