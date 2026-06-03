@@ -9,7 +9,7 @@ namespace Time.AnimationEngine.Patterns;
 /// metronomes. Every column shares the same swing period, so the only difference between
 /// columns is a constant start delay — this yields a coherent travelling wave that keeps
 /// its phase relationship indefinitely (it never drifts out of sync).
-/// The swing motion uses the bespoke "animateClockArmPendulum" JS primitive.
+/// The swing motion uses the shared "animateClockArmSwing" JS primitive with a 55° amplitude.
 /// </summary>
 public sealed class PendulumPattern : IClockPattern
 {
@@ -32,10 +32,11 @@ public sealed class PendulumPattern : IClockPattern
                     Direction = Direction.Clockwise,
                     EasingFunction = "ease-in-out",
                     Duration = 2600,
-                    Delay = col * 260
+                    Delay = col * 260,
+                    Amplitude = 55
                 };
             }
 
             AnimationConfigs.SetDefaultConfig(clocks, Config, Config);
-        }, jsFunctionName: "animateClockArmPendulum");
+        }, jsFunctionName: "animateClockArmSwing");
 }

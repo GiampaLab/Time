@@ -40,9 +40,6 @@ var previousAnimationConfigs = [];
 var animations = [];
 var animationConfigs = [];
 
-// Half-angle (in degrees) a pendulum needle swings to either side of its resting angle.
-const PENDULUM_SWING = 55;
-
 window.animationLoop = {
   initShadows: function (animationConfigs) {
     this.animationConfigs = animationConfigs;
@@ -134,7 +131,12 @@ window.animationLoop = {
       }, item.delay);
     });
   },
-  animateClockArmPendulum: function (something, animationConfigs) {
+  // Shared "swing" primitive used by any pattern whose needles sway around a resting angle
+  // (Pendulum, Wave, ...). Each needle eases out of its posed angle, then sways forever
+  // between ±item.amplitude around it, easing in/out at each end like a pendulum or a stalk
+  // in the wind. Amplitude is per-config so callers pick their own feel; the per-arm
+  // item.delay staggers the launches so a shared period resolves into a travelling wave.
+  animateClockArmSwing: function (something, animationConfigs) {
     animations = [];
     if (previousAnimationConfigs.length == 0) {
       previousAnimationConfigs = Array.from({ length: animationConfigs.length }, () => {
@@ -143,11 +145,11 @@ window.animationLoop = {
     }
     animationConfigs.forEach(function (item, index) {
       const center = item.state;
-      const to = center + PENDULUM_SWING;
-      const from = center - PENDULUM_SWING;
+      const to = center + item.amplitude;
+      const from = center - item.amplitude;
       setTimeout(() => {
         // Ease out from the resting angle to one extreme (half a swing) so the motion
-        // starts smoothly without snapping to a keyframe edge...
+        // starts smoothly from exactly where it was posed — no snap to a keyframe edge...
         item.elementReference
           .animate([{ transform: `rotate(${center}deg)` }, { transform: `rotate(${to}deg)` }], {
             duration: item.duration * 0.5,
@@ -157,7 +159,7 @@ window.animationLoop = {
           })
           .finished.then(() => {
             // ...then swing forever between the two extremes, easing in and out at each
-            // end like a real pendulum/metronome.
+            // end like a real pendulum / a stalk swaying in the wind.
             item.elementReference.animate([{ transform: `rotate(${to}deg)` }, { transform: `rotate(${from}deg)` }], {
               duration: item.duration,
               iterations: Infinity,

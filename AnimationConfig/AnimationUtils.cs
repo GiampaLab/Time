@@ -11,7 +11,8 @@ public class AnimationUtils
             easing = config.EasingFunction,
             direction = Enum.GetName(typeof(Direction), config.Direction),
             duration = config.Duration,
-            delay = config.Delay
+            delay = config.Delay,
+            amplitude = config.Amplitude
         };
     }
     public static int ArmStateToDegree(ArmState state)

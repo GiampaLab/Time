@@ -30,10 +30,12 @@ public class Clock
         FirstArm.Config.EasingFunction = firstArmConfig.EasingFunction;
         FirstArm.Config.Duration = firstArmConfig.Duration;
         FirstArm.Config.Delay = firstArmConfig.Delay;
+        FirstArm.Config.Amplitude = firstArmConfig.Amplitude;
         SecondArm.Config.Direction = secondArmConfig.Direction;
         SecondArm.Config.EasingFunction = secondArmConfig.EasingFunction;
         SecondArm.Config.Duration = secondArmConfig.Duration;
         SecondArm.Config.Delay = secondArmConfig.Delay;
+        SecondArm.Config.Amplitude = secondArmConfig.Amplitude;
     }
 
     public void UpdateState(ArmState firstArmState, ArmState secondArmState, int firstArmStateDeltaDegrees = 0, int secondArmStateDeltaDegrees = 0)
@@ -63,6 +65,13 @@ public class AnimationConfig
     public ElementReference ElementReference { get; internal set; }
     public int Duration { get; set; }
     public int Delay { get; set; }
+
+    /// <summary>
+    /// Half-angle (degrees) a swing/pendulum needle sweeps to either side of its resting
+    /// angle. Only consumed by the "animateClockArmSwing" JS primitive; ignored by spin
+    /// primitives. Lets swing-based patterns choose their own feel (e.g. Pendulum 55, Wave 45).
+    /// </summary>
+    public int Amplitude { get; set; }
 }
 
 public enum Direction
