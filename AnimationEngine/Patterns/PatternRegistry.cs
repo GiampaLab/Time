@@ -21,5 +21,6 @@ public static class PatternRegistry
         new TriangularPattern(),
         new PendulumPattern(),
         new WavePattern(),
+        new StarburstPattern(),
     };
 }

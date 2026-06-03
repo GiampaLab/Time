@@ -175,6 +175,41 @@ window.animationLoop = {
       }, item.delay);
     });
   },
+  // Bounded "breathe" primitive (Starburst): a needle oscillates ONE-sided between its posed
+  // resting angle and `center + item.amplitude`, forever. Unlike the swing (which sweeps
+  // symmetrically about center), the resting angle is an ENDPOINT of the oscillation, so an
+  // `alternate` animation already starts exactly at `center` — no intro half-swing and no
+  // snap. Two arms with opposite-sign amplitudes (+A / -A) bloom open into a V and close back
+  // to the overlapped ray, making each clock breathe. The per-arm item.delay can stagger the
+  // launches (0 = the whole field breathes in unison; >0 = a center-out ripple).
+  animateClockArmBreathe: function (something, animationConfigs) {
+    animations = [];
+    if (previousAnimationConfigs.length == 0) {
+      previousAnimationConfigs = Array.from({ length: animationConfigs.length }, () => {
+        return createDefaultAnimationConfig();
+      });
+    }
+    animationConfigs.forEach(function (item, index) {
+      const center = item.state;
+      const to = center + item.amplitude;
+      setTimeout(() => {
+        item.elementReference.animate(
+          [{ transform: `rotate(${center}deg)` }, { transform: `rotate(${to}deg)` }],
+          {
+            duration: item.duration,
+            iterations: Infinity,
+            direction: "alternate",
+            fill: "both",
+            easing: "ease-in-out",
+          }
+        );
+        // The breath never settles, so mark the end state unknown; the next finite
+        // animation will read the live angle to chain from it without jumping.
+        previousAnimationConfigs[index].state = null;
+        previousAnimationConfigs[index].direction = item.direction;
+      }, item.delay);
+    });
+  },
 };
 
 window.animationInterop = {
