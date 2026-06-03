@@ -26,7 +26,7 @@ public sealed class StarburstPattern : IClockPattern
 
     // Phase stagger across the grid: 0 = the whole sunburst breathes in unison; raise it (e.g.
     // 250) to make the breath a center-out ripple radiating outward. One-number feel switch.
-    private const int RippleDelayPerUnit = 0;
+    private const int RippleDelayPerUnit = 400;
 
     // Grid centre, in (column, row) space, for the ripple's distance-from-centre stagger.
     private const double CentreColumn = 3.5;
