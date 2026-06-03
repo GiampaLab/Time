@@ -141,6 +141,17 @@ public class AnimationPatterns
         }
     }
 
+    public static void SetWavePattern(Dictionary<int, Clock> clocks)
+    {
+        // Both arms point straight up (0°) and overlap, so each clock reads as a single
+        // upright needle: a field of stalks standing ready to sway. The wave motion then
+        // sweeps every needle from side to side around this resting angle.
+        for (var i = 0; i < 24; i++)
+        {
+            clocks[i + 1].UpdateState(ArmState.Zero, ArmState.Zero);
+        }
+    }
+
     public static void SetDiagonalPattern(Dictionary<int, Clock> clocks)
     {
         for (var i = 0; i < 24; i++)

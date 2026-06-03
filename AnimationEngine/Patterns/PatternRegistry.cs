@@ -20,5 +20,6 @@ public static class PatternRegistry
         new NumbersPattern(),
         new TriangularPattern(),
         new PendulumPattern(),
+        new WavePattern(),
     };
 }
