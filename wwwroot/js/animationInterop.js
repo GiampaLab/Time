@@ -82,6 +82,10 @@ window.animationLoop = {
           fill: "both",
           easing: item.easing,
         });
+        // The new animation (fill:both) now holds the arm, so release the stale
+        // ones it overrides. The live angle was already read above, so the handoff
+        // is unaffected.
+        sweepStaleAnimations(item.elementReference, animation);
         animations.push(animation.finished);
         animation.finished.then(() => {
           previousAnimationConfigs[index] = item;
@@ -109,20 +113,33 @@ window.animationLoop = {
       let targetAngle = item.direction === "Clockwise" ? 360 : -360;
       // Pause using setTimeout
       setTimeout(() => {
-        item.elementReference
-          .animate([{ transform: `rotate(${item.state}deg)` }, { transform: `rotate(${item.state + targetAngle}deg)` }], {
+        const windup = item.elementReference.animate(
+          [{ transform: `rotate(${item.state}deg)` }, { transform: `rotate(${item.state + targetAngle}deg)` }],
+          {
             duration: item.duration * 1.6,
             iterations: 1,
             fill: "both",
             easing: item.easing,
+          }
+        );
+        // Wind-up holds the arm now: release the previous phase's stale/infinite animations.
+        sweepStaleAnimations(item.elementReference, windup);
+        windup.finished
+          .then(() => {
+            const spin = item.elementReference.animate(
+              [{ transform: `rotate(${item.state}deg)` }, { transform: `rotate(${item.state + targetAngle}deg)` }],
+              {
+                duration: item.duration,
+                iterations: Infinity,
+                fill: "both",
+                easing: "linear",
+              }
+            );
+            // Infinite spin takes over: retire the now-finished wind-up.
+            sweepStaleAnimations(item.elementReference, spin);
           })
-          .finished.then(() => {
-            item.elementReference.animate([{ transform: `rotate(${item.state}deg)` }, { transform: `rotate(${item.state + targetAngle}deg)` }], {
-              duration: item.duration,
-              iterations: Infinity,
-              fill: "both",
-              easing: "linear",
-            });
+          .catch(() => {
+            /* wind-up was cancelled before completing; nothing to hand off */
           });
         // We do not know the end state of the animation, so we set it to null
         // and we will calculate it when the animation is finished
@@ -150,23 +167,36 @@ window.animationLoop = {
       setTimeout(() => {
         // Ease out from the resting angle to one extreme (half a swing) so the motion
         // starts smoothly from exactly where it was posed — no snap to a keyframe edge...
-        item.elementReference
-          .animate([{ transform: `rotate(${center}deg)` }, { transform: `rotate(${to}deg)` }], {
+        const windup = item.elementReference.animate(
+          [{ transform: `rotate(${center}deg)` }, { transform: `rotate(${to}deg)` }],
+          {
             duration: item.duration * 0.5,
             iterations: 1,
             fill: "both",
             easing: "ease-out",
-          })
-          .finished.then(() => {
+          }
+        );
+        // Wind-up holds the arm now: release the previous phase's stale/infinite animations.
+        sweepStaleAnimations(item.elementReference, windup);
+        windup.finished
+          .then(() => {
             // ...then swing forever between the two extremes, easing in and out at each
             // end like a real pendulum / a stalk swaying in the wind.
-            item.elementReference.animate([{ transform: `rotate(${to}deg)` }, { transform: `rotate(${from}deg)` }], {
-              duration: item.duration,
-              iterations: Infinity,
-              direction: "alternate",
-              fill: "both",
-              easing: "ease-in-out",
-            });
+            const swing = item.elementReference.animate(
+              [{ transform: `rotate(${to}deg)` }, { transform: `rotate(${from}deg)` }],
+              {
+                duration: item.duration,
+                iterations: Infinity,
+                direction: "alternate",
+                fill: "both",
+                easing: "ease-in-out",
+              }
+            );
+            // Swing takes over: retire the now-finished wind-up.
+            sweepStaleAnimations(item.elementReference, swing);
+          })
+          .catch(() => {
+            /* wind-up was cancelled before completing; nothing to hand off */
           });
         // The swing never settles, so mark the end state unknown; the next finite
         // animation will read the live angle to chain from it without jumping.
@@ -193,7 +223,7 @@ window.animationLoop = {
       const center = item.state;
       const to = center + item.amplitude;
       setTimeout(() => {
-        item.elementReference.animate(
+        const breath = item.elementReference.animate(
           [{ transform: `rotate(${center}deg)` }, { transform: `rotate(${to}deg)` }],
           {
             duration: item.duration,
@@ -203,6 +233,8 @@ window.animationLoop = {
             easing: "ease-in-out",
           }
         );
+        // The breath takes over the arm: release the previous phase's stale/infinite animations.
+        sweepStaleAnimations(item.elementReference, breath);
         // The breath never settles, so mark the end state unknown; the next finite
         // animation will read the live angle to chain from it without jumping.
         previousAnimationConfigs[index].state = null;
@@ -232,6 +264,31 @@ window.animationInterop = {
 // Reusable function to create a default animation configuration
 function createDefaultAnimationConfig() {
   return { state: 0, elementReference: null, direction: "Clockwise", duration: 0, delay: 0, easing: "linear" };
+}
+
+// Release an arm's stale animations once a new one has taken over. We only cancel
+// animations that are already invisible and safe to drop:
+//   - finished (filling) ones — overridden by the new keeper; their `finished`
+//     promise has already resolved, so cancelling rejects nothing that's awaited.
+//   - infinite ones (iterations === Infinity) — the previous phase's spin/swing,
+//     overridden in composite order; their `finished` promise is never observed.
+// A still-running finite animation (a wind-up or an in-progress pose) is left
+// alone, so we never reject a promise that drives AnimationFinished or the
+// wind-up -> infinite handoff; it finishes on its own and is reclaimed next sweep.
+// `keep` is the just-created animation that now holds the arm and must survive.
+function sweepStaleAnimations(element, keep) {
+  for (const anim of element.getAnimations()) {
+    if (anim === keep) continue;
+    const timing = anim.effect && anim.effect.getTiming ? anim.effect.getTiming() : null;
+    const isInfinite = timing && timing.iterations === Infinity;
+    if (anim.playState === "finished" || isInfinite) {
+      try {
+        anim.cancel();
+      } catch (e) {
+        /* already detached from the element */
+      }
+    }
+  }
 }
 
 function generateKeyframesWithClockDirection(currentAngle, targetAngle, direction, numKeyframes) {
