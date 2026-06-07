@@ -18,14 +18,19 @@
 
 ```
 Time/
-├── AnimationConfig/         # Animation configuration and utilities
-├── AnimationEngine/         # Animation engine, orchestrators, managers
+├── AnimationConfig/         # Animation configuration and distribution helpers
+├── AnimationEngine/         # Animation engine: orchestrator, managers, patterns
 ├── Components/              # Clock and related C# components
 ├── Pages/
 │   └── AnalogClock.razor    # Main page rendering the animated clocks
 ├── wwwroot/
 │   ├── css/                 # App styles
-│   └── js/animationInterop.js # JS interop for animation
+│   └── js/animationInterop.js  # JS interop driving the WAAPI animations
+├── android/                 # Android screen saver (DreamService + WebView)
+├── windows/screensaver/     # Windows screen saver (.scr: WinForms + WebView2)
+├── backlog/                 # Planned engineering work (e.g. animation improvements)
+├── build-android-assets.{sh,ps1}  # Publish Blazor + sync into the Android assets
+├── build-windows.{sh,ps1}         # Publish Blazor + build the Windows .scr
 ├── Program.cs               # App entry point
 ├── Time.csproj              # Project file
 ├── NuGet.config             # NuGet sources (includes .NET 9 preview feed)
@@ -39,6 +44,7 @@ Time/
 - Fullscreen mode prompt for immersive experience
 - Modular animation engine (easy to extend with new patterns)
 - C# and JavaScript interop for high-performance rendering
+- Ships as both an Android (DreamService) and a Windows (`.scr`) screen saver
 
 ## Getting Started
 
@@ -99,9 +105,24 @@ $env:Path += ";C:\android-sdk\cmdline-tools\latest\bin;C:\android-sdk\platform-t
 sdkmanager "platforms;android-34" "build-tools;34.0.0" "platform-tools"; sdkmanager --licenses
 ```
 
+### Connect your device
+
+Installing the APK needs a connected device, so set this up first. Enable **USB debugging** on the device (Developer options) and connect it over USB — `adb devices` should then list it.
+
+**On WSL2** there's no direct USB access, so first forward the device from the Windows host with [`usbipd-win`](https://github.com/dorssel/usbipd-win). In **Windows PowerShell (Administrator)**:
+
+```powershell
+winget install usbipd
+usbipd list                          # find your device's BUSID (e.g. 2-4)
+usbipd bind --busid <BUSID>          # one-time
+usbipd attach --wsl --busid <BUSID>  # repeat after each reconnect
+```
+
+`adb devices` inside WSL2 should now list the device. (Alternatively, build the APK in WSL2 and run only `adb install` from native Windows PowerShell, where `adb` is already on the PATH.)
+
 ### Build & install
 
-The same three steps publish the app, build the APK, and deploy it to a connected device (USB debugging enabled).
+The same three steps publish the app, build the APK, and deploy it to the connected device.
 
 **Linux / macOS / WSL2:**
 ```sh
@@ -139,19 +160,6 @@ adb shell cmd dreams start-dreaming
 
 > The screen saver only auto-activates while charging or docked (an Android OS limitation). To trigger it on idle, use an automation app such as Tasker.
 
-### Connecting a device from WSL2
-
-WSL2 has no direct USB access, so `adb` can't see a USB-connected device until you forward it from the Windows host with [`usbipd-win`](https://github.com/dorssel/usbipd-win). In **Windows PowerShell (Administrator)**:
-
-```powershell
-winget install usbipd
-usbipd list                          # find your device's BUSID (e.g. 2-4)
-usbipd bind --busid <BUSID>          # one-time
-usbipd attach --wsl --busid <BUSID>  # repeat after each reconnect
-```
-
-Then, inside WSL2, `adb devices` should list the device and you can build and install as above. (Alternatively, build the APK in WSL2 and run only `adb install` from native Windows PowerShell, where `adb` is already on the PATH.)
-
 ### Project Structure (Android)
 
 ```
@@ -164,6 +172,33 @@ android/
 └── build.gradle.kts
 build-android-assets.sh                       # Publish + sync script
 ```
+
+## Windows Screen Saver
+
+The project also ships a native Windows screen saver (`windows/screensaver/`): a Windows Forms host that renders the Blazor app in an embedded [WebView2](https://developer.microsoft.com/microsoft-edge/webview2/) control and packages it as a standard `.scr`.
+
+### Prerequisites
+
+- [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0) on **Windows** — the screen saver targets `net9.0-windows` (Windows Forms), so the executable must be compiled on Windows.
+- [WebView2 runtime](https://developer.microsoft.com/microsoft-edge/webview2/) — preinstalled on Windows 11 and recent Windows 10.
+
+### Build
+
+From a **Windows PowerShell** terminal at the repo root:
+
+```powershell
+.\build-windows.ps1
+```
+
+This publishes the Blazor app, builds a self-contained single-file `win-x64` executable, copies the web assets, and produces `windows/build/Time.scr` alongside its `wwwroot/` folder.
+
+> On Linux/macOS/WSL2 you can run `./build-windows.sh` to publish just the Blazor assets, but the `.scr` itself must still be compiled on Windows with `.\build-windows.ps1`.
+
+### Install
+
+Right-click `windows/build/Time.scr` → **Install** (this opens Screen Saver settings with *Time* selected), or copy `Time.scr` together with its `wwwroot/` folder into `C:\Windows\System32`.
+
+Then choose **Time** under **Settings → Personalization → Lock screen → Screen saver**. The saver handles the standard screen-saver arguments: `/s` (run full-screen), `/p <hwnd>` (settings-dialog preview), and `/c` (configure — it has no options).
 
 ## Extending the Project
 
