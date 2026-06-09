@@ -175,25 +175,28 @@ code {
  * `.theme-glass`, so the default white-hand look is left untouched.    *
  * ------------------------------------------------------------------ */
 
-/* The glass body itself: static frosted sheen + tint + edges. Everything here
-   is painted ONCE (no animated properties), so as the hand rotates the browser
-   just re-composites this cached layer instead of repainting it. The moving
-   light lives entirely in the ::before pseudo below, clipped to this shape via
-   `overflow: hidden`. (The hands and `.ctr` are already `position: absolute`
-   from the base rules, so they anchor the pseudo without needing a position
-   override here — adding one would break their layout.) */
+/* The glass body itself: static frosted sheen + tint + soft inset depth.
+   Everything here is painted ONCE (no animated properties), so as the hand
+   rotates the browser just re-composites this cached layer instead of repainting
+   it. The moving light lives entirely in the ::before pseudo below, clipped to
+   this shape via `overflow: hidden`. (The hands and `.ctr` are already
+   `position: absolute` from the base rules, so they anchor the pseudo without
+   needing a position override here — adding one would break their layout.)
+
+   No hard border or outer glow: with translucent hands those read as a crisp
+   outline, and the pivot dot can only merge seamlessly into the hands if the
+   hands share its borderless edge. Only the soft inset highlight/shade remains,
+   for frosted depth — identical on hands and dot, so the joint is invisible. */
 .theme-glass .clock .hour div,
 .theme-glass .clock .minute div,
 .theme-glass .clock .ctr {
   background-color: rgba(180, 220, 255, 0.06);
   background-image:
     linear-gradient(135deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.02) 45%, rgba(255, 255, 255, 0.14));
-  border: 1px solid rgba(255, 255, 255, 0.28);
   box-shadow:
     inset 0 1px 1px rgba(255, 255, 255, 0.6),
     inset 0 -2px 4px rgba(0, 0, 0, 0.35),
-    inset 0 0 12px rgba(150, 220, 255, 0.25),
-    0 0 14px rgba(160, 220, 255, 0.3);
+    inset 0 0 12px rgba(150, 220, 255, 0.25);
   overflow: hidden;
 }
 
@@ -201,17 +204,6 @@ code {
 .theme-glass .clock .hour div,
 .theme-glass .clock .minute div {
   border-radius: 4cqmin;
-}
-
-/* The centre dot only exists to bridge the two hands at the pivot. Now that the
-   hands are translucent glass, its ring (border) and outer glow read as a
-   separate outlined dot poking out between the hands. Drop both so it becomes a
-   borderless glass fill that just merges the joint — it keeps the matching
-   caustic ::before, so it still shimmers like the hands. Purely static, so no
-   cost to fluidity. */
-.theme-glass .clock .ctr {
-  border-color: transparent;
-  box-shadow: none;
 }
 
 /* The drifting caustics: four soft light blobs painted ONCE into an oversized
