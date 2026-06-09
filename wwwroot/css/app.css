@@ -183,8 +183,12 @@ code {
    `position: absolute` from the base rules, so they anchor the pseudo without
    needing a position override here — adding one would break their layout.)
 
-   No hard border or outer glow: with translucent hands those read as a crisp
-   outline. Only the soft inset highlight/shade remains, for frosted depth.
+   The body is an OPAQUE frosted glass (solid dark base, lit from within by the
+   caustics + sheen + inset highlight) rather than see-through to black. That is
+   what kills the overlap artefact: where the two hands cross at the hub, the top
+   one simply occludes the one below instead of two translucent layers stacking
+   into a brighter patch. A soft outer glow (last shadow) gives the edge presence
+   the translucency used to, without a hard outline.
 
    The pivot needs no separate dot: each hand is extended by one cap-radius so
    its rounded end's *circle* is centred on the rotation point (see the height
@@ -193,13 +197,14 @@ code {
    self-formed hub replaces the dot and never opens a wedge gap. */
 .theme-glass .clock .hour div,
 .theme-glass .clock .minute div {
-  background-color: rgba(180, 220, 255, 0.06);
+  background-color: rgb(16, 28, 47);
   background-image:
     linear-gradient(135deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.02) 45%, rgba(255, 255, 255, 0.14));
   box-shadow:
     inset 0 1px 1px rgba(255, 255, 255, 0.6),
     inset 0 -2px 4px rgba(0, 0, 0, 0.35),
-    inset 0 0 12px rgba(150, 220, 255, 0.25);
+    inset 0 0 12px rgba(150, 220, 255, 0.25),
+    0 0 12px rgba(150, 205, 255, 0.22);
   overflow: hidden;
 }
 
@@ -237,6 +242,12 @@ code {
   will-change: transform;
   transform: translate3d(0, 0, 0);
   animation: causticsDrift 9s ease-in-out infinite alternate;
+  /* Desync each clock by its grid position (col + row, set on .clock as
+     --caustic-phase) so the shimmer rolls top-left -> bottom-right. The delay is
+     negative, so every clock starts already mid-cycle: a continuous wave with no
+     staged startup. Pure phase offset — still one compositor animation, so no
+     cost to performance or fluidity. */
+  animation-delay: calc(var(--caustic-phase, 0) * -0.55s);
 }
 
 /* Slosh the light layer with transform only (translate3d + a hint of rotate),
