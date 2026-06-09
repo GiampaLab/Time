@@ -162,6 +162,92 @@ code {
   box-shadow: 0px 0px 8px rgba(255, 255, 255, 0.3);
 }
 
+/* ------------------------------------------------------------------ *
+ * Glass theme (iOS glassmorphism)                                     *
+ * Enabled by toggling `.theme-glass` on `.clocks-wrapper`. The hands  *
+ * and the centre dot turn into frosted glass pills lit from within by *
+ * drifting "light-on-water" caustics. Each hand carries its own       *
+ * caustics as its background, so the light is visible ONLY through the *
+ * glass — everything around it stays the existing pure black, which is *
+ * what gives the high-contrast, hidden-light effect. The caustics      *
+ * animate independently of the hand rotation, so light keeps rippling  *
+ * even while a hand is held still. All rules are scoped under          *
+ * `.theme-glass`, so the default white-hand look is left untouched.    *
+ * ------------------------------------------------------------------ */
+
+/* Procedural caustics: four soft light blobs over a faint glass tint,
+   plus a static diagonal sheen (the last layer) for the frosted look. */
+.theme-glass .clock .hour div,
+.theme-glass .clock .minute div,
+.theme-glass .clock .ctr {
+  background-color: rgba(180, 220, 255, 0.06);
+  background-image:
+    radial-gradient(ellipse 60% 40% at 30% 25%, rgba(195, 235, 255, 0.95), transparent 60%),
+    radial-gradient(ellipse 50% 35% at 70% 65%, rgba(255, 255, 255, 0.85), transparent 55%),
+    radial-gradient(ellipse 45% 32% at 50% 85%, rgba(120, 200, 255, 0.75), transparent 60%),
+    radial-gradient(ellipse 70% 50% at 80% 30%, rgba(205, 245, 255, 0.6), transparent 65%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.02) 45%, rgba(255, 255, 255, 0.14));
+  background-size: 220% 220%, 190% 190%, 240% 240%, 170% 170%, 100% 100%;
+  background-repeat: no-repeat;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.6),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.35),
+    inset 0 0 12px rgba(150, 220, 255, 0.25),
+    0 0 14px rgba(160, 220, 255, 0.3);
+  animation: causticsDrift 9s ease-in-out infinite alternate;
+}
+
+/* Rounded pill ends for the hands (half their 8cqmin width). */
+.theme-glass .clock .hour div,
+.theme-glass .clock .minute div {
+  border-radius: 4cqmin;
+}
+
+/* Drift the four caustic layers along different paths while keeping the
+   diagonal sheen (5th value) fixed, so the glass surface stays put while
+   the light underneath it moves. */
+@keyframes causticsDrift {
+  0% {
+    background-position: 0% 0%, 100% 0%, 0% 100%, 100% 100%, 0% 0%;
+  }
+  50% {
+    background-position: 50% 100%, 30% 55%, 85% 20%, 15% 45%, 0% 0%;
+  }
+  100% {
+    background-position: 100% 55%, 0% 100%, 40% 0%, 75% 80%, 0% 0%;
+  }
+}
+
+/* Unobtrusive corner control to switch the glass theme on/off (also bound
+   to the "g" key). Sits faint until hovered so it stays out of the way. */
+.theme-toggle {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  z-index: 1100;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.22;
+  transition: opacity 0.3s, background 0.3s;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+.theme-toggle:hover,
+.theme-toggle:focus-visible {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.16);
+  outline: none;
+}
+
 .fullscreen-overlay {
     position: fixed;
     top: 0;

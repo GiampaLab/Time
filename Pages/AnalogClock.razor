@@ -15,7 +15,9 @@
     </div>
 </div>
 
-<div class="clocks-wrapper">
+<button class="theme-toggle" title="Toggle glass theme (g)" @onclick="ToggleGlass">&#9672;</button>
+
+<div class="clocks-wrapper @(glassTheme ? "theme-glass" : "")">
     @for (int j = 0; j < 8; j++)
     {
         <div class="clock-container">
@@ -54,17 +56,50 @@
         set { minuteReferences.Add(value); }
     }
     private bool showFullscreenPrompt = false;
-    protected override void OnAfterRender(bool firstRender)
+    private bool glassTheme = false;
+    private DotNetObjectReference<AnalogClock>? selfReference;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
             controller = new Controller(JSRuntime, clockReferences, hourReferences, minuteReferences);
             controller.SetClock();
+
+            // Restore the saved theme preference, then let the user toggle it with the "g" key.
+            var pref = await JSRuntime.InvokeAsync<string?>("animationInterop.getThemePref");
+            if (pref == "glass")
+            {
+                glassTheme = true;
+                StateHasChanged();
+            }
+            selfReference = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("animationInterop.registerThemeKeyToggle", selfReference);
         }
     }
+
+    private async Task ToggleGlass()
+    {
+        glassTheme = !glassTheme;
+        await PersistTheme();
+    }
+
+    [JSInvokable]
+    public async Task ToggleGlassFromJs()
+    {
+        glassTheme = !glassTheme;
+        await PersistTheme();
+        StateHasChanged();
+    }
+
+    private async Task PersistTheme()
+    {
+        await JSRuntime.InvokeVoidAsync("animationInterop.setThemePref", glassTheme ? "glass" : "classic");
+    }
+
     public void Dispose()
     {
         controller?.Dispose();
+        selfReference?.Dispose();
     }
     public class Controller : IDisposable
     {
