@@ -175,27 +175,26 @@ code {
  * `.theme-glass`, so the default white-hand look is left untouched.    *
  * ------------------------------------------------------------------ */
 
-/* Procedural caustics: four soft light blobs over a faint glass tint,
-   plus a static diagonal sheen (the last layer) for the frosted look. */
+/* The glass body itself: static frosted sheen + tint + edges. Everything here
+   is painted ONCE (no animated properties), so as the hand rotates the browser
+   just re-composites this cached layer instead of repainting it. The moving
+   light lives entirely in the ::before pseudo below, clipped to this shape via
+   `overflow: hidden`. (The hands and `.ctr` are already `position: absolute`
+   from the base rules, so they anchor the pseudo without needing a position
+   override here — adding one would break their layout.) */
 .theme-glass .clock .hour div,
 .theme-glass .clock .minute div,
 .theme-glass .clock .ctr {
   background-color: rgba(180, 220, 255, 0.06);
   background-image:
-    radial-gradient(ellipse 60% 40% at 30% 25%, rgba(195, 235, 255, 0.95), transparent 60%),
-    radial-gradient(ellipse 50% 35% at 70% 65%, rgba(255, 255, 255, 0.85), transparent 55%),
-    radial-gradient(ellipse 45% 32% at 50% 85%, rgba(120, 200, 255, 0.75), transparent 60%),
-    radial-gradient(ellipse 70% 50% at 80% 30%, rgba(205, 245, 255, 0.6), transparent 65%),
     linear-gradient(135deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.02) 45%, rgba(255, 255, 255, 0.14));
-  background-size: 220% 220%, 190% 190%, 240% 240%, 170% 170%, 100% 100%;
-  background-repeat: no-repeat;
   border: 1px solid rgba(255, 255, 255, 0.28);
   box-shadow:
     inset 0 1px 1px rgba(255, 255, 255, 0.6),
     inset 0 -2px 4px rgba(0, 0, 0, 0.35),
     inset 0 0 12px rgba(150, 220, 255, 0.25),
     0 0 14px rgba(160, 220, 255, 0.3);
-  animation: causticsDrift 9s ease-in-out infinite alternate;
+  overflow: hidden;
 }
 
 /* Rounded pill ends for the hands (half their 8cqmin width). */
@@ -204,18 +203,50 @@ code {
   border-radius: 4cqmin;
 }
 
-/* Drift the four caustic layers along different paths while keeping the
-   diagonal sheen (5th value) fixed, so the glass surface stays put while
-   the light underneath it moves. */
+/* The drifting caustics: four soft light blobs painted ONCE into an oversized
+   pseudo, then slid around with `transform` only. Because transform animates on
+   the compositor (GPU) — unlike `background-position`, which forces a full
+   repaint every frame — the shimmer no longer competes with the hands' rotation,
+   so motion stays fluid. The pseudo is 250% of its host and inset by -75% so the
+   translate never drags an empty edge into view through the clip. */
+.theme-glass .clock .hour div::before,
+.theme-glass .clock .minute div::before,
+.theme-glass .clock .ctr::before {
+  content: "";
+  position: absolute;
+  inset: -75%;
+  background-image:
+    radial-gradient(ellipse 24% 16% at 30% 25%, rgba(195, 235, 255, 0.95), transparent 60%),
+    radial-gradient(ellipse 20% 14% at 70% 65%, rgba(255, 255, 255, 0.85), transparent 55%),
+    radial-gradient(ellipse 18% 12% at 50% 85%, rgba(120, 200, 255, 0.75), transparent 60%),
+    radial-gradient(ellipse 28% 20% at 80% 30%, rgba(205, 245, 255, 0.6), transparent 65%);
+  background-repeat: no-repeat;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  animation: causticsDrift 9s ease-in-out infinite alternate;
+}
+
+/* Slosh the light layer with transform only (translate3d + a hint of rotate),
+   so even a held-still hand keeps rippling. Offsets are small fractions of the
+   oversized pseudo, so the caustics never clip out of the glass body. */
 @keyframes causticsDrift {
   0% {
-    background-position: 0% 0%, 100% 0%, 0% 100%, 100% 100%, 0% 0%;
+    transform: translate3d(-12%, -8%, 0) rotate(0deg);
   }
   50% {
-    background-position: 50% 100%, 30% 55%, 85% 20%, 15% 45%, 0% 0%;
+    transform: translate3d(10%, 6%, 0) rotate(2deg);
   }
   100% {
-    background-position: 100% 55%, 0% 100%, 40% 0%, 75% 80%, 0% 0%;
+    transform: translate3d(-6%, 12%, 0) rotate(-1.5deg);
+  }
+}
+
+/* Respect reduced-motion: keep the glass look, but hold the light still. */
+@media (prefers-reduced-motion: reduce) {
+  .theme-glass .clock .hour div::before,
+  .theme-glass .clock .minute div::before,
+  .theme-glass .clock .ctr::before {
+    animation: none;
   }
 }
 
