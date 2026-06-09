@@ -203,6 +203,17 @@ code {
   border-radius: 4cqmin;
 }
 
+/* The centre dot only exists to bridge the two hands at the pivot. Now that the
+   hands are translucent glass, its ring (border) and outer glow read as a
+   separate outlined dot poking out between the hands. Drop both so it becomes a
+   borderless glass fill that just merges the joint — it keeps the matching
+   caustic ::before, so it still shimmers like the hands. Purely static, so no
+   cost to fluidity. */
+.theme-glass .clock .ctr {
+  border-color: transparent;
+  box-shadow: none;
+}
+
 /* The drifting caustics: four soft light blobs painted ONCE into an oversized
    pseudo, then slid around with `transform` only. Because transform animates on
    the compositor (GPU) — unlike `background-position`, which forces a full
