@@ -57,10 +57,11 @@
     }
     private bool showFullscreenPrompt = false;
     // Available clock skins, cycled in order by the corner button / "g" key.
-    // "classic" is the default white-hand look and maps to no theme class.
-    private static readonly string[] Skins = { "classic", "glass", "aurora" };
+    // "aurora" is the default; "classic" is the plain white-hand look and maps
+    // to no theme class.
+    private static readonly string[] Skins = { "aurora", "glass", "classic" };
     private int skinIndex = 0;
-    private string SkinClass => skinIndex == 0 ? "" : $"theme-{Skins[skinIndex]}";
+    private string SkinClass => Skins[skinIndex] == "classic" ? "" : $"theme-{Skins[skinIndex]}";
     private DotNetObjectReference<AnalogClock>? selfReference;
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
