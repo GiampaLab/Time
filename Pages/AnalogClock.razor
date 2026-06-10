@@ -15,9 +15,9 @@
     </div>
 </div>
 
-<button class="theme-toggle" title="Toggle glass theme (g)" @onclick="ToggleGlass">&#9672;</button>
+<button class="theme-toggle" title="Cycle clock skin (g)" @onclick="CycleSkin">&#9672;</button>
 
-<div class="clocks-wrapper @(glassTheme ? "theme-glass" : "")">
+<div class="clocks-wrapper @SkinClass">
     @for (int j = 0; j < 8; j++)
     {
         <div class="clock-container">
@@ -56,7 +56,11 @@
         set { minuteReferences.Add(value); }
     }
     private bool showFullscreenPrompt = false;
-    private bool glassTheme = false;
+    // Available clock skins, cycled in order by the corner button / "g" key.
+    // "classic" is the default white-hand look and maps to no theme class.
+    private static readonly string[] Skins = { "classic", "glass", "aurora" };
+    private int skinIndex = 0;
+    private string SkinClass => skinIndex == 0 ? "" : $"theme-{Skins[skinIndex]}";
     private DotNetObjectReference<AnalogClock>? selfReference;
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -65,11 +69,12 @@
             controller = new Controller(JSRuntime, clockReferences, hourReferences, minuteReferences);
             controller.SetClock();
 
-            // Restore the saved theme preference, then let the user toggle it with the "g" key.
+            // Restore the saved skin preference, then let the user cycle it with the "g" key.
             var pref = await JSRuntime.InvokeAsync<string?>("animationInterop.getThemePref");
-            if (pref == "glass")
+            var savedIndex = Array.IndexOf(Skins, pref);
+            if (savedIndex > 0)
             {
-                glassTheme = true;
+                skinIndex = savedIndex;
                 StateHasChanged();
             }
             selfReference = DotNetObjectReference.Create(this);
@@ -77,23 +82,23 @@
         }
     }
 
-    private async Task ToggleGlass()
+    private async Task CycleSkin()
     {
-        glassTheme = !glassTheme;
-        await PersistTheme();
+        skinIndex = (skinIndex + 1) % Skins.Length;
+        await PersistSkin();
     }
 
     [JSInvokable]
-    public async Task ToggleGlassFromJs()
+    public async Task CycleSkinFromJs()
     {
-        glassTheme = !glassTheme;
-        await PersistTheme();
+        skinIndex = (skinIndex + 1) % Skins.Length;
+        await PersistSkin();
         StateHasChanged();
     }
 
-    private async Task PersistTheme()
+    private async Task PersistSkin()
     {
-        await JSRuntime.InvokeVoidAsync("animationInterop.setThemePref", glassTheme ? "glass" : "classic");
+        await JSRuntime.InvokeVoidAsync("animationInterop.setThemePref", Skins[skinIndex]);
     }
 
     public void Dispose()

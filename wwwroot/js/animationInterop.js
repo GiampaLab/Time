@@ -259,9 +259,10 @@ window.animationInterop = {
       document.documentElement.msRequestFullscreen();
     }
   },
-  // Persist the chosen clock theme ("glass" / "classic") so it survives reloads.
-  // Wrapped in try/catch because localStorage can throw in private-mode / sandboxed
-  // WebViews (Android, the Windows screensaver host) — we just fall back to default.
+  // Persist the chosen clock skin ("classic" / "glass" / "aurora") so it survives
+  // reloads. Wrapped in try/catch because localStorage can throw in private-mode /
+  // sandboxed WebViews (Android, the Windows screensaver host) — we just fall back
+  // to the default.
   getThemePref: function () {
     try {
       return localStorage.getItem("clockTheme");
@@ -276,12 +277,12 @@ window.animationInterop = {
       /* storage unavailable — preference simply won't persist */
     }
   },
-  // Let the user toggle the glass theme from the keyboard (press "g"). The key
-  // press is routed back to the Blazor component so C# stays the source of truth.
+  // Let the user cycle through the clock skins from the keyboard (press "g"). The
+  // key press is routed back to the Blazor component so C# stays the source of truth.
   registerThemeKeyToggle: function (dotNetRef) {
     document.addEventListener("keydown", function (e) {
       if (e.key === "g" || e.key === "G") {
-        dotNetRef.invokeMethodAsync("ToggleGlassFromJs");
+        dotNetRef.invokeMethodAsync("CycleSkinFromJs");
       }
     });
   },
