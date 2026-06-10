@@ -1,5 +1,6 @@
 @page "/"
 @inject IJSRuntime JSRuntime;
+@inject NavigationManager Nav;
 @implements IDisposable;
 @using Time.AnimationConfig;
 @using Time.AnimationEngine;
@@ -62,6 +63,19 @@
     private static readonly string[] Skins = { "aurora", "glass", "classic" };
     private int skinIndex = 0;
     private string SkinClass => Skins[skinIndex] == "classic" ? "" : $"theme-{Skins[skinIndex]}";
+
+    // Minimal query-string lookup (avoids pulling in WebUtilities just for one key).
+    private static string? GetQueryValue(string uri, string key)
+    {
+        var q = new Uri(uri).Query.TrimStart('?');
+        foreach (var pair in q.Split('&', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var kv = pair.Split('=', 2);
+            if (Uri.UnescapeDataString(kv[0]) == key)
+                return kv.Length == 2 ? Uri.UnescapeDataString(kv[1]) : "";
+        }
+        return null;
+    }
     private DotNetObjectReference<AnalogClock>? selfReference;
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -70,13 +84,25 @@
             controller = new Controller(JSRuntime, clockReferences, hourReferences, minuteReferences);
             controller.SetClock();
 
-            // Restore the saved skin preference, then let the user cycle it with the "g" key.
-            var pref = await JSRuntime.InvokeAsync<string?>("animationInterop.getThemePref");
-            var savedIndex = Array.IndexOf(Skins, pref);
-            if (savedIndex > 0)
+            // A `?skin=` query param (used by the Windows screensaver, which has no
+            // usable skin control since any input exits it) forces a skin and wins
+            // over the saved preference. Otherwise restore the saved skin; with no
+            // saved preference the default (index 0 = aurora) stands.
+            var forcedIndex = Array.IndexOf(Skins, GetQueryValue(Nav.Uri, "skin"));
+            if (forcedIndex >= 0)
             {
-                skinIndex = savedIndex;
+                skinIndex = forcedIndex;
                 StateHasChanged();
+            }
+            else
+            {
+                var pref = await JSRuntime.InvokeAsync<string?>("animationInterop.getThemePref");
+                var savedIndex = Array.IndexOf(Skins, pref);
+                if (savedIndex > 0)
+                {
+                    skinIndex = savedIndex;
+                    StateHasChanged();
+                }
             }
             selfReference = DotNetObjectReference.Create(this);
             await JSRuntime.InvokeVoidAsync("animationInterop.registerThemeKeyToggle", selfReference);

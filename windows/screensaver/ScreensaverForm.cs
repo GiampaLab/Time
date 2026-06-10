@@ -61,7 +61,9 @@ public class ScreensaverForm : Form
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "TimeScreensaver"));
         await _webView.EnsureCoreWebView2Async(env);
-        _webView.CoreWebView2.Navigate($"http://localhost:{port}/");
+        // Force the aurora skin: the screensaver has no usable skin control (any
+        // input exits it), so it shouldn't depend on a stored preference.
+        _webView.CoreWebView2.Navigate($"http://localhost:{port}/?skin=aurora");
     }
 
     private int StartFileServer(string wwwroot)
