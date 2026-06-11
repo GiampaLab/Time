@@ -18,7 +18,7 @@
 
 <button class="theme-toggle" title="Cycle clock skin (g)" @onclick="CycleSkin">&#9672;</button>
 
-<div class="clocks-wrapper @SkinClass">
+<div class="clocks-wrapper @SkinClass @(powerSaver ? "power-saver" : "")">
     @for (int j = 0; j < 8; j++)
     {
         <div class="clock-container">
@@ -64,6 +64,18 @@
     private int skinIndex = 0;
     private string SkinClass => Skins[skinIndex] == "classic" ? "" : $"theme-{Skins[skinIndex]}";
 
+    // `?power=saver` (set by the Android screensaver) stretches the static
+    // time-display phase and shortens the moving phases so the GPU idles most of
+    // the time — the fix for the device staying warm overnight. It also holds the
+    // skin shimmer still (via the `.power-saver` class) so nothing composites while
+    // the hands are at rest. The website/Windows builds don't pass it, so they are
+    // unchanged.
+    private bool powerSaver;
+    protected override void OnInitialized()
+    {
+        powerSaver = GetQueryValue(Nav.Uri, "power") == "saver";
+    }
+
     // Minimal query-string lookup (avoids pulling in WebUtilities just for one key).
     private static string? GetQueryValue(string uri, string key)
     {
@@ -81,7 +93,7 @@
     {
         if (firstRender)
         {
-            controller = new Controller(JSRuntime, clockReferences, hourReferences, minuteReferences);
+            controller = new Controller(JSRuntime, clockReferences, hourReferences, minuteReferences, powerSaver);
             controller.SetClock();
 
             // A `?skin=` query param (used by the Windows screensaver, which has no
@@ -138,7 +150,7 @@
         private ChainedAnimationsManager chainedAnimationsManager;
         public Dictionary<int, Clock> Clocks { get; private set; }
         public Controller(IJSRuntime JSRuntime, List<ElementReference> clockReferences, List<ElementReference> hourReferences,
-        List<ElementReference> minuteReferences)
+        List<ElementReference> minuteReferences, bool powerSaver = false)
         {
             Clocks = new Dictionary<int, Clock>();
 
@@ -146,7 +158,7 @@
                 Clocks.Add(i + 1, new Clock(i + 1, hourReferences[i], minuteReferences[i]));
 
             JSRuntime.InvokeAsync<List<ElementReference>>("animationLoop.initShadows", clockReferences.ToArray());
-            var orchestrator = new AnimationOrchestrator(JSRuntime, Clocks);
+            var orchestrator = new AnimationOrchestrator(JSRuntime, Clocks, powerSaver);
             chainedAnimationsManager = new ChainedAnimationsManager(orchestrator.GetNextAnimationManager());
         }
 

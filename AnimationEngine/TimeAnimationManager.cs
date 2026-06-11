@@ -28,7 +28,9 @@ public class TimeAnimationManager(IJSRuntime jSRuntime, Dictionary<int, Clock> c
     public void AnimationFinished()
     {
         timer?.Dispose();
-        timer = new Timer(SetAnimationStatus, new AutoResetEvent(false), 0, 200);
+        // Poll once a second: a clock only changes at minute granularity, so 1s
+        // detection is imperceptible and wakes the WASM runtime 5x less often.
+        timer = new Timer(SetAnimationStatus, new AutoResetEvent(false), 0, 1000);
     }
 
     public void Stop()

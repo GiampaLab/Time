@@ -4,13 +4,26 @@ using Time.AnimationEngine.Patterns;
 using Time.Components;
 
 namespace Time.AnimationEngine;
-public class AnimationOrchestrator(IJSRuntime jSRuntime, Dictionary<int, Clock> clocks)
+public class AnimationOrchestrator(IJSRuntime jSRuntime, Dictionary<int, Clock> clocks, bool powerSaver = false)
 {
     private readonly IJSRuntime JSRuntime = jSRuntime;
     private readonly Dictionary<int, Clock> Clocks = clocks;
+    private readonly bool powerSaver = powerSaver;
     private readonly Random random = new();
     private List<IClockPattern> remainingPatterns = PatternRegistry.All.ToList();
     private IClockPattern? currentPattern;
+
+    // Phase durations (ms). In power-saver mode (Android screensaver) the static
+    // time-display phase is stretched and the continuously-moving Infinite phase
+    // is shortened, so the GPU is idle the vast majority of the time instead of
+    // animating ~40s of every 63s. This is the main lever for the overnight
+    // warming: a mostly-static clock lets the SoC cool like any static app, while
+    // the full show (patterns + spins) still appears, just spaced further apart.
+    // The Time phase actually runs until the next minute change after its duration
+    // elapses, so the hands keep displaying the correct time throughout the hold.
+    private int TimeDuration => powerSaver ? 180000 : 25000;
+    private int PatternDuration => 13000;
+    private int InfiniteDuration => powerSaver ? 8000 : 25000;
 
     public Func<IAnimationManager?, (IAnimationManager animationManager, int duration)> GetNextAnimationManager()
     {
@@ -18,19 +31,19 @@ public class AnimationOrchestrator(IJSRuntime jSRuntime, Dictionary<int, Clock> 
         {
             if (animationManager == null)
             {
-                return (GetTimeAnimationManager(), 25000);
+                return (GetTimeAnimationManager(), TimeDuration);
             }
             else if (animationManager.GetAnimationType() == AnimationType.Time)
             {
-                return (GetPatternAnimationManager(), 13000);
+                return (GetPatternAnimationManager(), PatternDuration);
             }
             else if (animationManager.GetAnimationType() == AnimationType.Pattern)
             {
-                return (GetInfiniteAnimationManager(), 25000);
+                return (GetInfiniteAnimationManager(), InfiniteDuration);
             }
             else if (animationManager.GetAnimationType() == AnimationType.Infinite)
             {
-                return (GetTimeAnimationManager(), 25000);
+                return (GetTimeAnimationManager(), TimeDuration);
             }
             else
             {

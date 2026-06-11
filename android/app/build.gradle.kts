@@ -21,6 +21,11 @@ android {
         }
     }
 
+    buildFeatures {
+        // Needed for BuildConfig.DEBUG, used to keep WebView debugging out of release.
+        buildConfig = true
+    }
+
     androidResources {
         ignoreAssetsPatterns += listOf("*.gz", "*.br")
     }

@@ -378,6 +378,18 @@ code {
   }
 }
 
+/* Power-saver (Android screensaver, `?power=saver`): hold the skin shimmer still
+   the same way. Without this the caustics/aurora would keep compositing through
+   the long static time-display phases and never let the GPU idle — which is the
+   whole point of saver mode. The static gradient colours remain, so the skin
+   still looks right; it just doesn't animate. */
+.power-saver .clock .hour div::before,
+.power-saver .clock .minute div::before,
+.power-saver .clock .hour div::after,
+.power-saver .clock .minute div::after {
+  animation: none;
+}
+
 /* Unobtrusive corner control cycling through the clock skins (also bound
    to the "g" key). Sits faint until hovered so it stays out of the way. */
 .theme-toggle {
