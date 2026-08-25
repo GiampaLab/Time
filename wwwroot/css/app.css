@@ -162,6 +162,256 @@ code {
   box-shadow: 0px 0px 8px rgba(255, 255, 255, 0.3);
 }
 
+/* ------------------------------------------------------------------ *
+ * Clock skins                                                          *
+ * The wrapper carries `.theme-glass` (iOS glassmorphism) or            *
+ * `.theme-aurora` (aurora borealis); no class = the classic white      *
+ * hands. Both skins share the same frosted-glass hand body — an opaque *
+ * dark pill lit from within — and differ only in the light show inside *
+ * it: drifting "light-on-water" caustics for glass, appearing/fading   *
+ * aurora curtains for aurora. The light animates independently of the  *
+ * hand rotation, and everything moving is compositor-only (transform / *
+ * opacity), so the rotation stays fluid. All rules are scoped under    *
+ * the theme classes, so the default look is untouched.                 *
+ * ------------------------------------------------------------------ */
+
+/* The shared glass body: static frosted sheen + tint + soft inset depth.
+   Everything here is painted ONCE (no animated properties), so as the hand
+   rotates the browser just re-composites this cached layer instead of repainting
+   it. The moving light lives entirely in the pseudo-elements below, clipped to
+   this shape via `overflow: hidden`. (The hands are already `position: absolute`
+   from the base rules, so they anchor the pseudos without needing a position
+   override here — adding one would break their layout.)
+
+   The body is an OPAQUE frosted glass (solid dark base, lit from within) rather
+   than see-through to black. That is what kills the overlap artefact: where the
+   two hands cross at the hub, the top one simply occludes the one below instead
+   of two translucent layers stacking into a brighter patch. A soft outer glow
+   (last shadow) gives the edge presence without a hard outline.
+
+   Geometry: rounded pill ends (half the 8cqmin width), each hand extended one
+   cap-radius (4cqmin) past the centre so the rounded end's circle is centred
+   exactly on the pivot. A circle centred on the rotation point is
+   rotation-invariant, so the two hands' caps always fill the same central disc
+   at every angle — that self-formed hub replaces the classic theme's dot. */
+.theme-glass .clock .hour div,
+.theme-glass .clock .minute div,
+.theme-aurora .clock .hour div,
+.theme-aurora .clock .minute div {
+  background-color: rgb(16, 28, 47);
+  background-image:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.02) 45%, rgba(255, 255, 255, 0.14));
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.6),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.35),
+    inset 0 0 12px rgba(150, 220, 255, 0.25),
+    0 0 12px rgba(150, 205, 255, 0.22);
+  overflow: hidden;
+  border-radius: 4cqmin;
+  height: calc(40% + 4cqmin);
+}
+
+/* No separate pivot dot in the skinned themes — the hands form their own hub.
+   The classic theme keeps its dot. */
+.theme-glass .clock .ctr,
+.theme-aurora .clock .ctr {
+  display: none;
+}
+
+/* The drifting caustics: four soft light blobs painted ONCE into an oversized
+   pseudo, then slid around with `transform` only. Because transform animates on
+   the compositor (GPU) — unlike `background-position`, which forces a full
+   repaint every frame — the shimmer no longer competes with the hands' rotation,
+   so motion stays fluid. The pseudo is 250% of its host and inset by -75% so the
+   translate never drags an empty edge into view through the clip. */
+.theme-glass .clock .hour div::before,
+.theme-glass .clock .minute div::before {
+  content: "";
+  position: absolute;
+  inset: -75%;
+  background-image:
+    radial-gradient(ellipse 24% 16% at 30% 25%, rgba(195, 235, 255, 0.95), transparent 60%),
+    radial-gradient(ellipse 20% 14% at 70% 65%, rgba(255, 255, 255, 0.85), transparent 55%),
+    radial-gradient(ellipse 18% 12% at 50% 85%, rgba(120, 200, 255, 0.75), transparent 60%),
+    radial-gradient(ellipse 28% 20% at 80% 30%, rgba(205, 245, 255, 0.6), transparent 65%);
+  background-repeat: no-repeat;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  animation: causticsDrift 9s ease-in-out infinite alternate;
+  /* Desync each clock by its grid position (col + row, set on .clock as
+     --caustic-phase) so the shimmer rolls bottom-right -> top-left. The delay
+     is negative, so every clock starts already mid-cycle: a continuous wave with
+     no staged startup. That sign also fixes the DIRECTION: a negative delay
+     starts an animation already advanced, so a higher-phase clock is further
+     through the cycle and therefore LEADS — phase 9 (bottom-right) runs ahead
+     of phase 0 (top-left), not behind it. Pure phase offset — still one
+     compositor animation, so no cost to performance or fluidity. */
+  animation-delay: calc(var(--caustic-phase, 0) * -0.55s);
+}
+
+/* Slosh the light layer with transform only (translate3d + a hint of rotate),
+   so even a held-still hand keeps rippling. Offsets are small fractions of the
+   oversized pseudo, so the caustics never clip out of the glass body. */
+@keyframes causticsDrift {
+  0% {
+    transform: translate3d(-12%, -8%, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(10%, 6%, 0) rotate(2deg);
+  }
+  100% {
+    transform: translate3d(-6%, 12%, 0) rotate(-1.5deg);
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * Aurora skin                                                          *
+ * Same opaque glass body, but the light inside is an aurora borealis:  *
+ * a bright multi-colour curtain (::after) that appears, drifts through *
+ * the hand, and fades away; underneath it a faint residue of the same  *
+ * colours (::before) keeps slowly moving between passes. Both layers   *
+ * animate only transform + opacity — both compositor properties — so   *
+ * this skin costs the same as the glass one: zero per-frame repaints.  *
+ * The per-clock --caustic-phase stagger makes the curtains travel      *
+ * across the grid right-to-left rather than firing in unison: the      *
+ * delay is negative, so higher-phase clocks lead and the wavefront     *
+ * runs bottom-right -> top-left.                                       *
+ * ------------------------------------------------------------------ */
+
+/* A deeper, colder arctic-night base than the glass skin's blue. */
+.theme-aurora .clock .hour div,
+.theme-aurora .clock .minute div {
+  background-color: rgb(9, 21, 30);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.45),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.4),
+    inset 0 0 12px rgba(90, 220, 180, 0.2),
+    0 0 12px rgba(110, 230, 190, 0.18);
+}
+
+/* Faint residue: soft green/blue/violet blobs that never quite go away,
+   drifting slowly and breathing in brightness — the "left behind" glow. */
+.theme-aurora .clock .hour div::before,
+.theme-aurora .clock .minute div::before {
+  content: "";
+  position: absolute;
+  inset: -75%;
+  background-image:
+    radial-gradient(ellipse 28% 18% at 32% 40%, rgba(90, 255, 190, 0.4), transparent 65%),
+    radial-gradient(ellipse 24% 16% at 66% 62%, rgba(110, 180, 255, 0.32), transparent 60%),
+    radial-gradient(ellipse 22% 15% at 48% 22%, rgba(190, 120, 255, 0.34), transparent 60%);
+  background-repeat: no-repeat;
+  opacity: 0.45;
+  will-change: transform, opacity;
+  transform: translate3d(0, 0, 0);
+  animation: auroraResidue 16s ease-in-out infinite alternate;
+  animation-delay: calc(var(--caustic-phase, 0) * -0.7s);
+}
+
+/* The aurora curtain itself: angled streaks of green -> teal -> violet -> pink,
+   like banded curtains of light. It sweeps across the hand while fading in and
+   out, and spends the rest of the cycle invisible (only the residue shows). */
+.theme-aurora .clock .hour div::after,
+.theme-aurora .clock .minute div::after {
+  content: "";
+  position: absolute;
+  inset: -75%;
+  background-image:
+    linear-gradient(100deg,
+      transparent 16%,
+      rgba(70, 255, 180, 0.85) 30%,
+      rgba(90, 215, 255, 0.5) 44%,
+      rgba(175, 110, 255, 0.65) 58%,
+      rgba(255, 130, 210, 0.4) 70%,
+      transparent 86%);
+  opacity: 0;
+  will-change: transform, opacity;
+  transform: translate3d(-22%, -3%, 0);
+  animation: auroraSweep 14s ease-in-out infinite;
+  animation-delay: calc(var(--caustic-phase, 0) * -0.8s);
+}
+
+@keyframes auroraResidue {
+  0% {
+    transform: translate3d(-10%, -6%, 0) rotate(0deg);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translate3d(8%, 5%, 0) rotate(2deg);
+    opacity: 0.55;
+  }
+  100% {
+    transform: translate3d(-5%, 9%, 0) rotate(-1.5deg);
+    opacity: 0.38;
+  }
+}
+
+/* Appear (0->12%), display while drifting through (12->40%), disappear
+   (40->54%), then stay dark until 100% — during that invisible tail the
+   transform glides back to the start, so the loop is seamless. */
+@keyframes auroraSweep {
+  0% {
+    transform: translate3d(-22%, -3%, 0);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.9;
+  }
+  40% {
+    opacity: 0.8;
+  }
+  54% {
+    transform: translate3d(20%, 4%, 0);
+    opacity: 0;
+  }
+  100% {
+    transform: translate3d(-22%, -3%, 0);
+    opacity: 0;
+  }
+}
+
+/* Respect reduced-motion: keep both skins' looks, but hold the light still
+   (the aurora curtain rests invisible; the residue glow stays). */
+@media (prefers-reduced-motion: reduce) {
+  .theme-glass .clock .hour div::before,
+  .theme-glass .clock .minute div::before,
+  .theme-aurora .clock .hour div::before,
+  .theme-aurora .clock .minute div::before,
+  .theme-aurora .clock .hour div::after,
+  .theme-aurora .clock .minute div::after {
+    animation: none;
+  }
+}
+
+/* Unobtrusive corner control cycling through the clock skins (also bound
+   to the "g" key). Sits faint until hovered so it stays out of the way. */
+.theme-toggle {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  z-index: 1100;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.22;
+  transition: opacity 0.3s, background 0.3s;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+.theme-toggle:hover,
+.theme-toggle:focus-visible {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.16);
+  outline: none;
+}
+
 .fullscreen-overlay {
     position: fixed;
     top: 0;

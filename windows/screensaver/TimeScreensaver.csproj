@@ -7,6 +7,12 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>TimeScreensaver</AssemblyName>
     <NoWarn>$(NoWarn);MSB3277</NoWarn>
+    <!-- WebView2Loader.dll is a NATIVE dll the SDK P/Invokes into. With
+         PublishSingleFile the .exe (renamed to Time.scr) ships alone, so the
+         loose loader would be left behind and CreateCoreWebView2Environment
+         throws DllNotFoundException. Embed native libs and self-extract them at
+         startup so the loader travels inside the single file. -->
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.*" />

@@ -39,6 +39,10 @@ window.addEventListener('resize', enforceLandscape);
 var previousAnimationConfigs = [];
 var animations = [];
 var animationConfigs = [];
+// Handle on the "g" skin-cycle keydown listener so it can be removed again.
+// Module-level rather than a property on animationInterop, so it does not
+// depend on `this` surviving Blazor's interop call.
+var themeKeyHandler = null;
 
 window.animationLoop = {
   initShadows: function (animationConfigs) {
@@ -257,6 +261,58 @@ window.animationInterop = {
     } else if (document.documentElement.msRequestFullscreen) {
       // IE/Edge
       document.documentElement.msRequestFullscreen();
+    }
+  },
+  // Persist the chosen clock skin ("classic" / "glass" / "aurora") so it survives
+  // reloads. Wrapped in try/catch because localStorage can throw in private-mode /
+  // sandboxed WebViews (Android, the Windows screensaver host) — we just fall back
+  // to the default.
+  getThemePref: function () {
+    try {
+      return localStorage.getItem("clockTheme");
+    } catch (e) {
+      return null;
+    }
+  },
+  setThemePref: function (value) {
+    try {
+      localStorage.setItem("clockTheme", value);
+    } catch (e) {
+      /* storage unavailable — preference simply won't persist */
+    }
+  },
+  // Let the user cycle through the clock skins from the keyboard (press "g"). The
+  // key press is routed back to the Blazor component so C# stays the source of truth.
+  // Unregisters first, so calling this twice cannot stack two listeners (which
+  // would cycle two skins per press).
+  registerThemeKeyToggle: function (dotNetRef) {
+    window.animationInterop.unregisterThemeKeyToggle();
+    themeKeyHandler = function (e) {
+      if (e.key === "g" || e.key === "G") {
+        // Dispose() removes this listener, but a keypress can already be in
+        // flight when the reference goes away. A disposed reference REJECTS the
+        // returned promise rather than throwing synchronously, so swallow both
+        // failure modes — neither must surface as an unhandled error.
+        try {
+          var pending = dotNetRef.invokeMethodAsync("CycleSkinFromJs");
+          if (pending && typeof pending.catch === "function") {
+            pending.catch(function () {
+              /* component disposed mid-flight */
+            });
+          }
+        } catch (err) {
+          /* reference already disposed */
+        }
+      }
+    };
+    document.addEventListener("keydown", themeKeyHandler);
+  },
+  // Called from the component's Dispose(). Without this the listener outlives
+  // the component and keeps a disposed DotNetObjectReference alive.
+  unregisterThemeKeyToggle: function () {
+    if (themeKeyHandler) {
+      document.removeEventListener("keydown", themeKeyHandler);
+      themeKeyHandler = null;
     }
   },
 };
