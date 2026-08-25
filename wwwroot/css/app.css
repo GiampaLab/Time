@@ -444,38 +444,52 @@ code {
    gradient's own axis, which makes the loop seamless by construction rather
    than by tuning. For a CSS angle A the axis unit vector is (sin A, -cos A),
    so a period of L travels (L sin A, -L cos A):
-     rays-a  105deg over 420px -> translate(405.7px, 108.7px)
-     rays-b  165deg over 560px -> translate(144.9px, 540.9px)
+     rays-a  105deg over 300px -> translate(289.8px, 77.6px)
+     rays-b  165deg over 300px -> translate(77.6px, 289.8px)
    105deg carries the bands mostly left-to-right, 165deg mostly top-to-bottom,
    and the two crossing systems are what give the field its depth.
 
-   NOTE: these layers must never be scaled or rotated. `translate` is applied
-   in the parent's space while the tile scales with the element, so under any
-   scale other than 1 the slide stops matching one tile width and the pattern
-   visibly jumps at the loop point. That bug is exactly what the wash layer
-   below is allowed to do instead, because it does not tile. */
+   Two constraints, both learned the hard way:
+
+   1. These layers must never be scaled or rotated. `translate` is applied in
+      the parent's space while the tile scales with the element, so at any
+      scale but 1 the slide stops matching one period and the pattern jumps at
+      the loop point. The wash layer below may scale only because it does not
+      tile.
+
+   2. Each layer's OVERHANG must be at least the distance it slides, in the
+      same units. The slide is an absolute px distance (it has to be — it is
+      one gradient period), so the overhang has to be px too. A percentage
+      inset scales with the viewport while the slide does not, so on any
+      screen small enough the layer slides off its own edge and lets the
+      background through before snapping back — which reads exactly like the
+      animation resetting. Hence the explicit px insets: rays-a slides
+      (289.8, 77.6) so it overhangs 310/110; rays-b slides (77.6, 289.8) so it
+      overhangs 110/310. Change a period and these must change with it. */
 .theme-aurora2 .sky-rays-a {
+  inset: -110px -310px;
   background-image: repeating-linear-gradient(105deg,
     #ffffff 0px,
-    #2bffb4 70px,
-    #ffffff 140px,
-    #4b8dff 210px,
-    #ffffff 280px,
-    #b45cff 350px,
-    #ffffff 420px);
+    #2bffb4 50px,
+    #ffffff 100px,
+    #4b8dff 150px,
+    #ffffff 200px,
+    #b45cff 250px,
+    #ffffff 300px);
   opacity: 0.8;
   animation: a2RaysA 23s linear infinite;
 }
 
 .theme-aurora2 .sky-rays-b {
+  inset: -310px -110px;
   background-image: repeating-linear-gradient(165deg,
     #ffffff 0px,
-    #ff5cc0 90px,
-    #ffffff 190px,
-    #35d8ff 290px,
-    #ffffff 390px,
-    #5cffb0 480px,
-    #ffffff 560px);
+    #ff5cc0 50px,
+    #ffffff 100px,
+    #35d8ff 150px,
+    #ffffff 200px,
+    #5cffb0 250px,
+    #ffffff 300px);
   opacity: 0.68;
   animation: a2RaysB 31s linear infinite;
 }
@@ -501,12 +515,12 @@ code {
 
 @keyframes a2RaysA {
   0% { translate: 0 0; }
-  100% { translate: 405.7px 108.7px; }
+  100% { translate: 289.8px 77.6px; }
 }
 
 @keyframes a2RaysB {
   0% { translate: 0 0; }
-  100% { translate: 144.9px 540.9px; }
+  100% { translate: 77.6px 289.8px; }
 }
 
 @keyframes a2WashDrift {
