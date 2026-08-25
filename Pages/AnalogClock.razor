@@ -131,6 +131,11 @@
     public void Dispose()
     {
         controller?.Dispose();
+        // Drop the "g" keydown listener before the reference it captures goes
+        // away, otherwise it outlives this component and a later keypress
+        // invokes a disposed DotNetObjectReference. Dispose() is synchronous so
+        // this is fire-and-forget; the handler is guarded JS-side for the race.
+        _ = JSRuntime.InvokeVoidAsync("animationInterop.unregisterThemeKeyToggle");
         selfReference?.Dispose();
     }
     public class Controller : IDisposable

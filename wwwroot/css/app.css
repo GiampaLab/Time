@@ -239,10 +239,13 @@ code {
   transform: translate3d(0, 0, 0);
   animation: causticsDrift 9s ease-in-out infinite alternate;
   /* Desync each clock by its grid position (col + row, set on .clock as
-     --caustic-phase) so the shimmer rolls top-left -> bottom-right. The delay is
-     negative, so every clock starts already mid-cycle: a continuous wave with no
-     staged startup. Pure phase offset — still one compositor animation, so no
-     cost to performance or fluidity. */
+     --caustic-phase) so the shimmer rolls bottom-right -> top-left. The delay
+     is negative, so every clock starts already mid-cycle: a continuous wave with
+     no staged startup. That sign also fixes the DIRECTION: a negative delay
+     starts an animation already advanced, so a higher-phase clock is further
+     through the cycle and therefore LEADS — phase 9 (bottom-right) runs ahead
+     of phase 0 (top-left), not behind it. Pure phase offset — still one
+     compositor animation, so no cost to performance or fluidity. */
   animation-delay: calc(var(--caustic-phase, 0) * -0.55s);
 }
 
@@ -269,8 +272,10 @@ code {
  * colours (::before) keeps slowly moving between passes. Both layers   *
  * animate only transform + opacity — both compositor properties — so   *
  * this skin costs the same as the glass one: zero per-frame repaints.  *
- * The per-clock --caustic-phase stagger makes the curtains stretch     *
- * across the grid from left to right rather than firing in unison.     *
+ * The per-clock --caustic-phase stagger makes the curtains travel      *
+ * across the grid right-to-left rather than firing in unison: the      *
+ * delay is negative, so higher-phase clocks lead and the wavefront     *
+ * runs bottom-right -> top-left.                                       *
  * ------------------------------------------------------------------ */
 
 /* A deeper, colder arctic-night base than the glass skin's blue. */
