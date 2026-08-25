@@ -24,8 +24,7 @@
         <div class="clock-container">
             @for (int i = 1; i < 4; i++)
             {
-                <div class="clock" @ref=ClockReference
-                     style="--caustic-phase: @(j + (i - 1)); --a2-seed: @((j * 7 + (i - 1) * 13) % 11);">
+                <div class="clock" @ref=ClockReference style="--caustic-phase: @(j + (i - 1));">
                     <div class="hour" @ref=HourReference>
                         <div></div>
                     </div>
@@ -37,6 +36,15 @@
             }
         </div>
     }
+    @* The aurora itself, for the aurora2 skin. It is ONE field for the whole
+       wall rather than light painted inside each arm, which is the only way
+       colour can flow from one arm into the next: it sits above the clocks and
+       multiplies onto them, so the light arms take its colour while the black
+       background stays black. It lives inside .clocks-wrapper on purpose — the
+       wrapper is what enforceLandscape() rotates in portrait, so the field
+       stays aligned with the clocks it is colouring. Hidden for other skins. *@
+    <div class="aurora-sky sky-a"></div>
+    <div class="aurora-sky sky-b"></div>
 </div>
 
 @code {
