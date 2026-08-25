@@ -24,7 +24,8 @@
         <div class="clock-container">
             @for (int i = 1; i < 4; i++)
             {
-                <div class="clock" @ref=ClockReference style="--caustic-phase: @(j + (i - 1));">
+                <div class="clock" @ref=ClockReference
+                     style="--caustic-phase: @(j + (i - 1)); --a2-seed: @((j * 7 + (i - 1) * 13) % 11);">
                     <div class="hour" @ref=HourReference>
                         <div></div>
                     </div>
@@ -58,9 +59,9 @@
     }
     private bool showFullscreenPrompt = false;
     // Available clock skins, cycled in order by the corner button / "g" key.
-    // "aurora" is the default; "classic" is the plain white-hand look and maps
+    // "aurora2" is the default; "classic" is the plain white-hand look and maps
     // to no theme class.
-    private static readonly string[] Skins = { "aurora", "glass", "classic" };
+    private static readonly string[] Skins = { "aurora2", "aurora", "glass", "classic" };
     private int skinIndex = 0;
     private string SkinClass => Skins[skinIndex] == "classic" ? "" : $"theme-{Skins[skinIndex]}";
 
