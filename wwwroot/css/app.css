@@ -418,8 +418,8 @@ code {
 
 /* The field. Absolutely positioned (not fixed) so it follows .clocks-wrapper
    through the portrait rotation enforceLandscape() applies; oversized well
-   past the wrapper so drift and rotation never pull an edge into view. Only
-   rendered for this skin. */
+   past the wrapper so drift never pulls an edge into view. Only rendered for
+   this skin. */
 .aurora-sky {
   display: none;
 }
@@ -434,61 +434,93 @@ code {
   will-change: translate, rotate, scale;
 }
 
-/* Layer A travels: the tile repeats horizontally and the layer slides exactly
-   one tile width per cycle, so the motion is a genuine unbroken right-to-left
-   drift rather than a loop that rewinds. Blobs that would cross a tile edge
-   are mirrored on the opposite edge so the seam is invisible. */
-.theme-aurora2 .sky-a {
-  background-color: rgb(223, 232, 255);
-  background-size: 50% 100%;
-  background-repeat: repeat;
-  background-image:
-    radial-gradient(ellipse 30% 42% at 0% 26%, #00ff9d, transparent 70%),
-    radial-gradient(ellipse 30% 42% at 100% 26%, #00ff9d, transparent 70%),
-    radial-gradient(ellipse 34% 46% at 30% 72%, #ff3fae, transparent 70%),
-    radial-gradient(ellipse 30% 40% at 58% 18%, #1fa8ff, transparent 68%),
-    radial-gradient(ellipse 32% 44% at 82% 60%, #9327ff, transparent 70%),
-    radial-gradient(ellipse 32% 44% at -18% 60%, #9327ff, transparent 70%);
-  animation: a2SkyTravel 60s linear infinite, a2SkyTiltA 67s ease-in-out infinite;
+/* --- The rays -------------------------------------------------------------
+   An aurora is banded: curtains of light with gaps between them, not a soft
+   wash. So the two ray layers are repeating-linear-gradients — saturated bands
+   separated by white, and under `multiply` white tints nothing, so the white
+   runs read as the gaps between curtains.
+
+   Each layer slides by EXACTLY one repeat period, measured along the
+   gradient's own axis, which makes the loop seamless by construction rather
+   than by tuning. For a CSS angle A the axis unit vector is (sin A, -cos A),
+   so a period of L travels (L sin A, -L cos A):
+     rays-a  105deg over 420px -> translate(405.7px, 108.7px)
+     rays-b  165deg over 560px -> translate(144.9px, 540.9px)
+   105deg carries the bands mostly left-to-right, 165deg mostly top-to-bottom,
+   and the two crossing systems are what give the field its depth.
+
+   NOTE: these layers must never be scaled or rotated. `translate` is applied
+   in the parent's space while the tile scales with the element, so under any
+   scale other than 1 the slide stops matching one tile width and the pattern
+   visibly jumps at the loop point. That bug is exactly what the wash layer
+   below is allowed to do instead, because it does not tile. */
+.theme-aurora2 .sky-rays-a {
+  background-image: repeating-linear-gradient(105deg,
+    #ffffff 0px,
+    #2bffb4 70px,
+    #ffffff 140px,
+    #4b8dff 210px,
+    #ffffff 280px,
+    #b45cff 350px,
+    #ffffff 420px);
+  opacity: 0.8;
+  animation: a2RaysA 23s linear infinite;
 }
 
-/* Layer B does not travel; it breathes and counter-rotates on periods coprime
-   to A's, so the two fields shear across each other and the combined pattern
-   never settles into a repeat. */
-.theme-aurora2 .sky-b {
-  background-color: rgb(238, 242, 255);
-  background-image:
-    radial-gradient(ellipse 48% 42% at 68% 18%, #4b5bff, transparent 72%),
-    radial-gradient(ellipse 42% 50% at 20% 54%, #16ffb4, transparent 70%),
-    radial-gradient(ellipse 44% 40% at 92% 72%, #ff4fc0, transparent 70%),
-    radial-gradient(ellipse 40% 46% at 46% 96%, #21c4ff, transparent 70%);
-  animation: a2SkyDriftB 53s linear infinite, a2SkyTiltB 79s ease-in-out infinite;
+.theme-aurora2 .sky-rays-b {
+  background-image: repeating-linear-gradient(165deg,
+    #ffffff 0px,
+    #ff5cc0 90px,
+    #ffffff 190px,
+    #35d8ff 290px,
+    #ffffff 390px,
+    #5cffb0 480px,
+    #ffffff 560px);
+  opacity: 0.68;
+  animation: a2RaysB 31s linear infinite;
 }
 
-/* Exactly one tile width, so the loop point is seamless. */
-@keyframes a2SkyTravel {
+/* --- The wash -------------------------------------------------------------
+   Broad, slow colour underneath the rays, so the curtains are not all one hue
+   and the palette shifts across the wall. Not tiled, so unlike the ray layers
+   this one is free to rotate and scale; it drifts on a closed loop well inside
+   the oversized element, so no edge can come into view. Periods coprime with
+   the ray layers (29s / 37s vs 13s / 19s), so the whole field never returns to
+   a state it has been in. */
+.theme-aurora2 .sky-wash {
+  background-color: #f2f5ff;
+  background-image:
+    radial-gradient(ellipse 46% 52% at 12% 24%, #4dffbe, transparent 72%),
+    radial-gradient(ellipse 50% 46% at 52% 4%, #59b4ff, transparent 70%),
+    radial-gradient(ellipse 44% 54% at 88% 36%, #a75cff, transparent 72%),
+    radial-gradient(ellipse 52% 46% at 28% 78%, #ff6dbe, transparent 72%),
+    radial-gradient(ellipse 48% 50% at 78% 90%, #3fffd6, transparent 72%);
+  opacity: 0.85;
+  animation: a2WashDrift 29s linear infinite, a2WashTilt 37s ease-in-out infinite;
+}
+
+@keyframes a2RaysA {
   0% { translate: 0 0; }
-  100% { translate: -50% 0; }
+  100% { translate: 405.7px 108.7px; }
 }
 
-@keyframes a2SkyDriftB {
-  0% { translate: -5% 4%; }
+@keyframes a2RaysB {
+  0% { translate: 0 0; }
+  100% { translate: 144.9px 540.9px; }
+}
+
+@keyframes a2WashDrift {
+  0% { translate: -5% 3%; }
   27% { translate: 3% -3%; }
-  52% { translate: 8% 5%; }
-  78% { translate: 0% 9%; }
-  100% { translate: -5% 4%; }
+  52% { translate: 7% 4%; }
+  78% { translate: 0% 8%; }
+  100% { translate: -5% 3%; }
 }
 
-@keyframes a2SkyTiltA {
-  0% { rotate: -4deg; scale: 1.05; }
-  50% { rotate: 5deg; scale: 1.14; }
-  100% { rotate: -4deg; scale: 1.05; }
-}
-
-@keyframes a2SkyTiltB {
-  0% { rotate: 6deg; scale: 1.12; }
-  50% { rotate: -5deg; scale: 1.04; }
-  100% { rotate: 6deg; scale: 1.12; }
+@keyframes a2WashTilt {
+  0% { rotate: -3deg; scale: 1.06; }
+  50% { rotate: 4deg; scale: 1.13; }
+  100% { rotate: -3deg; scale: 1.06; }
 }
 
 /* Respect reduced-motion: keep both skins' looks, but hold the light still
