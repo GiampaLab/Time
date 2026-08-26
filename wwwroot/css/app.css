@@ -78,7 +78,6 @@ code {
 }
 
 .clocks-wrapper {
-  position: relative; /* containing block for .aurora-sky */
   display: flex;
   flex-flow: row nowrap; /* Keep clocks in a row, no wrapping */
   justify-content: space-around; /* Distribute clocks evenly with space around */
@@ -377,164 +376,69 @@ code {
 /* ------------------------------------------------------------------ *
  * Aurora2 skin (default)                                               *
  *                                                                      *
- * The other two skins paint light INSIDE each arm, clipped to the pill.*
- * That can never look like one aurora over the wall, however carefully *
- * the arms are synchronised: the colour begins and ends inside an arm, *
- * so it cannot flow from one into the next. Matching their timing only *
- * makes 48 arms do the same local thing at staggered moments.          *
+ * Structurally this IS the aurora skin — same curtain, same residue,   *
+ * same right-to-left stagger — and it deliberately reuses `auroraSweep`*
+ * and `auroraResidue` rather than declaring its own. Those keyframes   *
+ * animate only transform and opacity and carry no colour, so the       *
+ * movement is shared and only the palette differs.                     *
  *                                                                      *
- * So this skin inverts the structure. There is ONE field for the whole *
- * wall — .aurora-sky, viewport-sized, sitting ABOVE the clocks — and it*
- * multiplies onto them. Multiply is not a stylistic pick but the only  *
- * blend that works here: it leaves black untouched (0 x n = 0), so the *
- * background stays black while light pixels take the colour. That is   *
- * also why the pill is PALE in this skin, where the others are dark —  *
- * multiply has nothing to tint on a dark arm.                          *
- *                                                                      *
- * Because the field is anchored to the wall and not to any arm, colour *
- * is continuous across the whole grid, and a rotating arm sweeps       *
- * through it and changes hue by where it is on screen.                 *
- *                                                                      *
- * It is also far cheaper than what it replaces: two full-screen layers *
- * instead of a ::before and ::after on all 48 arms, and still only     *
- * compositor properties animate.                                       *
+ * That reuse is the point. Earlier versions of this skin replaced the  *
+ * movement model outright to chase variation, and lost the one thing   *
+ * that made the original legible: a strong, repetitive, unmistakably   *
+ * directional sweep. The motion here is left exactly as it was.        *
  * ------------------------------------------------------------------ */
 
-/* Pale frosted glass: the same body the other skins use — inset highlight,
-   soft depth, rounded caps forming the hub — inverted to a light base so the
-   aurora above has something to tint. Geometry (overflow, radius, height)
-   still comes from the shared rule; only the colouring changes here. */
+/* Same arctic-night base as the aurora skin, with the inner and outer glow
+   retuned from that skin's softer green to this palette's sharper one. */
 .theme-aurora2 .clock .hour div,
 .theme-aurora2 .clock .minute div {
-  background-color: rgb(232, 238, 248);
-  background-image:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.25) 45%, rgba(206, 222, 245, 0.6));
+  background-color: rgb(9, 21, 30);
   box-shadow:
-    inset 0 1px 1px rgba(255, 255, 255, 0.95),
-    inset 0 -2px 5px rgba(120, 150, 190, 0.35),
-    inset 0 0 12px rgba(255, 255, 255, 0.5),
-    0 0 14px rgba(180, 210, 255, 0.3);
+    inset 0 1px 1px rgba(255, 255, 255, 0.45),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.4),
+    inset 0 0 12px rgba(43, 255, 180, 0.22),
+    0 0 12px rgba(53, 216, 255, 0.2);
 }
 
-/* The field. Absolutely positioned (not fixed) so it follows .clocks-wrapper
-   through the portrait rotation enforceLandscape() applies; oversized well
-   past the wrapper so drift never pulls an edge into view. Only rendered for
-   this skin. */
-.aurora-sky {
-  display: none;
-}
-
-.theme-aurora2 .aurora-sky {
-  display: block;
+/* Residue: the glow left behind between curtain passes. */
+.theme-aurora2 .clock .hour div::before,
+.theme-aurora2 .clock .minute div::before {
+  content: "";
   position: absolute;
-  inset: -30%;
-  z-index: 5;
-  pointer-events: none;
-  mix-blend-mode: multiply;
-  will-change: translate, rotate, scale;
-}
-
-/* --- The rays -------------------------------------------------------------
-   An aurora is banded: curtains of light with gaps between them, not a soft
-   wash. So the two ray layers are repeating-linear-gradients — saturated bands
-   separated by white, and under `multiply` white tints nothing, so the white
-   runs read as the gaps between curtains.
-
-   Each layer slides by EXACTLY one repeat period, measured along the
-   gradient's own axis, which makes the loop seamless by construction rather
-   than by tuning. For a CSS angle A the axis unit vector is (sin A, -cos A),
-   so a period of L travels (L sin A, -L cos A):
-     rays-a  105deg over 300px -> translate(289.8px, 77.6px)
-     rays-b  165deg over 300px -> translate(77.6px, 289.8px)
-   105deg carries the bands mostly left-to-right, 165deg mostly top-to-bottom,
-   and the two crossing systems are what give the field its depth.
-
-   Two constraints, both learned the hard way:
-
-   1. These layers must never be scaled or rotated. `translate` is applied in
-      the parent's space while the tile scales with the element, so at any
-      scale but 1 the slide stops matching one period and the pattern jumps at
-      the loop point. The wash layer below may scale only because it does not
-      tile.
-
-   2. Each layer's OVERHANG must be at least the distance it slides, in the
-      same units. The slide is an absolute px distance (it has to be — it is
-      one gradient period), so the overhang has to be px too. A percentage
-      inset scales with the viewport while the slide does not, so on any
-      screen small enough the layer slides off its own edge and lets the
-      background through before snapping back — which reads exactly like the
-      animation resetting. Hence the explicit px insets: rays-a slides
-      (289.8, 77.6) so it overhangs 310/110; rays-b slides (77.6, 289.8) so it
-      overhangs 110/310. Change a period and these must change with it. */
-.theme-aurora2 .sky-rays-a {
-  inset: -110px -310px;
-  background-image: repeating-linear-gradient(105deg,
-    #ffffff 0px,
-    #2bffb4 50px,
-    #ffffff 100px,
-    #4b8dff 150px,
-    #ffffff 200px,
-    #b45cff 250px,
-    #ffffff 300px);
-  opacity: 0.8;
-  animation: a2RaysA 23s linear infinite;
-}
-
-.theme-aurora2 .sky-rays-b {
-  inset: -310px -110px;
-  background-image: repeating-linear-gradient(165deg,
-    #ffffff 0px,
-    #ff5cc0 50px,
-    #ffffff 100px,
-    #35d8ff 150px,
-    #ffffff 200px,
-    #5cffb0 250px,
-    #ffffff 300px);
-  opacity: 0.68;
-  animation: a2RaysB 31s linear infinite;
-}
-
-/* --- The wash -------------------------------------------------------------
-   Broad, slow colour underneath the rays, so the curtains are not all one hue
-   and the palette shifts across the wall. Not tiled, so unlike the ray layers
-   this one is free to rotate and scale; it drifts on a closed loop well inside
-   the oversized element, so no edge can come into view. Periods coprime with
-   the ray layers (29s / 37s vs 13s / 19s), so the whole field never returns to
-   a state it has been in. */
-.theme-aurora2 .sky-wash {
-  background-color: #f2f5ff;
+  inset: -75%;
   background-image:
-    radial-gradient(ellipse 46% 52% at 12% 24%, #4dffbe, transparent 72%),
-    radial-gradient(ellipse 50% 46% at 52% 4%, #59b4ff, transparent 70%),
-    radial-gradient(ellipse 44% 54% at 88% 36%, #a75cff, transparent 72%),
-    radial-gradient(ellipse 52% 46% at 28% 78%, #ff6dbe, transparent 72%),
-    radial-gradient(ellipse 48% 50% at 78% 90%, #3fffd6, transparent 72%);
-  opacity: 0.85;
-  animation: a2WashDrift 29s linear infinite, a2WashTilt 37s ease-in-out infinite;
+    radial-gradient(ellipse 28% 18% at 32% 40%, rgba(43, 255, 180, 0.42), transparent 65%),
+    radial-gradient(ellipse 24% 16% at 66% 62%, rgba(75, 141, 255, 0.34), transparent 60%),
+    radial-gradient(ellipse 22% 15% at 48% 22%, rgba(180, 92, 255, 0.36), transparent 60%);
+  background-repeat: no-repeat;
+  opacity: 0.45;
+  will-change: transform, opacity;
+  transform: translate3d(0, 0, 0);
+  animation: auroraResidue 16s ease-in-out infinite alternate;
+  animation-delay: calc(var(--caustic-phase, 0) * -0.7s);
 }
 
-@keyframes a2RaysA {
-  0% { translate: 0 0; }
-  100% { translate: 289.8px 77.6px; }
-}
-
-@keyframes a2RaysB {
-  0% { translate: 0 0; }
-  100% { translate: 77.6px 289.8px; }
-}
-
-@keyframes a2WashDrift {
-  0% { translate: -5% 3%; }
-  27% { translate: 3% -3%; }
-  52% { translate: 7% 4%; }
-  78% { translate: 0% 8%; }
-  100% { translate: -5% 3%; }
-}
-
-@keyframes a2WashTilt {
-  0% { rotate: -3deg; scale: 1.06; }
-  50% { rotate: 4deg; scale: 1.13; }
-  100% { rotate: -3deg; scale: 1.06; }
+/* The curtain: green -> cyan -> violet -> pink, sweeping through the hand.
+   The negative per-clock delay makes higher-phase clocks lead, so the
+   wavefront runs bottom-right -> top-left: right to left across the wall. */
+.theme-aurora2 .clock .hour div::after,
+.theme-aurora2 .clock .minute div::after {
+  content: "";
+  position: absolute;
+  inset: -75%;
+  background-image:
+    linear-gradient(100deg,
+      transparent 16%,
+      rgba(43, 255, 180, 0.85) 30%,
+      rgba(53, 216, 255, 0.6) 44%,
+      rgba(180, 92, 255, 0.7) 58%,
+      rgba(255, 92, 192, 0.5) 70%,
+      transparent 86%);
+  opacity: 0;
+  will-change: transform, opacity;
+  transform: translate3d(-22%, -3%, 0);
+  animation: auroraSweep 14s ease-in-out infinite;
+  animation-delay: calc(var(--caustic-phase, 0) * -0.8s);
 }
 
 /* Respect reduced-motion: keep both skins' looks, but hold the light still
@@ -546,7 +450,10 @@ code {
   .theme-aurora .clock .minute div::before,
   .theme-aurora .clock .hour div::after,
   .theme-aurora .clock .minute div::after,
-  .theme-aurora2 .aurora-sky {
+  .theme-aurora2 .clock .hour div::before,
+  .theme-aurora2 .clock .minute div::before,
+  .theme-aurora2 .clock .hour div::after,
+  .theme-aurora2 .clock .minute div::after {
     animation: none;
   }
 }
