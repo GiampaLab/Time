@@ -91,14 +91,17 @@
         {
             controller = new Controller(JSRuntime, clockReferences, hourReferences, minuteReferences);
 
-            // `?bench=1` runs the skin benchmark instead of the clock. The
+            // The skin benchmark runs instead of the clock when `?bench=1` is
+            // in the URL, or when index.html carries a <meta name="bench"> -
+            // the Android dream loads a bare URL and takes no input, so the
+            // meta tag is the only way to reach it there. The
             // harness drives all 48 arms itself with one deterministic rotation
             // so that every skin is measured under an identical workload - the
             // orchestrator picks its phases and patterns at random, which is
             // right for the screensaver and useless for a comparison. It also
             // owns the skin class while it runs, so the preference restore below
             // is skipped rather than fighting it.
-            if (GetQueryValue(Nav.Uri, "bench") is not null)
+            if (await JSRuntime.InvokeAsync<bool>("benchHarness.isEnabled"))
             {
                 await JSRuntime.InvokeVoidAsync("benchHarness.start");
                 return;

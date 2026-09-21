@@ -38,13 +38,36 @@
     { key: "field", cls: "theme-field", note: "screen-space field + multiply, no filtering" }
   ];
 
-  // Overridable from the query string, e.g.
-  //   ?bench=1&measure=60000&rounds=6   - a long run for thermal behaviour
-  //   ?bench=1&warmup=300&measure=800&rounds=1 - a quick smoke test
+  /* Where the settings come from. In a browser they are query params:
+       ?bench=1&measure=60000&rounds=6      - a long run for thermal behaviour
+       ?bench=1&warmup=300&measure=800&rounds=1 - a quick smoke test
+
+     The Android DreamService cannot use those: it calls loadUrl() on a bare
+     "https://appassets.androidplatform.net/" with no query string, and it is
+     not interactive, so there is no way to type one either. So a
+     <meta name="bench"> in index.html enables the benchmark too, and its
+     content is read exactly as a query string would be. Adding that one tag
+     before ./build-android.sh turns the screensaver into the benchmark;
+     removing it turns it back into a clock. No Kotlin change, no rebuild of
+     anything but the assets. */
+  function benchConfig() {
+    var q = location.search || "";
+    var meta = document.querySelector('meta[name="bench"]');
+    if (meta) {
+      q += (q ? "&" : "?") + (meta.getAttribute("content") || "bench=1");
+    }
+    return q;
+  }
+
   function param(name, dflt) {
-    var m = new RegExp("[?&]" + name + "=([^&]*)").exec(location.search);
+    var m = new RegExp("[?&]" + name + "=([^&]*)").exec(benchConfig());
     var v = m ? parseInt(decodeURIComponent(m[1]), 10) : NaN;
     return isNaN(v) ? dflt : v;
+  }
+
+  function isEnabled() {
+    return /[?&]bench=1/.test(location.search) ||
+      !!document.querySelector('meta[name="bench"]');
   }
 
   var WARMUP_MS = param("warmup", 3000); // discarded: layerisation, first paints
@@ -269,6 +292,8 @@
   }
 
   window.benchHarness = {
+    // Asked by AnalogClock.razor before it starts the orchestrator.
+    isEnabled: isEnabled,
     start: function () {
       // OnAfterRenderAsync fires as soon as the DOM is up; give layout and the
       // first paints a moment to settle before the first warm-up starts.
