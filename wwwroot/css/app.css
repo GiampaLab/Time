@@ -461,12 +461,34 @@ code {
      frame rather than cached and translated. Dial it up only if the curtains
      look too crisp on the device - and re-measure if you do. */
   --field-filter: none;
-  /* Band-to-band distance. NOTE this is a fraction of the FIELD element, which
-     is inset -45% -75% and so is 2.5x the wrapper's width - not a fraction of
-     the screen. 9.5% x 2.5 is about a quarter of the wall, i.e. one band per
-     two clock columns, which is what keeps a travelling edge on screen while
-     still letting a single hand hold more than one band. */
-  --ray-period: 9.5%;
+  /* Band-to-band distance, as a fraction of the FIELD layer's own width - not
+     of the screen. The layer is inset -45% -80%, so it is 2.6x the wrapper
+     wide: 5% of it is about 13% of the wall, i.e. one band per clock column.
+     --hue-period is 3 bands and --wash-period is 4, and fieldSweep travels
+     exactly 6 bands / 2 hue periods while fieldWash travels exactly 1 wash
+     period, so both loops close invisibly. Retune these together or the resets
+     start showing as colour jumps. */
+  --ray-period: 5%;
+  --hue-period: 15%;
+  --wash-period: 20%;
+
+  /* Tilt of the two curtain layers. The bands are drawn by 90deg gradients and
+     the diagonal comes from rotating the layer, because a gradient's stops are
+     measured along the GRADIENT LINE while a translate percentage is measured
+     along element WIDTH - at any other angle the two units disagree and the
+     loop stops closing (see the note on .aurora-field::before).
+
+     COST: a rotated layer has to be resampled as it is composited, where a pure
+     translate can be blitted. Measured with no GPU, dropping the tilt to 0
+     moved theme-lens from 22.4 to 30.2fps and theme-field from 21.9 to 27.4.
+     That is a software-rasteriser figure and probably not what a phone does -
+     rotating a cached texture is close to free on a real GPU - so this is left
+     on and exposed as a dial rather than removed. If the Pixel numbers say
+     otherwise, set both to 0deg: vertical curtains travelling sideways are
+     closer to a real aurora anyway, at the cost of lining up with the grid's
+     columns. */
+  --field-tilt: -11deg;
+  --wash-tilt: -7deg;
   --lens-blur: 10px;
   --lens-saturate: 2.1;
   --lens-brightness: 14;
@@ -505,60 +527,100 @@ code {
   mix-blend-mode: multiply;
 }
 
-/* The travelling ray curtains. The banding layer darkens the GAPS rather than
-   brightening the bands: it is composited with multiply, and multiplying by a
-   transparent pixel changes nothing, so a band gradient built the intuitive way
-   round - white bands over transparent gaps - renders as a flat wash. That is
-   exactly the "no discernible rays" failure recorded on the earlier branch.
-   Dark gaps over a continuous colour layer is what actually produces bands.
-
-   A repeating gradient gives evenly spaced bands
-   with genuine dark gaps between them, which is what makes the travel legible;
-   the overlaid wide gradient varies the bands' brightness along the wall so the
-   repetition is not itself readable. Oversized and inset so the translate never
-   drags an empty edge into view. */
+/* The travelling ray curtains.
+ *
+ * Three properties have to hold at once, and each was broken in a different
+ * way before:
+ *
+ * 1. THE COLOUR TRAVELS WITH THE BANDS. The hue used to be one wide gradient
+ *    spanning the whole layer while the bands repeated inside it, so the layer
+ *    could only slide the hue a fraction of its own span: the left of the wall
+ *    stayed green and the right stayed purple no matter how far the rays
+ *    travelled. Hue is now a REPEATING gradient too, on a period of three
+ *    bands, so the colour sequence scrolls with the rays and a fixed point on
+ *    the wall cycles through the whole palette.
+ *
+ * 2. THE LOOP IS SEAMLESS. Both layers repeat, and each animation travels
+ *    exactly a whole number of its own periods, so the reset at 100% lands the
+ *    pattern precisely back on itself. Getting this wrong is what produced the
+ *    sudden colour changes: the old sweep translated 28% while the hue gradient
+ *    spanned 100%, so every 71s the colour snapped a quarter of the way across
+ *    the palette in one frame.
+ *
+ *    That is also why the gradients are at 90deg and the diagonal comes from a
+ *    rotate() in the transform instead of from the gradient angle. A gradient's
+ *    percentage stops are relative to the GRADIENT LINE, whose length for an
+ *    angled gradient depends on both element dimensions, while a translate
+ *    percentage is relative to element WIDTH. At 100deg the two never agree, so
+ *    "travel six periods" silently became 5.6 periods at one viewport size and
+ *    something else at the next. At 90deg the gradient line IS the width, the
+ *    two units coincide, and the loop closes at every aspect ratio.
+ *
+ * 3. IT NEVER STOPS. Speed still varies, but every segment is linear with a
+ *    non-zero delta, so the curtains always move. The old keyframes used
+ *    easings like cubic-bezier(0.9, 0, 0.9, 0.3), whose slope is ~0 through the
+ *    middle: that is a dead stop lasting seconds, not a slow drift. Any easing
+ *    with zero slope at a keyframe - ease-in-out included - stalls there, which
+ *    is why these are all linear and the variation lives in the spacing.
+ *
+ * The banding layer darkens the GAPS rather than brightening the bands: it is
+ * composited with multiply, and multiplying by a transparent pixel changes
+ * nothing, so bands built the intuitive way round - white over transparent -
+ * render as a flat wash. That is the "no discernible rays" failure recorded on
+ * the earlier branch.
+ *
+ * All periods below are percentages of the layer's own width. */
 .aurora-field::before {
   content: "";
   position: absolute;
-  inset: -45% -75%;
+  inset: -45% -80%;
   background-image:
-    linear-gradient(95deg,
-      rgba(43, 255, 180, 0.7) 0%,
-      rgba(43, 255, 180, 0.95) 16%,
-      rgba(53, 216, 255, 0.9) 33%,
-      rgba(120, 150, 255, 0.75) 48%,
-      rgba(180, 92, 255, 0.92) 66%,
-      rgba(255, 92, 192, 0.85) 83%,
-      rgba(255, 140, 170, 0.7) 100%),
-    repeating-linear-gradient(100deg,
-      rgba(0, 0, 0, 0.8) 0,
+    repeating-linear-gradient(90deg,
+      rgba(0, 0, 0, 0.8) 0%,
       rgba(0, 0, 0, 0.8) calc(var(--ray-period) * 0.3),
       rgba(0, 0, 0, 0.28) calc(var(--ray-period) * 0.44),
       rgba(0, 0, 0, 0) calc(var(--ray-period) * 0.5),
       rgba(0, 0, 0, 0.28) calc(var(--ray-period) * 0.56),
       rgba(0, 0, 0, 0.8) calc(var(--ray-period) * 0.7),
-      rgba(0, 0, 0, 0.8) var(--ray-period));
+      rgba(0, 0, 0, 0.8) var(--ray-period)),
+    repeating-linear-gradient(90deg,
+      rgb(43, 255, 180) 0%,
+      rgb(53, 216, 255) calc(var(--hue-period) * 0.167),
+      rgb(90, 150, 255) calc(var(--hue-period) * 0.333),
+      rgb(180, 92, 255) calc(var(--hue-period) * 0.5),
+      rgb(90, 150, 255) calc(var(--hue-period) * 0.667),
+      rgb(53, 216, 255) calc(var(--hue-period) * 0.833),
+      rgb(43, 255, 180) var(--hue-period));
   background-blend-mode: multiply;
   will-change: transform;
-  transform: translate3d(0, 0, 0);
+  transform: rotate(var(--field-tilt)) translate3d(0, 0, 0);
   animation: fieldSweep 71s linear infinite;
 }
 
-/* The slower counter-drifting layer: broad, dim, no banding. It exists to keep
-   the wall from ever settling into the sweep's period - 53s against 71s means
-   the pair realigns only every ~63 minutes. */
+/* The second curtain, travelling the other way at a different rate. It is what
+   makes an individual ray change colour as it crosses the wall: the two layers
+   slide against each other, so the hue landing on any given band drifts
+   continuously instead of being fixed to it. It also guarantees the wall is
+   never still even at the sweep's slowest moment, and on 53s against 71s the
+   pair realigns only every ~63 minutes.
+
+   Both hue gradients are palindromes - they run out to violet and back rather
+   than wrapping round - so there is no point in the cycle where the colour has
+   to jump from one end of the palette to the other. */
 .aurora-field::after {
   content: "";
   position: absolute;
-  inset: -45% -75%;
+  inset: -45% -80%;
   background-image:
-    radial-gradient(ellipse 40% 55% at 22% 38%, rgba(43, 255, 180, 0.34), transparent 62%),
-    radial-gradient(ellipse 34% 48% at 58% 66%, rgba(75, 141, 255, 0.3), transparent 60%),
-    radial-gradient(ellipse 30% 44% at 82% 30%, rgba(180, 92, 255, 0.3), transparent 60%);
-  background-repeat: no-repeat;
+    repeating-linear-gradient(90deg,
+      rgba(43, 255, 180, 0.3) 0%,
+      rgba(120, 120, 255, 0.16) calc(var(--wash-period) * 0.25),
+      rgba(255, 110, 200, 0.3) calc(var(--wash-period) * 0.5),
+      rgba(120, 120, 255, 0.16) calc(var(--wash-period) * 0.75),
+      rgba(43, 255, 180, 0.3) var(--wash-period));
   will-change: transform;
-  transform: translate3d(0, 0, 0);
-  animation: fieldResidue 53s linear infinite;
+  transform: rotate(var(--wash-tilt)) translate3d(0, 0, 0);
+  animation: fieldWash 53s linear infinite;
 }
 
 /* Any blur is applied to the SAME elements that are transformed, never to their
@@ -573,28 +635,34 @@ code {
   filter: var(--field-filter);
 }
 
-/* Four passes inside one cycle, differing in speed, extent and dwell. The
-   per-segment timing functions are the point: the curtain drifts, nearly
-   stalls, then surges. A constant-rate translate reads as a mechanical wipe
-   however pretty the colours are. */
+/* Travels 30% = exactly 6 ray periods = exactly 2 hue periods, so the reset is
+   invisible. Eight linear segments whose spacing sets the speed: the weights
+   run 1.6, 0.6, 1.0, 1.8, 0.7, 1.3, 0.5, 1.5, so the fastest stretch is about
+   3.6x the slowest and the slowest is still about 0.44x the average - slow
+   enough to read as a drift, never a stop. Keep every x a multiple of 30/9
+   apart if you retune, and keep the last one at exactly 30%. */
 @keyframes fieldSweep {
-  0%   { transform: translate3d(0, 0, 0); animation-timing-function: cubic-bezier(0.35, 0, 0.65, 1); }
-  22%  { transform: translate3d(6.3%, -1.2%, 0); animation-timing-function: cubic-bezier(0.9, 0, 0.9, 0.3); }
-  38%  { transform: translate3d(9.1%, 0.8%, 0); animation-timing-function: linear; }
-  54%  { transform: translate3d(16.8%, -0.8%, 0); animation-timing-function: cubic-bezier(0.1, 0.7, 0.2, 1); }
-  71%  { transform: translate3d(19.6%, 1.5%, 0); animation-timing-function: cubic-bezier(0.95, 0, 1, 0.2); }
-  88%  { transform: translate3d(21.7%, -0.4%, 0); animation-timing-function: cubic-bezier(0.2, 0.8, 0.3, 1); }
-  100% { transform: translate3d(28%, 0, 0); }
+  0%     { transform: rotate(var(--field-tilt)) translate3d(0, 0, 0); }
+  12.5%  { transform: rotate(var(--field-tilt)) translate3d(5.333%, 0, 0); }
+  25%    { transform: rotate(var(--field-tilt)) translate3d(7.333%, 0, 0); }
+  37.5%  { transform: rotate(var(--field-tilt)) translate3d(10.667%, 0, 0); }
+  50%    { transform: rotate(var(--field-tilt)) translate3d(16.667%, 0, 0); }
+  62.5%  { transform: rotate(var(--field-tilt)) translate3d(19%, 0, 0); }
+  75%    { transform: rotate(var(--field-tilt)) translate3d(23.333%, 0, 0); }
+  87.5%  { transform: rotate(var(--field-tilt)) translate3d(25%, 0, 0); }
+  100%   { transform: rotate(var(--field-tilt)) translate3d(30%, 0, 0); }
 }
 
-/* A closed loop: it must end where it began, or the wall jumps once every 53s.
-   The sweep above does not have to close because its bands repeat on
-   --ray-period, so it can travel forever. */
-@keyframes fieldResidue {
-  0%   { transform: translate3d(0, 0, 0) scale(1); }
-  33%  { transform: translate3d(-5%, 3%, 0) scale(1.06); }
-  66%  { transform: translate3d(4%, -2.5%, 0) scale(1.03); }
-  100% { transform: translate3d(0, 0, 0) scale(1); }
+/* Travels -20% = exactly 1 wash period, the other way, on its own uneven
+   spacing so the two layers' relative speed keeps changing. */
+@keyframes fieldWash {
+  0%       { transform: rotate(var(--wash-tilt)) translate3d(0, 0, 0); }
+  16.667%  { transform: rotate(var(--wash-tilt)) translate3d(-3.934%, 0, 0); }
+  33.333%  { transform: rotate(var(--wash-tilt)) translate3d(-6.557%, 0, 0); }
+  50%      { transform: rotate(var(--wash-tilt)) translate3d(-11.475%, 0, 0); }
+  66.667%  { transform: rotate(var(--wash-tilt)) translate3d(-13.443%, 0, 0); }
+  83.333%  { transform: rotate(var(--wash-tilt)) translate3d(-17.049%, 0, 0); }
+  100%     { transform: rotate(var(--wash-tilt)) translate3d(-20%, 0, 0); }
 }
 
 /* ---- lens: the hands as lenses -------------------------------------- *
