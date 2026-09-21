@@ -1,7 +1,11 @@
 /* ------------------------------------------------------------------ *
  * Skin benchmark harness.
  *
- * Runs only when the app is loaded with `?bench=1`. It exists to answer one
+ * This file holds two diagnostics. The benchmark below, and a field-reveal
+ * control (see the end of the file) that makes the lens skin's normally
+ * invisible aurora field visible so its movement can be watched.
+ *
+ * The benchmark runs only when the app is loaded with `?bench=1`. It answers one
  * question with numbers rather than opinion: does revealing a screen-space
  * aurora through the clock arms cost more than painting the light inside each
  * arm, on the device that actually has to run this for hours.
@@ -291,7 +295,79 @@
     setSkin("theme-lens");
   }
 
+  /* ---------------------------------------------------------------- *
+   * Field reveal.
+   *
+   * .theme-lens paints its aurora field at about 4% over black - low enough to
+   * read as black, high enough for backdrop-filter to have something to
+   * amplify. That is the point of the skin and it is also why the field's
+   * movement is impossible to study: you only ever see it through the arms,
+   * a few degrees of arc at a time.
+   *
+   * `f` cycles the field up through 20%, 50% and 100% and back to normal;
+   * `?field=0.5` sets it at load. Nothing here changes the shipped look - the
+   * default is untouched and the override is an inline style on the wrapper.
+   *
+   * Raising the field alone would blow the arms out to white, since brightness
+   * is tuned for a 4% backdrop. So the arms' amplification is scaled down by
+   * the same factor: the background becomes visible while the arms keep
+   * looking roughly as they should, and you can see how the two relate.
+   * ---------------------------------------------------------------- */
+  var REVEAL_STEPS = [null, 0.2, 0.5, 1]; // null = the skin's own default
+  var revealIndex = 0;
+  var BASE_OPACITY = 0.04; // keep in step with --field-opacity in app.css
+  var BASE_BRIGHTNESS = 14; // and with --lens-brightness
+
+  function applyReveal(value) {
+    var wrapper = document.querySelector(".clocks-wrapper");
+    if (!wrapper) return;
+    if (value === null || value === undefined) {
+      wrapper.style.removeProperty("--field-opacity");
+      wrapper.style.removeProperty("--lens-brightness");
+      flash("field: default (invisible)");
+      return;
+    }
+    wrapper.style.setProperty("--field-opacity", String(value));
+    // Hold the arms at roughly their normal exposure as the field comes up.
+    wrapper.style.setProperty(
+      "--lens-brightness",
+      String(Math.max(1, BASE_BRIGHTNESS * (BASE_OPACITY / value)))
+    );
+    flash("field: " + Math.round(value * 100) + "%");
+  }
+
+  var flashEl = null;
+  var flashTimer = null;
+  function flash(text) {
+    if (!flashEl) {
+      flashEl = el("div", "bench-overlay");
+      flashEl.style.top = "auto";
+      flashEl.style.bottom = "0";
+      document.body.appendChild(flashEl);
+    }
+    flashEl.textContent = text + "   (f cycles)";
+    flashEl.style.display = "block";
+    clearTimeout(flashTimer);
+    flashTimer = setTimeout(function () { flashEl.style.display = "none"; }, 1800);
+  }
+
+  function installReveal() {
+    var m = /[?&]field=([^&]*)/.exec(location.search);
+    if (m) {
+      var v = parseFloat(decodeURIComponent(m[1]));
+      if (!isNaN(v)) setTimeout(function () { applyReveal(v); }, 400);
+    }
+    window.addEventListener("keydown", function (e) {
+      if (e.key !== "f" && e.key !== "F") return;
+      revealIndex = (revealIndex + 1) % REVEAL_STEPS.length;
+      applyReveal(REVEAL_STEPS[revealIndex]);
+    });
+  }
+
+  installReveal();
+
   window.benchHarness = {
+    reveal: applyReveal,
     // Asked by AnalogClock.razor before it starts the orchestrator.
     isEnabled: isEnabled,
     start: function () {
