@@ -78,6 +78,7 @@ code {
 }
 
 .clocks-wrapper {
+  position: relative; /* anchors the absolutely-positioned .aurora-field */
   display: flex;
   flex-flow: row nowrap; /* Keep clocks in a row, no wrapping */
   justify-content: space-around; /* Distribute clocks evenly with space around */
@@ -381,6 +382,355 @@ code {
   .theme-aurora .clock .minute div::after {
     animation: none;
   }
+}
+
+/* ------------------------------------------------------------------ *
+ * Screen-space field skins: "lens" and "field"                         *
+ *                                                                      *
+ * Both invert the model used by .theme-aurora / .theme-glass. Those    *
+ * paint light INSIDE each hand, so the light is anchored to the hand's *
+ * own rotating frame: it turns with the hand, and all 48 hands play    *
+ * the same loop. Here there is ONE aurora field for the whole wall,    *
+ * anchored to the screen, and the hands reveal the patch of it they    *
+ * currently cover. A hand sweeping 180 degrees therefore crosses       *
+ * genuinely different light, and two hands at different angles show    *
+ * different colour, without any of that being authored per hand.       *
+ *                                                                      *
+ * The two skins differ only in HOW the hands reveal the field:         *
+ *                                                                      *
+ *   .theme-lens  - the field is painted dim (a few percent over black, *
+ *                  so the wall still reads as black) and each hand is  *
+ *                  a lens: backdrop-filter blurs, saturates and        *
+ *                  amplifies the field where the hand covers it. This  *
+ *                  is real glassmorphism - the hand distorts what is   *
+ *                  behind it - and it costs one backdrop snapshot per  *
+ *                  hand per frame, which is the thing being measured.  *
+ *                                                                      *
+ *   .theme-field - the field is painted at full strength ABOVE the     *
+ *                  clocks and multiplied onto them. Multiply leaves    *
+ *                  black untouched (0 x n = 0), so the wall stays      *
+ *                  black while the pale hands take the colour. No      *
+ *                  per-hand filtering at all: two composited layers,   *
+ *                  and the cost does not grow with the hand count.     *
+ *                  This is the fallback if .theme-lens is too slow.    *
+ *                                                                      *
+ * PRIOR ART, and why the field looks the way it does. A screen-space   *
+ * field was tried before on claude/gemini-aurora-borealis-effect and   *
+ * abandoned: it "made colour continuous across the wall but read as    *
+ * slow chaotic fades with no discernible rays ... the motion itself    *
+ * never read as travelling light". That attempt built the field out of *
+ * soft radial blobs. The failure was structural, not a matter of       *
+ * tuning: a field whose features are much larger than a clock gives    *
+ * every hand a near-uniform colour, so nothing reads as moving.        *
+ *                                                                      *
+ * So this field is built from RAYS, not blobs - banded curtains with   *
+ * real contrast between band and gap, on a period of roughly two       *
+ * clocks, so a travelling edge is always visible somewhere on the      *
+ * wall and a single hand can hold more than one band. That is a        *
+ * deliberate departure from a pure wall-scale field, and it is the     *
+ * one change that addresses the documented failure.                    *
+ *                                                                      *
+ * The motion carries over the other lesson from that branch: two       *
+ * layers on coprime periods (71s and 53s, realigning only every ~63    *
+ * minutes) and a sweep that stalls and surges rather than travelling   *
+ * at constant speed, so it reads as light rather than as a wipe.       *
+ * Everything animated is transform-only, and each blurred layer is     *
+ * blurred at the same element that is transformed - never a blurred    *
+ * parent with moving children, which would re-rasterise every frame.   *
+ * ------------------------------------------------------------------ */
+
+/* Tunables, all overridable at runtime by the benchmark harness so the
+   look can be adjusted on the device without a rebuild. */
+.clocks-wrapper {
+  /* lens: how much of the field is actually painted. This is THE dial for this
+     skin. Higher gives the arms more to work with and less banding; lower keeps
+     the wall black. At 0.055 the curtains were faintly legible on the
+     background in a dark room, so the default sits just under that - but it is
+     a judgement to make on the real panel, not on a screenshot. */
+  --field-opacity: 0.04;
+  /* field: softness of the multiplied curtains. DEFAULT OFF, on evidence.
+     Note this is a whole filter value, not a length: `blur(0px)` is NOT off.
+     A zero-radius blur is still a filter, so it still forces a render surface
+     and the same per-frame re-rasterisation - measured at 26.4fps against
+     43.7fps for a genuine `none`. Set it to e.g. blur(6px) to enable.
+     Measured in headless Chromium: with the blur on, theme-field ran at 16.7fps;
+     with it off, 43.7fps. Removing the multiply instead changed nothing (16.6),
+     so the blend is free and the blur was the entire cost. Shrinking it from
+     14px to 5px, and the blurred area from ~11x the screen to ~4.75x, moved it
+     only 13.7 -> 15.0, which says the filtered layer is re-rasterised every
+     frame rather than cached and translated. Dial it up only if the curtains
+     look too crisp on the device - and re-measure if you do. */
+  --field-filter: none;
+  /* Band-to-band distance. NOTE this is a fraction of the FIELD element, which
+     is inset -45% -75% and so is 2.5x the wrapper's width - not a fraction of
+     the screen. 9.5% x 2.5 is about a quarter of the wall, i.e. one band per
+     two clock columns, which is what keeps a travelling edge on screen while
+     still letting a single hand hold more than one band. */
+  --ray-period: 9.5%;
+  --lens-blur: 10px;
+  --lens-saturate: 2.1;
+  --lens-brightness: 14;
+  --lens-base-alpha: 0.22;    /* dark tint in the glass; also damps hub stacking */
+}
+
+/* The field element itself. It lives inside .clocks-wrapper on purpose: in
+   portrait, enforceLandscape() rotates the wrapper 90deg, and the field has
+   to rotate with it or the grid and the light would disagree about which way
+   is up. Hidden for every skin that does not use it. */
+.aurora-field {
+  display: none;
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.theme-lens .aurora-field,
+.theme-field .aurora-field {
+  display: block;
+}
+
+/* lens: the field sits BELOW the clocks, dim enough to read as black, and is
+   what each hand's backdrop-filter samples. */
+.theme-lens .aurora-field {
+  z-index: 0;
+  opacity: var(--field-opacity);
+}
+
+/* field: the field sits ABOVE the clocks and multiplies onto them. It must be
+   at full strength here - multiply is what hides it, not its opacity. */
+.theme-field .aurora-field {
+  z-index: 5;
+  opacity: 1;
+  mix-blend-mode: multiply;
+}
+
+/* The travelling ray curtains. The banding layer darkens the GAPS rather than
+   brightening the bands: it is composited with multiply, and multiplying by a
+   transparent pixel changes nothing, so a band gradient built the intuitive way
+   round - white bands over transparent gaps - renders as a flat wash. That is
+   exactly the "no discernible rays" failure recorded on the earlier branch.
+   Dark gaps over a continuous colour layer is what actually produces bands.
+
+   A repeating gradient gives evenly spaced bands
+   with genuine dark gaps between them, which is what makes the travel legible;
+   the overlaid wide gradient varies the bands' brightness along the wall so the
+   repetition is not itself readable. Oversized and inset so the translate never
+   drags an empty edge into view. */
+.aurora-field::before {
+  content: "";
+  position: absolute;
+  inset: -45% -75%;
+  background-image:
+    linear-gradient(95deg,
+      rgba(43, 255, 180, 0.7) 0%,
+      rgba(43, 255, 180, 0.95) 16%,
+      rgba(53, 216, 255, 0.9) 33%,
+      rgba(120, 150, 255, 0.75) 48%,
+      rgba(180, 92, 255, 0.92) 66%,
+      rgba(255, 92, 192, 0.85) 83%,
+      rgba(255, 140, 170, 0.7) 100%),
+    repeating-linear-gradient(100deg,
+      rgba(0, 0, 0, 0.8) 0,
+      rgba(0, 0, 0, 0.8) calc(var(--ray-period) * 0.3),
+      rgba(0, 0, 0, 0.28) calc(var(--ray-period) * 0.44),
+      rgba(0, 0, 0, 0) calc(var(--ray-period) * 0.5),
+      rgba(0, 0, 0, 0.28) calc(var(--ray-period) * 0.56),
+      rgba(0, 0, 0, 0.8) calc(var(--ray-period) * 0.7),
+      rgba(0, 0, 0, 0.8) var(--ray-period));
+  background-blend-mode: multiply;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  animation: fieldSweep 71s linear infinite;
+}
+
+/* The slower counter-drifting layer: broad, dim, no banding. It exists to keep
+   the wall from ever settling into the sweep's period - 53s against 71s means
+   the pair realigns only every ~63 minutes. */
+.aurora-field::after {
+  content: "";
+  position: absolute;
+  inset: -45% -75%;
+  background-image:
+    radial-gradient(ellipse 40% 55% at 22% 38%, rgba(43, 255, 180, 0.34), transparent 62%),
+    radial-gradient(ellipse 34% 48% at 58% 66%, rgba(75, 141, 255, 0.3), transparent 60%),
+    radial-gradient(ellipse 30% 44% at 82% 30%, rgba(180, 92, 255, 0.3), transparent 60%);
+  background-repeat: no-repeat;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  animation: fieldResidue 53s linear infinite;
+}
+
+/* Any blur is applied to the SAME elements that are transformed, never to their
+   parent: a filtered element whose own children moved must be re-rasterised
+   every frame. That is necessary but, on the evidence above, not sufficient -
+   so the blur is off by default and this rule is a no-op until --field-filter
+   is set. Crisp bands also serve this skin better: indistinct light with no
+   discernible rays is the documented reason the earlier screen-space attempt
+   was abandoned. */
+.theme-field .aurora-field::before,
+.theme-field .aurora-field::after {
+  filter: var(--field-filter);
+}
+
+/* Four passes inside one cycle, differing in speed, extent and dwell. The
+   per-segment timing functions are the point: the curtain drifts, nearly
+   stalls, then surges. A constant-rate translate reads as a mechanical wipe
+   however pretty the colours are. */
+@keyframes fieldSweep {
+  0%   { transform: translate3d(0, 0, 0); animation-timing-function: cubic-bezier(0.35, 0, 0.65, 1); }
+  22%  { transform: translate3d(6.3%, -1.2%, 0); animation-timing-function: cubic-bezier(0.9, 0, 0.9, 0.3); }
+  38%  { transform: translate3d(9.1%, 0.8%, 0); animation-timing-function: linear; }
+  54%  { transform: translate3d(16.8%, -0.8%, 0); animation-timing-function: cubic-bezier(0.1, 0.7, 0.2, 1); }
+  71%  { transform: translate3d(19.6%, 1.5%, 0); animation-timing-function: cubic-bezier(0.95, 0, 1, 0.2); }
+  88%  { transform: translate3d(21.7%, -0.4%, 0); animation-timing-function: cubic-bezier(0.2, 0.8, 0.3, 1); }
+  100% { transform: translate3d(28%, 0, 0); }
+}
+
+/* A closed loop: it must end where it began, or the wall jumps once every 53s.
+   The sweep above does not have to close because its bands repeat on
+   --ray-period, so it can travel forever. */
+@keyframes fieldResidue {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  33%  { transform: translate3d(-5%, 3%, 0) scale(1.06); }
+  66%  { transform: translate3d(4%, -2.5%, 0) scale(1.03); }
+  100% { transform: translate3d(0, 0, 0) scale(1); }
+}
+
+/* ---- lens: the hands as lenses -------------------------------------- *
+ * Geometry matches the other skins (see the shared glass-body rule above):
+ * a rounded pill extended one cap-radius past the pivot, so the two caps
+ * always fill the same central disc and form the hub at every angle.
+ *
+ * KNOWN ARTEFACT: where the two hands cross, the upper hand's backdrop
+ * includes the lower hand, which has already been amplified - so the hub
+ * lenses twice and sits brighter than the arms. The opaque bodies in the
+ * other skins avoid this by occluding instead of stacking. --lens-base-alpha
+ * damps it (a darker body admits less of the layer beneath) but cannot remove
+ * it; judge it on the device before deciding whether it matters. */
+/* The theme class sits ON the wrapper, so it needs a compound selector here,
+   not a descendant one. Body is already black, so a transparent wrapper still
+   reads as black - it just stops occluding the field behind the clocks. */
+.clocks-wrapper.theme-lens,
+.theme-lens .clock,
+.theme-lens .clock-container {
+  background-color: transparent;
+}
+
+.theme-lens .clock .hour div,
+.theme-lens .clock .minute div {
+  overflow: hidden;
+  border-radius: 4cqmin;
+  height: calc(40% + 4cqmin);
+  background-color: rgba(6, 16, 24, var(--lens-base-alpha));
+  background-image: none;
+  /* Order matters: blur first so the dim field is smoothed BEFORE it is
+     amplified. Amplifying first would multiply 8-bit quantisation steps into
+     visible banding, and no amount of blurring afterwards removes them. */
+  -webkit-backdrop-filter:
+    blur(var(--lens-blur)) saturate(var(--lens-saturate)) brightness(var(--lens-brightness));
+  backdrop-filter:
+    blur(var(--lens-blur)) saturate(var(--lens-saturate)) brightness(var(--lens-brightness));
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.5),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.45),
+    inset 0 0 14px rgba(120, 220, 255, 0.18),
+    0 0 14px rgba(110, 230, 190, 0.16);
+}
+
+/* Edge lighting. This, not the blur, is what the eye reads as thickness: a
+   bright leading edge and a darker trailing one. Painted once, never animated,
+   so it costs nothing as the hand turns. */
+.theme-lens .clock .hour div::before,
+.theme-lens .clock .minute div::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image:
+    linear-gradient(105deg,
+      rgba(255, 255, 255, 0.28) 0%,
+      rgba(255, 255, 255, 0.06) 22%,
+      rgba(255, 255, 255, 0) 45%,
+      rgba(0, 0, 0, 0.18) 78%,
+      rgba(0, 0, 0, 0.3) 100%);
+  pointer-events: none;
+}
+
+/* Dither. Amplifying a field painted at a few percent means working with only
+   a handful of distinct 8-bit levels, which band across a gradient. A faint
+   irregular texture breaks the bands up; it is a static paint, so it is free. */
+.theme-lens .clock .hour div::after,
+.theme-lens .clock .minute div::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image:
+    repeating-radial-gradient(circle at 17% 43%, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 3px),
+    repeating-radial-gradient(circle at 71% 19%, rgba(255, 255, 255, 0.028) 0 1px, transparent 1px 4px);
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.theme-lens .clock .ctr,
+.theme-field .clock .ctr {
+  display: none;
+}
+
+/* ---- field: pale hands for the multiply reveal ---------------------- *
+ * Multiply has nothing to tint on a dark hand, so this skin's body is pale
+ * where the others are dark: the hand carries the luminance and the field
+ * supplies the colour. The frosted shading survives as greyscale modulation. */
+.theme-field .clock .hour div,
+.theme-field .clock .minute div {
+  overflow: hidden;
+  border-radius: 4cqmin;
+  height: calc(40% + 4cqmin);
+  background-color: rgb(232, 242, 250);
+  background-image:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(196, 216, 232, 0.9) 45%, rgba(255, 255, 255, 0.85));
+  box-shadow:
+    inset 0 1px 2px rgba(255, 255, 255, 0.9),
+    inset 0 -3px 6px rgba(120, 150, 175, 0.4),
+    0 0 14px rgba(150, 205, 255, 0.2);
+}
+
+/* Reduced motion: keep both fields, hold them still. */
+@media (prefers-reduced-motion: reduce) {
+  .aurora-field::before,
+  .aurora-field::after {
+    animation: none;
+  }
+}
+
+/* Benchmark overlay. Rendered only in bench mode. Updated between phases,
+   never per frame, so measuring does not perturb what is measured. */
+.bench-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 2000;
+  margin: 8px;
+  padding: 10px 14px;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #d8f6ff;
+  background: rgba(0, 0, 0, 0.82);
+  border: 1px solid rgba(120, 220, 255, 0.35);
+  border-radius: 8px;
+  white-space: pre;
+  pointer-events: none;
+}
+
+.bench-overlay .bench-now {
+  color: #6bffcf;
+  font-weight: bold;
+}
+
+.bench-overlay .bench-warn {
+  color: #ffb36b;
 }
 
 /* Unobtrusive corner control cycling through the clock skins (also bound

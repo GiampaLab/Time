@@ -19,6 +19,11 @@
 <button class="theme-toggle" title="Cycle clock skin (g)" @onclick="CycleSkin">&#9672;</button>
 
 <div class="clocks-wrapper @SkinClass">
+    @* One aurora field for the whole wall. Inside the wrapper so that
+       enforceLandscape()'s 90deg portrait rotation carries it with the grid;
+       the skins decide whether it sits under the clocks (lens) or multiplies
+       over them (field), and every other skin hides it. *@
+    <div class="aurora-field"></div>
     @for (int j = 0; j < 8; j++)
     {
         <div class="clock-container">
@@ -60,7 +65,10 @@
     // Available clock skins, cycled in order by the corner button / "g" key.
     // "aurora" is the default; "classic" is the plain white-hand look and maps
     // to no theme class.
-    private static readonly string[] Skins = { "aurora", "glass", "classic" };
+    // "lens" and "field" both reveal one screen-space aurora through the hands:
+    // lens amplifies a dim field with a per-hand backdrop-filter, field
+    // multiplies a full-strength one over pale hands. See app.css.
+    private static readonly string[] Skins = { "aurora", "lens", "field", "glass", "classic" };
     private int skinIndex = 0;
     private string SkinClass => Skins[skinIndex] == "classic" ? "" : $"theme-{Skins[skinIndex]}";
 
@@ -82,6 +90,20 @@
         if (firstRender)
         {
             controller = new Controller(JSRuntime, clockReferences, hourReferences, minuteReferences);
+
+            // `?bench=1` runs the skin benchmark instead of the clock. The
+            // harness drives all 48 arms itself with one deterministic rotation
+            // so that every skin is measured under an identical workload - the
+            // orchestrator picks its phases and patterns at random, which is
+            // right for the screensaver and useless for a comparison. It also
+            // owns the skin class while it runs, so the preference restore below
+            // is skipped rather than fighting it.
+            if (GetQueryValue(Nav.Uri, "bench") is not null)
+            {
+                await JSRuntime.InvokeVoidAsync("benchHarness.start");
+                return;
+            }
+
             controller.SetClock();
 
             // A `?skin=` query param (used by the Windows screensaver, which has no
