@@ -461,34 +461,24 @@ code {
      frame rather than cached and translated. Dial it up only if the curtains
      look too crisp on the device - and re-measure if you do. */
   --field-filter: none;
-  /* Band-to-band distance, as a fraction of the FIELD layer's own width - not
-     of the screen. The layer is inset -45% -80%, so it is 2.6x the wrapper
-     wide: 5% of it is about 13% of the wall, i.e. one band per clock column.
-     --hue-period is 3 bands and --wash-period is 4, and fieldSweep travels
-     exactly 6 bands / 2 hue periods while fieldWash travels exactly 1 wash
-     period, so both loops close invisibly. Retune these together or the resets
-     start showing as colour jumps. */
-  --ray-period: 5%;
-  --hue-period: 15%;
-  --wash-period: 20%;
+  /* Band-to-band distance, as an ABSOLUTE length. These used to be
+     percentages of the field layer's own width, which forced the diagonal to
+     come from rotating the layer - see the note on .aurora-field::before for
+     why that cost 1.3x. In vw they are real lengths, the same unit a translate
+     uses, so the gradient can carry the diagonal itself and the loop still
+     closes at any viewport size. --hue-period is 3 bands, --wash-period is 4.
 
-  /* Tilt of the two curtain layers. The bands are drawn by 90deg gradients and
-     the diagonal comes from rotating the layer, because a gradient's stops are
-     measured along the GRADIENT LINE while a translate percentage is measured
-     along element WIDTH - at any other angle the two units disagree and the
-     loop stops closing (see the note on .aurora-field::before).
+     THESE THREE MOVE TOGETHER WITH THE TRAVEL DISTANCES IN THE KEYFRAMES.
+     fieldSweep must travel exactly a whole number of hue periods along the
+     gradient axis and fieldWash a whole number of wash periods, or the loop
+     reset shows as a colour jump. The travel is
+         travel = periods x period-length / sin(angle)
+     because the layers translate horizontally while the pattern repeats along
+     the gradient's own axis. Change any of these and recompute all of them. */
+  --ray-period: 13vw;
+  --hue-period: 39vw;
+  --wash-period: 52vw;
 
-     COST: a rotated layer has to be resampled as it is composited, where a pure
-     translate can be blitted. Measured with no GPU, dropping the tilt to 0
-     moved theme-lens from 22.4 to 30.2fps and theme-field from 21.9 to 27.4.
-     That is a software-rasteriser figure and probably not what a phone does -
-     rotating a cached texture is close to free on a real GPU - so this is left
-     on and exposed as a dial rather than removed. If the Pixel numbers say
-     otherwise, set both to 0deg: vertical curtains travelling sideways are
-     closer to a real aurora anyway, at the cost of lining up with the grid's
-     columns. */
-  --field-tilt: -11deg;
-  --wash-tilt: -7deg;
   --lens-blur: 10px;
   --lens-saturate: 2.1;
   --lens-brightness: 14;
@@ -573,9 +563,9 @@ code {
 .aurora-field::before {
   content: "";
   position: absolute;
-  inset: -45% -80%;
+  inset: 0 -85%;
   background-image:
-    repeating-linear-gradient(90deg,
+    repeating-linear-gradient(79deg,
       rgba(0, 0, 0, 0.8) 0%,
       rgba(0, 0, 0, 0.8) calc(var(--ray-period) * 0.3),
       rgba(0, 0, 0, 0.28) calc(var(--ray-period) * 0.44),
@@ -583,7 +573,7 @@ code {
       rgba(0, 0, 0, 0.28) calc(var(--ray-period) * 0.56),
       rgba(0, 0, 0, 0.8) calc(var(--ray-period) * 0.7),
       rgba(0, 0, 0, 0.8) var(--ray-period)),
-    repeating-linear-gradient(90deg,
+    repeating-linear-gradient(79deg,
       rgb(43, 255, 180) 0%,
       rgb(53, 216, 255) calc(var(--hue-period) * 0.167),
       rgb(90, 150, 255) calc(var(--hue-period) * 0.333),
@@ -593,7 +583,7 @@ code {
       rgb(43, 255, 180) var(--hue-period));
   background-blend-mode: multiply;
   will-change: transform;
-  transform: rotate(var(--field-tilt)) translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
   animation: fieldSweep 71s linear infinite;
 }
 
@@ -610,16 +600,16 @@ code {
 .aurora-field::after {
   content: "";
   position: absolute;
-  inset: -45% -80%;
+  inset: 0 -85%;
   background-image:
-    repeating-linear-gradient(90deg,
+    repeating-linear-gradient(83deg,
       rgba(43, 255, 180, 0.3) 0%,
       rgba(120, 120, 255, 0.16) calc(var(--wash-period) * 0.25),
       rgba(255, 110, 200, 0.3) calc(var(--wash-period) * 0.5),
       rgba(120, 120, 255, 0.16) calc(var(--wash-period) * 0.75),
       rgba(43, 255, 180, 0.3) var(--wash-period));
   will-change: transform;
-  transform: rotate(var(--wash-tilt)) translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
   animation: fieldWash 53s linear infinite;
 }
 
@@ -635,34 +625,41 @@ code {
   filter: var(--field-filter);
 }
 
-/* Travels 30% = exactly 6 ray periods = exactly 2 hue periods, so the reset is
-   invisible. Eight linear segments whose spacing sets the speed: the weights
-   run 1.6, 0.6, 1.0, 1.8, 0.7, 1.3, 0.5, 1.5, so the fastest stretch is about
-   3.6x the slowest and the slowest is still about 0.44x the average - slow
-   enough to read as a drift, never a stop. Keep every x a multiple of 30/9
-   apart if you retune, and keep the last one at exactly 30%. */
+/* Travels exactly 6 ray periods = 2 hue periods ALONG THE GRADIENT AXIS, so
+   the reset is invisible: 79.459902vw x sin(79deg) = 78vw = 6 x 13vw. The
+   layer moves horizontally while the pattern repeats along its own 79deg axis,
+   which is where the sin() comes from. Sliding a set of parallel bands along
+   their own length changes nothing, so only the perpendicular component is
+   visible and this looks exactly like sliding them side-on.
+
+   Eight linear segments whose spacing sets the speed: weights 1.6, 0.6, 1.0,
+   1.8, 0.7, 1.3, 0.5, 1.5, so the fastest stretch is about 3.6x the slowest
+   and the slowest is still 0.44x the average - a drift, never a stop. Any
+   easing with zero slope at a keyframe, ease-in-out included, would stall
+   there, which is why these are all linear. */
 @keyframes fieldSweep {
-  0%     { transform: rotate(var(--field-tilt)) translate3d(0, 0, 0); }
-  12.5%  { transform: rotate(var(--field-tilt)) translate3d(5.333%, 0, 0); }
-  25%    { transform: rotate(var(--field-tilt)) translate3d(7.333%, 0, 0); }
-  37.5%  { transform: rotate(var(--field-tilt)) translate3d(10.667%, 0, 0); }
-  50%    { transform: rotate(var(--field-tilt)) translate3d(16.667%, 0, 0); }
-  62.5%  { transform: rotate(var(--field-tilt)) translate3d(19%, 0, 0); }
-  75%    { transform: rotate(var(--field-tilt)) translate3d(23.333%, 0, 0); }
-  87.5%  { transform: rotate(var(--field-tilt)) translate3d(25%, 0, 0); }
-  100%   { transform: rotate(var(--field-tilt)) translate3d(30%, 0, 0); }
+  0%     { transform: translate3d(0, 0, 0); }
+  12.5%  { transform: translate3d(14.126381vw, 0, 0); }
+  25%    { transform: translate3d(19.423178vw, 0, 0); }
+  37.5%  { transform: translate3d(28.252763vw, 0, 0); }
+  50%    { transform: translate3d(44.144743vw, 0, 0); }
+  62.5%  { transform: translate3d(50.324340vw, 0, 0); }
+  75%    { transform: translate3d(61.802323vw, 0, 0); }
+  87.5%  { transform: translate3d(66.216320vw, 0, 0); }
+  100%   { transform: translate3d(79.459902vw, 0, 0); }
 }
 
-/* Travels -20% = exactly 1 wash period, the other way, on its own uneven
-   spacing so the two layers' relative speed keeps changing. */
+/* Travels exactly 1 wash period along its own 83deg axis:
+   52.390511vw x sin(83deg) = 52vw. Opposite direction, uneven spacing of its
+   own, so the two layers' relative speed keeps changing. */
 @keyframes fieldWash {
-  0%       { transform: rotate(var(--wash-tilt)) translate3d(0, 0, 0); }
-  16.667%  { transform: rotate(var(--wash-tilt)) translate3d(-3.934%, 0, 0); }
-  33.333%  { transform: rotate(var(--wash-tilt)) translate3d(-6.557%, 0, 0); }
-  50%      { transform: rotate(var(--wash-tilt)) translate3d(-11.475%, 0, 0); }
-  66.667%  { transform: rotate(var(--wash-tilt)) translate3d(-13.443%, 0, 0); }
-  83.333%  { transform: rotate(var(--wash-tilt)) translate3d(-17.049%, 0, 0); }
-  100%     { transform: rotate(var(--wash-tilt)) translate3d(-20%, 0, 0); }
+  0%     { transform: translate3d(0, 0, 0); }
+  16.667%{ transform: translate3d(-10.305213vw, 0, 0); }
+  33.333%{ transform: translate3d(-17.176229vw, 0, 0); }
+  50%    { transform: translate3d(-30.059056vw, 0, 0); }
+  66.667%{ transform: translate3d(-35.214282vw, 0, 0); }
+  83.333%{ transform: translate3d(-44.660291vw, 0, 0); }
+  100%   { transform: translate3d(-52.390511vw, 0, 0); }
 }
 
 /* ---- lens: the hands as lenses -------------------------------------- *

@@ -94,14 +94,16 @@
    * texture at all. What did move it there was the tilt, the blur and the
    * second curtain - every one of which costs quality.
    *
-   * A GPU reorders that list: rotating a cached texture is close to free on
-   * real hardware, while a per-arm backdrop blur is not. So do not port the
-   * desktop conclusions - run this and read the device's own answer.
+   * The tilt used to be on this list and is not any more: the diagonal now
+   * comes from the gradient's own angle rather than from rotating the layer,
+   * which removed the resampling and its 1.3x without costing anything.
+   *
+   * A GPU reorders what is left: a per-arm backdrop blur is the expensive one
+   * on real hardware. So do not port the desktop conclusions - run this and
+   * read the device's own answer.
    * ---------------------------------------------------------------- */
   var PROBES = [
     { key: "baseline", css: "", note: "lens exactly as it ships" },
-    { key: "no tilt", note: "curtains vertical; no layer resampling",
-      css: ".clocks-wrapper{--field-tilt:0deg;--wash-tilt:0deg}" },
     { key: "blur 4px", note: "backdrop blur down from 10px",
       css: ".theme-lens .clock .hour div,.theme-lens .clock .minute div{" +
         "-webkit-backdrop-filter:blur(4px) saturate(2.1) brightness(14);" +
