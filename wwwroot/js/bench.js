@@ -70,9 +70,54 @@
   }
 
   function isEnabled() {
-    return /[?&]bench=1/.test(location.search) ||
+    return /[?&](bench|probe)=1/.test(benchConfig()) ||
       !!document.querySelector('meta[name="bench"]');
   }
+
+  function isProbe() {
+    return /[?&]probe=1/.test(benchConfig());
+  }
+
+  /* ---------------------------------------------------------------- *
+   * Perf probe (?probe=1).
+   *
+   * The benchmark compares SKINS. This compares the levers WITHIN the lens
+   * skin, so the device itself can say which are worth paying for. Every
+   * entry after the baseline costs something visually - that is the point;
+   * the question is what each one buys.
+   *
+   * Worth running because the same comparison in headless Chromium, with no
+   * GPU, found nothing free. The off-screen overhang, an extra gradient, the
+   * blend mode, a tiled bitmap and 96 pseudo-elements all measured as noise:
+   * Chromium already skips off-screen tiles, Skia already fuses adjacent
+   * colour matrices, and a solid colour is only fast because it needs no
+   * texture at all. What did move it there was the tilt, the blur and the
+   * second curtain - every one of which costs quality.
+   *
+   * A GPU reorders that list: rotating a cached texture is close to free on
+   * real hardware, while a per-arm backdrop blur is not. So do not port the
+   * desktop conclusions - run this and read the device's own answer.
+   * ---------------------------------------------------------------- */
+  var PROBES = [
+    { key: "baseline", css: "", note: "lens exactly as it ships" },
+    { key: "no tilt", note: "curtains vertical; no layer resampling",
+      css: ".clocks-wrapper{--field-tilt:0deg;--wash-tilt:0deg}" },
+    { key: "blur 4px", note: "backdrop blur down from 10px",
+      css: ".theme-lens .clock .hour div,.theme-lens .clock .minute div{" +
+        "-webkit-backdrop-filter:blur(4px) saturate(2.1) brightness(14);" +
+        "backdrop-filter:blur(4px) saturate(2.1) brightness(14)}" },
+    { key: "no blur", note: "amplify only; risks banding",
+      css: ".theme-lens .clock .hour div,.theme-lens .clock .minute div{" +
+        "-webkit-backdrop-filter:saturate(2.1) brightness(14);" +
+        "backdrop-filter:saturate(2.1) brightness(14)}" },
+    { key: "no wash", note: "rays stop changing colour as they travel",
+      css: ".aurora-field::after{display:none}" },
+    { key: "no clip", note: "arms' outer glow no longer cropped to the face",
+      css: ".theme-lens .clock{overflow:visible;border-radius:0}" },
+    { key: "no filter", note: "floor: field present, but no arm lenses it",
+      css: ".theme-lens .clock .hour div,.theme-lens .clock .minute div{" +
+        "-webkit-backdrop-filter:none;backdrop-filter:none}" }
+  ];
 
   var WARMUP_MS = param("warmup", 3000); // discarded: layerisation, first paints
   var MEASURE_MS = param("measure", 12000);
@@ -366,6 +411,77 @@
 
   installReveal();
 
+  var probeStyle = null;
+  function applyProbe(css) {
+    if (!probeStyle) {
+      probeStyle = document.createElement("style");
+      document.head.appendChild(probeStyle);
+    }
+    probeStyle.textContent = css;
+  }
+
+  function median(a) {
+    var s = a.slice().sort(function (x, y) { return x - y; });
+    return s[Math.floor(s.length / 2)];
+  }
+
+  function renderProbe(results, current) {
+    if (!overlay) {
+      overlay = el("div", "bench-overlay");
+      document.body.appendChild(overlay);
+    }
+    var base = results.baseline && results.baseline.length ? median(results.baseline) : 0;
+    var lines = ["PERF PROBE - lens skin, " + ROUNDS + " x " + MEASURE_MS / 1000 + "s each", ""];
+    lines.push(pad("variant", 12) + padL("fps", 7) + padL("vs base", 9) + "   what it costs");
+    lines.push("-".repeat(64));
+    PROBES.forEach(function (v) {
+      var got = results[v.key];
+      if (!got || !got.length) {
+        lines.push(pad(v.key, 12) + padL(v.key === current ? "running" : "-", 7));
+        return;
+      }
+      var m = median(got);
+      lines.push(pad(v.key, 12) + padL(fmt(m), 7) +
+        padL(base ? fmt(m / base, 2) + "x" : "-", 9) + "   " + v.note);
+    });
+    lines.push("");
+    lines.push("at or below 1.00x is not worth its quality cost.");
+    overlay.textContent = lines.join("\n");
+    if (current) {
+      var now = el("div", "bench-now");
+      now.textContent = "\n> measuring: " + current;
+      overlay.appendChild(now);
+    }
+  }
+
+  async function runProbe() {
+    setSkin("theme-lens");
+    var armCount = driveArms();
+    console.log("[probe] start; arms=" + armCount);
+    var results = {};
+    PROBES.forEach(function (v) { results[v.key] = []; });
+    renderProbe(results, null);
+    for (var round = 1; round <= ROUNDS; round++) {
+      for (var i = 0; i < PROBES.length; i++) {
+        var v = PROBES[i];
+        applyProbe(v.css);
+        renderProbe(results, v.key);
+        await wait(WARMUP_MS);
+        var stats = summarise(await record(MEASURE_MS));
+        results[v.key].push(stats.fps);
+        console.log("[probe] r" + round + " " + v.key + " fps=" + fmt(stats.fps) +
+          " p95=" + fmt(stats.p95) + " jank%=" + fmt(stats.jankPct));
+        renderProbe(results, null);
+      }
+    }
+    applyProbe("");
+    console.log("[probe] done");
+    renderProbe(results, null);
+    var done = el("div", "bench-now");
+    done.textContent = "\n> finished - photograph this, or adb logcat -s TimeWebView";
+    overlay.appendChild(done);
+  }
+
   window.benchHarness = {
     reveal: applyReveal,
     // Asked by AnalogClock.razor before it starts the orchestrator.
@@ -373,7 +489,7 @@
     start: function () {
       // OnAfterRenderAsync fires as soon as the DOM is up; give layout and the
       // first paints a moment to settle before the first warm-up starts.
-      setTimeout(function () { run(); }, 500);
+      setTimeout(function () { isProbe() ? runProbe() : run(); }, 500);
     },
     lastResults: function () {
       try {
