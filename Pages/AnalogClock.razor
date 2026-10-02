@@ -63,12 +63,12 @@
     }
     private bool showFullscreenPrompt = false;
     // Available clock skins, cycled in order by the corner button / "g" key.
-    // "aurora" is the default; "classic" is the plain white-hand look and maps
+    // "field" is the default (index 0); "classic" is the plain white-hand look and maps
     // to no theme class.
     // "lens" and "field" both reveal one screen-space aurora through the hands:
     // lens amplifies a dim field with a per-hand backdrop-filter, field
     // multiplies a full-strength one over pale hands. See app.css.
-    private static readonly string[] Skins = { "aurora", "lens", "field", "glass", "classic" };
+    private static readonly string[] Skins = { "field", "aurora", "lens", "glass", "classic" };
     private int skinIndex = 0;
     private string SkinClass => Skins[skinIndex] == "classic" ? "" : $"theme-{Skins[skinIndex]}";
 
@@ -112,7 +112,7 @@
             // A `?skin=` query param (used by the Windows screensaver, which has no
             // usable skin control since any input exits it) forces a skin and wins
             // over the saved preference. Otherwise restore the saved skin; with no
-            // saved preference the default (index 0 = aurora) stands.
+            // saved preference the default (index 0 = field) stands.
             var forcedIndex = Array.IndexOf(Skins, GetQueryValue(Nav.Uri, "skin"));
             if (forcedIndex >= 0)
             {
