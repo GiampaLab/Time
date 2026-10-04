@@ -761,10 +761,130 @@ code {
     0 0 14px rgba(150, 205, 255, 0.2);
 }
 
-/* Reduced motion: keep both fields, hold them still. */
+/* ---- blob: the soft-blob field, for comparison ---------------------- *
+ * The first screen-space aurora (02eda46 on the gemini-aurora branch),
+ * brought back as its own skin so it can be judged next to field. Same
+ * multiply-over-pale-hands mechanism; the difference is the field itself:
+ * soft radial blobs that drift and breathe, where field uses banded rays.
+ *
+ * One fix over the original. Its travelling layer slid exactly one tile
+ * width per cycle while the SAME element was also scaled by its tilt, and
+ * translate works in the parent's space while the tile scales with the
+ * element - so the slide only matched the tile at scale 1 and the colour
+ * jumped at every loop point. The tile now lives on a ::before that only
+ * translates, and the tilt (rotate + scale) stays on the layer around it,
+ * so the slide is measured in the tile's own units and the loop closes
+ * exactly at any scale. */
+.aurora-sky {
+  display: none;
+}
+
+.theme-blob .aurora-sky {
+  display: block;
+  position: absolute;
+  inset: -30%;
+  z-index: 5;
+  overflow: hidden;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+  will-change: transform;
+}
+
+/* Layer A travels. The tile is 50% of the layer wide (25% of this 200%-wide
+   pseudo) and the pseudo slides exactly one tile per cycle, so the drift is
+   unbroken right-to-left rather than a loop that rewinds. Blobs that would
+   cross a tile edge are mirrored on the opposite edge so the seam is
+   invisible. */
+.theme-blob .sky-a {
+  background-color: rgb(223, 232, 255);
+  animation: blobTiltA 67s ease-in-out infinite;
+}
+
+.theme-blob .sky-a::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 200%;
+  background-size: 25% 100%;
+  background-repeat: repeat;
+  background-image:
+    radial-gradient(ellipse 30% 42% at 0% 26%, #00ff9d, transparent 70%),
+    radial-gradient(ellipse 30% 42% at 100% 26%, #00ff9d, transparent 70%),
+    radial-gradient(ellipse 34% 46% at 30% 72%, #ff3fae, transparent 70%),
+    radial-gradient(ellipse 30% 40% at 58% 18%, #1fa8ff, transparent 68%),
+    radial-gradient(ellipse 32% 44% at 82% 60%, #9327ff, transparent 70%),
+    radial-gradient(ellipse 32% 44% at -18% 60%, #9327ff, transparent 70%);
+  will-change: transform;
+  animation: blobTravel 60s linear infinite;
+}
+
+/* Layer B does not travel; it breathes and counter-rotates on periods coprime
+   to A's, so the two fields shear across each other and the combined pattern
+   never settles into a repeat. Untiled, so it alone may move and scale on the
+   same element. */
+.theme-blob .sky-b {
+  background-color: rgb(238, 242, 255);
+  background-image:
+    radial-gradient(ellipse 48% 42% at 68% 18%, #4b5bff, transparent 72%),
+    radial-gradient(ellipse 42% 50% at 20% 54%, #16ffb4, transparent 70%),
+    radial-gradient(ellipse 44% 40% at 92% 72%, #ff4fc0, transparent 70%),
+    radial-gradient(ellipse 40% 46% at 46% 96%, #21c4ff, transparent 70%);
+  animation: blobDriftB 53s linear infinite, blobTiltB 79s ease-in-out infinite;
+}
+
+/* Exactly one tile, in the pseudo's own width, so the loop point is seamless. */
+@keyframes blobTravel {
+  0% { translate: 0 0; }
+  100% { translate: -25% 0; }
+}
+
+@keyframes blobDriftB {
+  0% { translate: -5% 4%; }
+  27% { translate: 3% -3%; }
+  52% { translate: 8% 5%; }
+  78% { translate: 0% 9%; }
+  100% { translate: -5% 4%; }
+}
+
+@keyframes blobTiltA {
+  0% { rotate: -4deg; scale: 1.05; }
+  50% { rotate: 5deg; scale: 1.14; }
+  100% { rotate: -4deg; scale: 1.05; }
+}
+
+@keyframes blobTiltB {
+  0% { rotate: 6deg; scale: 1.12; }
+  50% { rotate: -5deg; scale: 1.04; }
+  100% { rotate: 6deg; scale: 1.12; }
+}
+
+/* Same pale hands as field: multiply needs something light to tint. */
+.theme-blob .clock .hour div,
+.theme-blob .clock .minute div {
+  overflow: hidden;
+  border-radius: 4cqmin;
+  height: calc(40% + 4cqmin);
+  background-color: rgb(232, 242, 250);
+  background-image:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(196, 216, 232, 0.9) 45%, rgba(255, 255, 255, 0.85));
+  box-shadow:
+    inset 0 1px 2px rgba(255, 255, 255, 0.9),
+    inset 0 -3px 6px rgba(120, 150, 175, 0.4),
+    0 0 14px rgba(150, 205, 255, 0.2);
+}
+
+.theme-blob .clock .ctr {
+  display: none;
+}
+
+/* Reduced motion: keep all three fields, hold them still. */
 @media (prefers-reduced-motion: reduce) {
   .aurora-field::before,
-  .aurora-field::after {
+  .aurora-field::after,
+  .theme-blob .aurora-sky,
+  .theme-blob .sky-a::before {
     animation: none;
   }
 }

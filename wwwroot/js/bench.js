@@ -39,7 +39,8 @@
     { key: "classic", cls: "", note: "floor: plain hands, no light at all" },
     { key: "aurora", cls: "theme-aurora", note: "control: today's per-arm aurora" },
     { key: "lens", cls: "theme-lens", note: "screen-space field + per-arm backdrop-filter" },
-    { key: "field", cls: "theme-field", note: "screen-space field + multiply, no filtering" }
+    { key: "field", cls: "theme-field", note: "screen-space field + multiply, no filtering" },
+    { key: "blob", cls: "theme-blob", note: "screen-space blob field + multiply, no filtering" }
   ];
 
   /* Where the settings come from. In a browser they are query params:

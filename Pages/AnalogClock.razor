@@ -24,6 +24,11 @@
        the skins decide whether it sits under the clocks (lens) or multiplies
        over them (field), and every other skin hides it. *@
     <div class="aurora-field"></div>
+    @* The blob skin's field: the earlier screen-space attempt, built from soft
+       radial blobs rather than rays, kept so the two can be compared side by
+       side. Same placement and reasoning as .aurora-field; hidden otherwise. *@
+    <div class="aurora-sky sky-a"></div>
+    <div class="aurora-sky sky-b"></div>
     @for (int j = 0; j < 8; j++)
     {
         <div class="clock-container">
@@ -67,8 +72,10 @@
     // to no theme class.
     // "lens" and "field" both reveal one screen-space aurora through the hands:
     // lens amplifies a dim field with a per-hand backdrop-filter, field
-    // multiplies a full-strength one over pale hands. See app.css.
-    private static readonly string[] Skins = { "field", "aurora", "lens", "glass", "classic" };
+    // multiplies a full-strength one over pale hands. "blob" is the same
+    // multiply idea with the older soft-blob field instead of rays, kept next
+    // to field in the cycle so the two can be compared. See app.css.
+    private static readonly string[] Skins = { "field", "blob", "aurora", "lens", "glass", "classic" };
     private int skinIndex = 0;
     private string SkinClass => Skins[skinIndex] == "classic" ? "" : $"theme-{Skins[skinIndex]}";
 
