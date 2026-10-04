@@ -28,16 +28,25 @@ public class SettingsForm : Form
         _skin.Items.AddRange(Skins);
         _skin.SelectedItem = LoadSkin();
 
-        var ok = new Button { Text = "OK", DialogResult = DialogResult.OK };
-        var cancel = new Button { Text = "Cancel", DialogResult = DialogResult.Cancel };
+        var ok = new Button { Text = "OK", DialogResult = DialogResult.OK, AutoSize = true };
+        var cancel = new Button { Text = "Cancel", DialogResult = DialogResult.Cancel, AutoSize = true };
         ok.Click += (_, _) => SaveSkin((string)_skin.SelectedItem!);
         AcceptButton = ok;
         CancelButton = cancel;
 
-        var buttons = new FlowLayoutPanel { FlowDirection = FlowDirection.RightToLeft, AutoSize = true, Dock = DockStyle.Fill };
+        // AutoSize panels grow to fit their buttons; Dock = Fill would instead
+        // pin the panel to the row height and clip them.
+        var buttons = new FlowLayoutPanel
+        {
+            FlowDirection = FlowDirection.RightToLeft,
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            Anchor = AnchorStyles.Right,
+            Margin = new Padding(0, 8, 0, 0),
+        };
         buttons.Controls.AddRange(new Control[] { cancel, ok });
 
-        var layout = new TableLayoutPanel { ColumnCount = 2, AutoSize = true };
+        var layout = new TableLayoutPanel { ColumnCount = 2, AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink };
         layout.Controls.Add(new Label { Text = "Clock skin:", AutoSize = true, Anchor = AnchorStyles.Left }, 0, 0);
         layout.Controls.Add(_skin, 1, 0);
         layout.Controls.Add(buttons, 0, 1);
