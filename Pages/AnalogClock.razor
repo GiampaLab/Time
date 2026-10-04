@@ -75,6 +75,8 @@
     // multiplies a full-strength one over pale hands. "blob" is the same
     // multiply idea with the older soft-blob field instead of rays, kept next
     // to field in the cycle so the two can be compared. See app.css.
+    // The Windows screensaver's settings dialog keeps its own copy of this list
+    // (windows/screensaver/SettingsForm.cs) - add new skins there too.
     private static readonly string[] Skins = { "field", "blob", "aurora", "lens", "glass", "classic" };
     private int skinIndex = 0;
     private string SkinClass => Skins[skinIndex] == "classic" ? "" : $"theme-{Skins[skinIndex]}";

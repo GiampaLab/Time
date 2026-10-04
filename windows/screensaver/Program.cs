@@ -21,8 +21,7 @@ static class Program
         }
         else if (mode.StartsWith("/c"))
         {
-            MessageBox.Show("No settings available.", "Time Screensaver",
-                MessageBoxButtons.OK, MessageBoxIcon.Information);
+            Application.Run(new SettingsForm());
         }
     }
 }

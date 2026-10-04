@@ -67,9 +67,10 @@ public class ScreensaverForm : Form
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "TimeScreensaver"));
         await _webView.EnsureCoreWebView2Async(env);
-        // Force the field skin: the screensaver has no usable skin control (any
-        // input exits it), so it shouldn't depend on a stored preference.
-        _webView.CoreWebView2.Navigate($"http://localhost:{port}/?skin=field");
+        // Force the skin chosen in the /c settings dialog (default field): the
+        // screensaver itself has no usable skin control (any input exits it), so
+        // it shouldn't depend on the app's stored preference.
+        _webView.CoreWebView2.Navigate($"http://localhost:{port}/?skin={SettingsForm.LoadSkin()}");
     }
 
     private int StartFileServer(string wwwroot)

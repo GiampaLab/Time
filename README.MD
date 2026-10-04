@@ -198,7 +198,7 @@ This publishes the Blazor app, builds a self-contained single-file `win-x64` exe
 
 Right-click `windows/build/Time.scr` → **Install** (this opens Screen Saver settings with *Time* selected), or copy `Time.scr` together with its `wwwroot/` folder into `C:\Windows\System32`.
 
-Then choose **Time** under **Settings → Personalization → Lock screen → Screen saver**. The saver handles the standard screen-saver arguments: `/s` (run full-screen), `/p <hwnd>` (settings-dialog preview), and `/c` (configure — it has no options).
+Then choose **Time** under **Settings → Personalization → Lock screen → Screen saver**. The saver handles the standard screen-saver arguments: `/s` (run full-screen), `/p <hwnd>` (settings-dialog preview), and `/c` (configure). The **Settings…** button opens a dialog for choosing the clock skin; the choice is stored per user under `HKCU\Software\GiampaLab\TimeScreensaver`.
 
 ## Extending the Project
 
