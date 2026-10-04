@@ -53,7 +53,13 @@ public class ScreensaverForm : Form
 
     private async Task InitAsync()
     {
-        var wwwroot = Path.Combine(AppContext.BaseDirectory, "wwwroot");
+        // GetFullPath, not just Combine: when Windows starts the saver on its own
+        // it launches it by its 8.3 short path (C:\Users\x\GIAMPA~1\...), and
+        // GetFullPath expands short names. HandleRequest runs every requested file
+        // through GetFullPath, so the root must be expanded the same way or the
+        // containment check never matches and every request is a 404.
+        var wwwroot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "wwwroot"))
+            .TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
         var port = StartFileServer(wwwroot);
 
         var env = await CoreWebView2Environment.CreateAsync(
